@@ -1,0 +1,29 @@
+var data = {
+  "title": "...",
+  "subtitle": "...",
+  "categories": [{
+    "id": "#",
+    "name": "...",
+    "items": [
+      { "id": "#", "name": "...", "desc": "..." },
+      { "id": "#", "name": "...", "desc": "..." } //, ...
+    ]
+  }] //, { ...
+};    
+
+var cfg = {
+  "target": "services-container",
+  "data": data,
+  "layout": {
+    "elements": [{
+      "path": "title",
+      "render": Monominoes.H2
+    }, {
+      "path": "subtitle",
+      "render": Monominoes.CENTER_P
+    }, {
+      "path": "categories",
+      "elements": [ /* ... */ ]
+    }]
+  }
+};
