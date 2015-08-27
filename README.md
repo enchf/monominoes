@@ -1,6 +1,6 @@
 ### Monominoes
 
-Simplified content manager for HTML5 catalogs.
+Simplified content render for HTML5 catalogs.
 It uses Bootstrap Grid System and is coded in Javascript. 
 
 Applicable to:
@@ -10,6 +10,7 @@ Applicable to:
 
 Provides:
 
-* Configurable management system
-* View based on bootstrap grids
-* Item renderer functions
+* Quick and easy to configure interface.
+* Integrates with any JSON hierarchical data.
+* Pre-defined item renderer functions.
+* Freedom to add new configurable and adaptable renderers.
