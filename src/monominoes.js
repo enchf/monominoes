@@ -25,7 +25,9 @@ String.prototype.format = function() { $.validator.format.apply(this,arguments);
                                                                     
 (Monominoes.init = function() {
   /* Static values */
-  var tags = ["div","h1","h2","h3","h4","h5","h6","span","img","ul","ol","li","header","br","strong"];
+  var simpletags = ["div","h1","h2","h3","h4","h5","h6","span","li","header","strong"];
+  var complextags = ["img","ul","ol","br"];
+  var tags = simpletags.concat(complextags);
   for (var x in tags) Monominoes.tags[tags[x].toUpperCase()] = tags[x];
   
   Monominoes.cols = ["col-lg-12","col-lg-6","col-md-6 col-lg-4","col-sm-6 col-md-4 col-lg-3", // 1,2,3,4.
@@ -34,21 +36,46 @@ String.prototype.format = function() { $.validator.format.apply(this,arguments);
   Monominoes.offsets = ["","","","","col-lg-offset-1","","","col-lg-offset-2","","col-lg-offset-1","",""];
   
   /* Renders */
+  Monominoes.simpleTagFn = function(tag,clazz) {
+    return function(data,parent) {
+      Monominoes.getTag(tag).addClass(this[(clazz || "class")]).text(data).appendTo(parent);
+    };
+  };
+  
+  var renderCfg = function(def,cfg) {
+    var c = (cfg || {});
+    var cloned = Monominoes.clone(def);
+    for (var x in cloned) {
+      if (x.indexOf("class") >= 0) {
+        cloned[x] = cloned[x].append(cfg[x]);
+        delete cfg[x];
+      }
+    }
+    return Monominoes.overwrite.call(cloned, cfg, false);
+  };
+  
+  for (var i in simpletags) {
+    var tag = simpletags[i];
+    Monominoes.renders[tag.toUpperCase()] = function(cfg) {
+      return renderCfg({ 
+        "class": "monominoes {0}".format(tag).append(cfg["class"]),
+        "fn": Monominoes.simpleTagFn(tag)
+      }, cfg);
+    };
+  } 
+  
   var configs = {
-    "H2": {
-      class: "monominoes title",
-      fn: function(data, parent) { Monominoes.getTag(Monominoes.tags.H2).text(data).appendTo(parent); }
+    "LIST": {
+      "class": "monominoes list",
+      "el-class": "monominoes item",
+      "ordered": false,
+      "fn": function(data, parent) {
+        var list = Monominoes.getTag(ordered ? "ol" : "ul").addClass(this["class"]).appendTo(parent);
+        for (var x in data) Monominoes.simpleTagFn("li","el-class").call(this,data[x],list);
+      }
     }
   };
   
-  for (var i in configs) {
-    var config = configs[i];
-    Monominoes.renders[i] = function(cfg) {
-      var c = (cfg || {});
-      var obj = Monominoes.clone(config);
-      return Monominoes.overwrite.call(obj, cfg, false);
-    };
-  }   
 })();
 
 Monominoes.validate = function(cfg) {
