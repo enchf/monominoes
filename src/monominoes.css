@@ -1,0 +1,11 @@
+.monominoes {}
+
+/* Renderers */
+.monominoes .title {
+  text-align: center;
+  letter-spacing: 4px;
+  font-size: 2.25em;
+  font-weight: 700;
+  color: black;
+  text-transform: uppercase;
+}

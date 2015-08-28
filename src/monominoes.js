@@ -7,6 +7,7 @@ Monominoes.tags = {};
 Monominoes.assert = function(obj, msg) { if (!obj) throw msg || "assertion failed"; };
 Monominoes.overwrite = function(obj, safe) { if (obj) for (var x in obj) if (!safe || (safe && !this[x])) this[x] = obj[x]; };
 Monominoes.getTag = function(tag) { return $("<{0}></{0}>".format(tag)); };
+Monominoes.clone = function(obj) { var clon = {}; for (var x in obj) { clon[x] = obj[x] } return clon; }
 
 Monominoes.path = function(obj, path) {
   var paths = path.split(".");
@@ -31,6 +32,23 @@ String.prototype.format = function() { $.validator.format.apply(this,arguments);
                      "col-sm-6 col-md-4 col-lg-2","col-xs-6 col-sm-4 col-md-3 col-lg-2","", // 5,6,7.
                      "col-lg-1", "", "col-lg-1", "", "col-lg-1" ]; // 8,9,10,11,12.
   Monominoes.offsets = ["","","","","col-lg-offset-1","","","col-lg-offset-2","","col-lg-offset-1","",""];
+  
+  /* Renders */
+  var configs = {
+    "H2": {
+      class: "monominoes title",
+      fn: function(data, parent) { Monominoes.getTag(Monominoes.tags.H2).text(data).appendTo(parent); }
+    }
+  };
+  
+  for (var i in configs) {
+    var config = configs[i];
+    Monominoes.renders[i] = function(cfg) {
+      var c = (cfg || {});
+      var obj = Monominoes.clone(config);
+      return Monominoes.overwrite.call(obj, cfg, false);
+    };
+  }   
 })();
 
 Monominoes.validate = function(cfg) {
