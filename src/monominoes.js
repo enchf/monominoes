@@ -1,13 +1,22 @@
 function Monominoes() {}
+function MonoUtils() {}
+
+/** Monominoes Utils definition */
+Monominoes.assert = function(obj, msg) { if (!obj) throw msg || "assertion failed"; };
+Monominoes.getTag = function(tag) { return $("<{0}></{0}>".format(tag)); };
+Monominoes.clone = function(obj) { var clon = {}; for (var x in obj) { clon[x] = obj[x] } return clon; }
 
 /* Static methods */
 Monominoes.cache = {};
 Monominoes.renders = {};
 Monominoes.tags = {};
-Monominoes.assert = function(obj, msg) { if (!obj) throw msg || "assertion failed"; };
-Monominoes.overwrite = function(obj, safe) { if (obj) for (var x in obj) if (!safe || (safe && !this[x])) this[x] = obj[x]; };
-Monominoes.getTag = function(tag) { return $("<{0}></{0}>".format(tag)); };
-Monominoes.clone = function(obj) { var clon = {}; for (var x in obj) { clon[x] = obj[x] } return clon; }
+
+Monominoes.overwrite = function(target, source, safe) { 
+  if (target && source) {
+    for (var x in source) 
+      if (!safe || (safe && target[x] != undefined)) target[x] = source[x];
+  }
+};
 
 Monominoes.path = function(obj, path) {
   var paths = path.split(".");
@@ -22,6 +31,18 @@ Monominoes.path = function(obj, path) {
 /* Extensions */
 String.prototype.append = function(app,sep) { return (this+(sep||" ")+(app||"")).trim(); };
 String.prototype.format = function() { $.validator.format.apply(this,arguments); };
+Number.prototype.formatMoney = function(c, d, t){
+  var n = this, 
+    c = isNaN(c = Math.abs(c)) ? 2 : c, 
+    d = d == undefined ? "." : d, 
+    t = t == undefined ? "," : t, 
+    s = n < 0 ? "-" : "", 
+    i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "", 
+    j = (j = i.length) > 3 ? j % 3 : 0;
+  return s + (j ? i.substr(0, j) + t : "") 
+           + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) 
+           + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+};
                                                                     
 (Monominoes.init = function() {
   /* Static values */
@@ -42,7 +63,99 @@ String.prototype.format = function() { $.validator.format.apply(this,arguments);
     };
   };
   
-  var renderCfg = function(def,cfg) {
+  for (var i in simpletags) {
+    var tag = simpletags[i];
+    Monominoes.renders[tag.toUpperCase()] = { 
+      "class": "monominoes-{0}".format(tag).append(cfg["class"]),
+      "formatter": function(data) { return data; }, //
+      "fn": Monominoes.simpleTagFn(tag)
+    };
+  } 
+  
+  Monominoes.renders.LIST = {
+    "class": "monominoes-list",
+    "item-class": "monominoes-item",
+    "ordered": false,
+    "marked": true,
+    "item-render": function(data, list) {
+      Monominoes.simpleTagFn(Monominoes.tags.LI,"item-class").call(this,data,list);
+    },
+    "fn": function(data, parent) {
+      var list = Monominoes.getTag(ordered ? Monominoes.tags.OL : Monominoes.tags.UL)
+        .addClass(this.class)
+        .appendTo(parent);
+
+      if (this.marked === false) list.css("list-style-type","none");
+      else if (typeof this.marked == "string") list.css("list-style-type",this.marked);
+
+      for (var x in data) this["item-render"].call(this, data[x], list);
+    }
+  };
+  
+  Monominoes.renders.LABELED = {
+    "class": "monominoes-labeled",
+    "label": "", // Mandatory.
+    "bold": true,
+    "fn": function(data,parent) {
+      if (this.bold) {
+        Monominoes.simpleTagFn(Monominoes.tags.STRONG)("{0}:".format(this.label),parent);
+        Monominoes.simpleTagFn(Monominoes.tags.SPAN)(data,parent);
+      } else {
+        Monominoes.simpleTagFn(Monominoes.tags.SPAN)("{0}: {1}".format(this.label,data),parent);
+      }
+    }
+  };
+  
+  /**
+   * Img configuration supported for data items.
+   * This is how 'data' argument should be interpreted.
+   * - string: Image name itself.
+   * - object: An object with one of the following properties:
+   *   - imgfn: Function to retrieve image name (Function).
+   *   - name: Image name.
+   *   - property: 
+   */
+  Monominoes.renders.IMG = {
+    "class": "img-responsive monominoes-img",
+    "default-format": "jpg",
+    "default-img": null, // Optional URL to default image.
+    "centered": true,
+    "height": null, // Optional image height (% or px).
+    "source": "",   // Image repository path, default to root. Add last / if necessary.
+    "formatter": function(data) { // Overwritable function to format image name from data argument.
+      return this.source + data;  // Scope of the function will be config object itself.
+    },
+    "alt": function(data) { return ""; }, // Overwritable function to add alt img attribute.
+    "fn": function(data, parent) {
+      var div,helper,img;
+      var scope = this;
+      
+      div = Monominoes.getTag(Monominoes.tags.DIV)
+        .css("height", (this.height || "auto"))
+        .appendTo(parent);
+      
+      if (this.centered) {
+        helper = Monominoes.getTag(Monominoes.tags.SPAN)
+          .addClass("monominoes-img-helper")
+          .appendTo(div);
+      }
+      
+      img = Monominoes.getTag(Monominoes.tags.IMG)
+        .attr("src", this.formatter(data))
+        .attr("alt", this.alt(data))
+        .addClass(this.class)
+        .error(function(img) {
+          img.onerror = "";
+          if (scope["default-img"]) img.src = scope.source + scope["default-img"];
+          return true;
+        })
+        .appendTo(div);
+    }
+  };
+  
+  /* Transform LIST,LABELED,etc. configs into renderer config functions. */
+  var render;
+  var renderer = function(def,cfg) {
     var c = (cfg || {});
     var cloned = Monominoes.clone(def);
     for (var x in cloned) {
@@ -51,31 +164,15 @@ String.prototype.format = function() { $.validator.format.apply(this,arguments);
         delete cfg[x];
       }
     }
-    return Monominoes.overwrite.call(cloned, cfg, false);
+    return Monominoes.overwrite(cloned, cfg, false);
   };
   
-  for (var i in simpletags) {
-    var tag = simpletags[i];
-    Monominoes.renders[tag.toUpperCase()] = function(cfg) {
-      return renderCfg({ 
-        "class": "monominoes {0}".format(tag).append(cfg["class"]),
-        "fn": Monominoes.simpleTagFn(tag)
-      }, cfg);
+  for (var x in Monominoes.renders) {
+    render = Monominoes.renders[x];
+    Monominoes.renders[x] = function(cfg) {
+      return renderer(render,cfg);
     };
-  } 
-  
-  var configs = {
-    "LIST": {
-      "class": "monominoes list",
-      "el-class": "monominoes item",
-      "ordered": false,
-      "fn": function(data, parent) {
-        var list = Monominoes.getTag(ordered ? "ol" : "ul").addClass(this["class"]).appendTo(parent);
-        for (var x in data) Monominoes.simpleTagFn("li","el-class").call(this,data[x],list);
-      }
-    }
-  };
-  
+  }
 })();
 
 Monominoes.validate = function(cfg) {
@@ -144,7 +241,7 @@ Monominoes.build = function(cfg) {
   
   Monominoes.validate(cfg);
   m = new Monominoes();
-  Monominoes.overwrite.call(m,cfg,true);
+  Monominoes.overwrite(m,cfg,true);
   
   m.div = (m.div) ? $(m.div) : $("#"+m.target);
   m.target = (m.target || (m.div.id || null));
