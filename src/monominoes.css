@@ -37,3 +37,14 @@
   display: inline-block;
   max-height: 100%;
 }
+
+.monominoes-text-block {
+  display: block;
+  text-align: center;
+  padding: 8px 10px;
+  border-radius: 3px;
+  -o-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  font-weight: 700;
+}

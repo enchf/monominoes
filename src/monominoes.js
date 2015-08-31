@@ -2,23 +2,33 @@ function Monominoes() {}
 function MonoUtils() {}
 
 /** Monominoes Utils definition */
-Monominoes.assert = function(obj, msg) { if (!obj) throw msg || "assertion failed"; };
-Monominoes.getTag = function(tag) { return $("<{0}></{0}>".format(tag)); };
-Monominoes.clone = function(obj) { var clon = {}; for (var x in obj) { clon[x] = obj[x] } return clon; }
-
-/* Static methods */
-Monominoes.cache = {};
-Monominoes.renders = {};
-Monominoes.tags = {};
-
-Monominoes.overwrite = function(target, source, safe) { 
-  if (target && source) {
-    for (var x in source) 
-      if (!safe || (safe && target[x] != undefined)) target[x] = source[x];
+MonoUtils.assert = function(obj, msg) { if (!obj) throw msg || "assertion failed"; };
+MonoUtils.format = function() { $.validator.format.apply(null,arguments); };
+MonoUtils.append = function(str,app,sep) { return ((str||"") + (sep||" ") + (app||"")).trim(); };
+MonoUtils.getTag = function(tag) { return $(MonoUtils.format("<{0}></{0}>",tag)); };
+MonoUtils.clone  = function(obj) { var clon = {}; for (var x in obj) { clon[x] = obj[x] } return clon; }
+MonoUtils.currency = function(num,nd,ds,ms){
+  MonoUtils.assert(typeof num == "number", "Formatting a non-number");
+  nd = nd !== "" && nd !== null && !isNan((nd = Math.abs(nd))) ? nd : 2;
+  ds = ds != undefined ? ds : ".";
+  ms = ms != undefined ? ms : ",";
+  var neg = num < 0 ? "-" : "";
+  var ist = Math.abs(parseInt(num.toFixed(0))).toString();
+  var dec = Math.abs(num).toString().substr(ist.length+1,nd);
+  dec = (dec.length < nd) ? dec + ((new Array(nd-dec.length+1)).join("0")) : dec;
+  var res = neg;
+  var i = ist.length-1;
+  for (; (i-3)>0; i-=3) res += (ms+ist.substr(i-3,3));
+  res+=ist.substring(0,i);
+  return res + (dec.length > 0 ? (ds+dec) : "");
+};
+MonoUtils.overwrite = function(obj,src,safe) {
+  if (obj && src) {
+    for (var x in src) 
+      if (!safe || (safe && obj[x] == undefined)) obj[x] = src[x];
   }
 };
-
-Monominoes.path = function(obj, path) {
+MonoUtils.path = function(obj,path) {
   var paths = path.split(".");
   var el = obj;
   for (var p in paths) {
@@ -27,22 +37,12 @@ Monominoes.path = function(obj, path) {
   }
   return el;
 };
+MonoUtils.self = function(x) { return x; };
 
-/* Extensions */
-String.prototype.append = function(app,sep) { return (this+(sep||" ")+(app||"")).trim(); };
-String.prototype.format = function() { $.validator.format.apply(this,arguments); };
-Number.prototype.formatMoney = function(c, d, t){
-  var n = this, 
-    c = isNaN(c = Math.abs(c)) ? 2 : c, 
-    d = d == undefined ? "." : d, 
-    t = t == undefined ? "," : t, 
-    s = n < 0 ? "-" : "", 
-    i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + "", 
-    j = (j = i.length) > 3 ? j % 3 : 0;
-  return s + (j ? i.substr(0, j) + t : "") 
-           + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) 
-           + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
-};
+/* Constants */
+Monominoes.cache = {};
+Monominoes.renders = {};
+Monominoes.tags = {};
                                                                     
 (Monominoes.init = function() {
   /* Static values */
@@ -59,15 +59,18 @@ Number.prototype.formatMoney = function(c, d, t){
   /* Renders */
   Monominoes.simpleTagFn = function(tag,clazz) {
     return function(data,parent) {
-      Monominoes.getTag(tag).addClass(this[(clazz || "class")]).text(data).appendTo(parent);
+      MonoUtils.getTag(tag)
+        .addClass(this[(clazz || "class")])
+        .text(this.formatter ? this.formatter(data) : data)
+        .appendTo(parent);
     };
   };
   
   for (var i in simpletags) {
     var tag = simpletags[i];
     Monominoes.renders[tag.toUpperCase()] = { 
-      "class": "monominoes-{0}".format(tag).append(cfg["class"]),
-      "formatter": function(data) { return data; }, //
+      "class": MonoUtils.format("monominoes-{0}",tag),
+      "formatter": MonoUtils.self, // Overwritable formatter. Returns data itself by default.
       "fn": Monominoes.simpleTagFn(tag)
     };
   } 
@@ -77,11 +80,12 @@ Number.prototype.formatMoney = function(c, d, t){
     "item-class": "monominoes-item",
     "ordered": false,
     "marked": true,
+    "formatter": MonoUtils.self,
     "item-render": function(data, list) {
       Monominoes.simpleTagFn(Monominoes.tags.LI,"item-class").call(this,data,list);
     },
     "fn": function(data, parent) {
-      var list = Monominoes.getTag(ordered ? Monominoes.tags.OL : Monominoes.tags.UL)
+      var list = MonoUtils.getTag(ordered ? Monominoes.tags.OL : Monominoes.tags.UL)
         .addClass(this.class)
         .appendTo(parent);
 
@@ -92,29 +96,64 @@ Number.prototype.formatMoney = function(c, d, t){
     }
   };
   
+  Monominoes.renders.LIST_GROUP = MonoUtils.overwrite(
+    MonoUtils.clone(Monominoes.renders.LIST),
+    { 
+      "class": "list-group",
+      "item-class": "list-group-item",
+      "marked": false
+    },
+    false
+  );
+  
+  Monominoes.renders.TEXT_BLOCK = {
+    "class": "monominoes-text-block",
+    "color": "white",
+    "background": "black",
+    "formatter": MonoUtils.self,
+    "fn": function(data,parent) {
+      MonoUtils.getTag(Monominoes.tags.SPAN)
+        .addClass(this.class)
+        .text(this.formatter(data))
+        .css("color", this.color)
+        .css("background-color", this.background)
+        .appendTo(parent);
+    }
+  };
+  
+  Monominoes.renders.PRICE = MonoUtils.overwrite(
+    MonoUtils.clone(Monominoes.renders.TEXT_BLOCK),
+    {
+      "decimals": 2,
+      "decimal-separator": ".",
+      "thousands-separator": ",",
+      "formatter": function(data) { 
+        return MonoUtils.currency(
+          data,
+          this.decimals,
+          this["decimal-separator"],
+          this["thousands-separator"]
+        );
+      }
+    },
+    false
+  );
+  
   Monominoes.renders.LABELED = {
     "class": "monominoes-labeled",
     "label": "", // Mandatory.
     "bold": true,
+    "formatter": MonoUtils.self,
     "fn": function(data,parent) {
       if (this.bold) {
-        Monominoes.simpleTagFn(Monominoes.tags.STRONG)("{0}:".format(this.label),parent);
+        Monominoes.simpleTagFn(Monominoes.tags.STRONG)(MonoUtils.format("{0}:",this.label),parent);
         Monominoes.simpleTagFn(Monominoes.tags.SPAN)(data,parent);
       } else {
-        Monominoes.simpleTagFn(Monominoes.tags.SPAN)("{0}: {1}".format(this.label,data),parent);
+        Monominoes.simpleTagFn(Monominoes.tags.SPAN)(MonoUtils.format("{0}: {1}",this.label,data),parent);
       }
     }
   };
   
-  /**
-   * Img configuration supported for data items.
-   * This is how 'data' argument should be interpreted.
-   * - string: Image name itself.
-   * - object: An object with one of the following properties:
-   *   - imgfn: Function to retrieve image name (Function).
-   *   - name: Image name.
-   *   - property: 
-   */
   Monominoes.renders.IMG = {
     "class": "img-responsive monominoes-img",
     "default-format": "jpg",
@@ -123,24 +162,29 @@ Number.prototype.formatMoney = function(c, d, t){
     "height": null, // Optional image height (% or px).
     "source": "",   // Image repository path, default to root. Add last / if necessary.
     "formatter": function(data) { // Overwritable function to format image name from data argument.
-      return this.source + data;  // Scope of the function will be config object itself.
+      var lastch = this.source[this.source.length-1];
+      return MonoUtils.format("{0}{1}{2}.{3}",
+          this.source,
+          this.source && (lastch !== "/" && lastch !=="\\") ? "/" : "",
+          data,
+          this["default-format"]); // Scope of the function will be config object itself.
     },
     "alt": function(data) { return ""; }, // Overwritable function to add alt img attribute.
     "fn": function(data, parent) {
-      var div,helper,img;
+      var div;
       var scope = this;
       
-      div = Monominoes.getTag(Monominoes.tags.DIV)
+      div = MonoUtils.getTag(Monominoes.tags.DIV)
         .css("height", (this.height || "auto"))
         .appendTo(parent);
       
       if (this.centered) {
-        helper = Monominoes.getTag(Monominoes.tags.SPAN)
+        MonoUtils.getTag(Monominoes.tags.SPAN)
           .addClass("monominoes-img-helper")
           .appendTo(div);
       }
       
-      img = Monominoes.getTag(Monominoes.tags.IMG)
+      MonoUtils.getTag(Monominoes.tags.IMG)
         .attr("src", this.formatter(data))
         .attr("alt", this.alt(data))
         .addClass(this.class)
@@ -157,14 +201,14 @@ Number.prototype.formatMoney = function(c, d, t){
   var render;
   var renderer = function(def,cfg) {
     var c = (cfg || {});
-    var cloned = Monominoes.clone(def);
+    var cloned = MonoUtils.clone(def);
     for (var x in cloned) {
       if (x.indexOf("class") >= 0) {
-        cloned[x] = cloned[x].append(cfg[x]);
+        cloned[x] = MonoUtils.append(cloned[x],cfg[x]);
         delete cfg[x];
       }
     }
-    return Monominoes.overwrite(cloned, cfg, false);
+    return MonoUtils.overwrite(cloned, cfg, false);
   };
   
   for (var x in Monominoes.renders) {
@@ -181,12 +225,12 @@ Monominoes.validate = function(cfg) {
   var man = [false,false,true,true];
   var t;
              
-  Monominoes.assert(cfg.target || cfg.div,"Neither target ID or div is provided");
+  MonoUtils.assert(cfg.target || cfg.div,"Neither target ID or div is provided");
   
   for (var i=0; i<val.length; i++) {
-    if (man[i]) Monominoes.assert(cfg[val[i]], "Property {0} is not provided".format(val[i]));
-    if (cfg[val[i]]) Monominoes.assert((t = typeof cfg[val[i]]) === typ[i], 
-                                       "Property {0} type expected was {1} but is {2}".format(val[i],typ[i],t));
+    if (man[i]) MonoUtils.assert(cfg[val[i]], MonoUtils.format("Property {0} is not provided",val[i]));
+    if (cfg[val[i]]) MonoUtils.assert((t = typeof cfg[val[i]]) === typ[i], 
+                                       MonoUtils.format("Property {0} type expected was {1} but is {2}",val[i],typ[i],t));
   }
 };
 
@@ -194,22 +238,22 @@ Monominoes.prototype.source = function(cfg,src) { return (!src || cfg.absolute) 
 
 Monominoes.prototype.buildGrid = function(cfg,parent,src) {
   var source = this.source(cfg,src);
-  var data = cfg.path ? Monominoes.path(source, cfg.path) : [source];
+  var data = cfg.path ? MonoUtils.path(source, cfg.path) : [source];
   var cols = (cfg.cols || 1);
   var div,row,col,thm;
   var items,item,el;
   
-  div = Monominoes.getTag(Monominoes.tags.DIV)
-    .addClass("container".append(Monominoes.path(cfg, "class.container")))
+  div = MonoUtils.getTag(Monominoes.tags.DIV)
+    .addClass(MonoUtils.append("container",MonoUtils.path(cfg, "class.container")))
     .appendTo(parent);
   
   for (var i = 0; i < data.length; i++) {
-    if (i % cols) row = Monominoes.getTag(Monominoes.tags.DIV).addClass("row").appendTo(div);
-    col = Monominoes.getTag(Monominoes.tags.DIV)
+    if (i % cols) row = MonoUtils.getTag(Monominoes.tags.DIV).addClass("row").appendTo(div);
+    col = MonoUtils.getTag(Monominoes.tags.DIV)
       .addClass(this.getColStyle(cfg,cols,i))
       .appendTo(row);
-    thm = Monominoes.getTag(Monominoes.tags.DIV)
-      .addClass("thumbnail".append(Monominoes.path(cfg, "class.thumbnail")))
+    thm = MonoUtils.getTag(Monominoes.tags.DIV)
+      .addClass(MonoUtils.append("thumbnail",MonoUtils.path(cfg, "class.thumbnail")))
       .appendTo(col);
     item = data[i];
     items = cfg.elements || [];
@@ -224,16 +268,16 @@ Monominoes.prototype.buildGrid = function(cfg,parent,src) {
 
 Monominoes.prototype.render = function(cfg,parent,src) {
   var source = this.source(cfg,src);
-  var data = Monominoes.path(source,cfg.path);
+  var data = MonoUtils.path(source,cfg.path);
   var rcfg = typeof cfg.render == "function" ? cfg.render() : cfg.render;
   rcfg.fn(data,parent);
 };
 
 Monominoes.prototype.getColStyle = function(cfg,cols,i) {
-  return Monominoes.cols[cols-1]
-    .append(i == 0 ? Monominoes.offsets[cols-1] : "")
-    .append(Monominoes.path(cfg,"class.col"))
-    .trim();
+  return MonoUtils.append(
+    MonoUtils.append(Monominoes.cols[cols-1],(i == 0 ? Monominoes.offsets[cols-1] : "")),
+    MonoUtils.path(cfg,"class.col")
+  ).trim();
 };
 
 Monominoes.build = function(cfg) {
@@ -241,7 +285,7 @@ Monominoes.build = function(cfg) {
   
   Monominoes.validate(cfg);
   m = new Monominoes();
-  Monominoes.overwrite(m,cfg,true);
+  MonoUtils.overwrite(m,cfg,true);
   
   m.div = (m.div) ? $(m.div) : $("#"+m.target);
   m.target = (m.target || (m.div.id || null));

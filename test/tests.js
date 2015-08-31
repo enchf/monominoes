@@ -32,9 +32,9 @@ QUnit.test("Init Function", function(assert) {
 
 QUnit.test("Path static method", function(assert) {
   var obj = { "a": 1, "b": [1,2,3], "c": "str", "d": { "e": "e", "f": { "g": false }, "h": true }, "i": -1 };
-  assert.strictEqual(Monominoes.path(obj,"a"), 1, "Test simple path ['a']");
-  assert.strictEqual(Monominoes.path(obj,"d.e"), "e", "Test one depth ['d.e']");
-  assert.strictEqual(Monominoes.path(obj,"d.f.g"), false, "Test two depth ['d.f.g']");
-  assert.strictEqual(Monominoes.path(obj,"d.i.f"), null, "Test unreachable path === null");
-  assert.strictEqual(Monominoes.path(obj,"a.b"), null, "Test try to go deep into a non object");
+  assert.strictEqual(MonoUtils.path(obj,"a"), 1, "Test simple path ['a']");
+  assert.strictEqual(MonoUtils.path(obj,"d.e"), "e", "Test one depth ['d.e']");
+  assert.strictEqual(MonoUtils.path(obj,"d.f.g"), false, "Test two depth ['d.f.g']");
+  assert.strictEqual(MonoUtils.path(obj,"d.i.f"), null, "Test unreachable path === null");
+  assert.strictEqual(MonoUtils.path(obj,"a.b"), null, "Test try to go deep into a non object");
 });
