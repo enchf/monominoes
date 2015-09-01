@@ -9,17 +9,18 @@ MonoUtils.getTag = function(tag) { return $(MonoUtils.format("<{0}></{0}>",tag))
 MonoUtils.clone  = function(obj) { var clon = {}; for (var x in obj) { clon[x] = obj[x] } return clon; }
 MonoUtils.currency = function(num,nd,ds,ms){
   MonoUtils.assert(typeof num == "number", "Formatting a non-number");
-  nd = nd !== "" && nd !== null && !isNan((nd = Math.abs(nd))) ? nd : 2;
+  nd = nd !== "" && nd !== null && !isNaN((nd = Math.abs(nd))) ? nd : 2;
   ds = ds != undefined ? ds : ".";
   ms = ms != undefined ? ms : ",";
   var neg = num < 0 ? "-" : "";
-  var ist = Math.abs(parseInt(num.toFixed(0))).toString();
-  var dec = Math.abs(num).toString().substr(ist.length+1,nd);
+  var fix = num.toFixed(nd);
+  var ist = Math.abs(parseInt(fix)).toString();
+  var dec = Math.abs(fix).toString().substr(ist.length+1,nd);
   dec = (dec.length < nd) ? dec + ((new Array(nd-dec.length+1)).join("0")) : dec;
-  var res = neg;
-  var i = ist.length-1;
-  for (; (i-3)>0; i-=3) res += (ms+ist.substr(i-3,3));
-  res+=ist.substring(0,i);
+  var res = "";
+  var i = ist.length;
+  for (; (i-3)>0; i-=3) res = (ms+ist.substr(i-3,3)) + res;
+  res=neg + ist.substring(0,i) + res;
   return res + (dec.length > 0 ? (ds+dec) : "");
 };
 MonoUtils.overwrite = function(obj,src,safe) {
