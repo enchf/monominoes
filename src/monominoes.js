@@ -26,7 +26,7 @@ MonoUtils.currency = function(num,nd,ds,ms){
 MonoUtils.overwrite = function(obj,src,safe) {
   if (obj && src) {
     for (var x in src) 
-      if (!safe || (safe && obj[x] == undefined)) obj[x] = src[x];
+      if (safe === false || ((safe == null || safe === true) && obj[x] == undefined)) obj[x] = src[x];
   }
 };
 MonoUtils.path = function(obj,path) {

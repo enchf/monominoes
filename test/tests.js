@@ -70,4 +70,23 @@ QUnit.test("Currency formatter", function(assert) {
   assert.equal(MonoUtils.currency(1.20019001,4),"1.2002","Testing 4 decimals round up");
   assert.equal(MonoUtils.currency(1.23,3,"@"),"1@230","Testing changing decimal separator");
   assert.equal(MonoUtils.currency(12345.567,2,"-","="),"12=345-57","Testing changing both decimal and thousands separators");
+  assert.equal(MonoUtils.currency(12345.6543,2,"$%&","--"),"12--345$%&65","Lenght > 1 separators");
+});
+
+QUnit.test("Overwrite function", function(assert) {
+  var fn = function() { return { a:1,b:"2",c:false,d:[] }; };
+  var ob = function() { return { b:"3",e:{},c:true }; };
+  var a,b;
+  
+  MonoUtils.overwrite((a=fn()),(b=ob()));
+  assert.equal(a.a,1,"Test no overwrite of attrs not set in src");
+  assert.equal(a.b,"2","Test no overwrite existing attrs in safe mode");
+  assert.equal(b.b,"3","Test no overwrite on src");
+  assert.propEqual(a.e,{},"Test overwrite non-existing attrs in safe mode");
+  
+  MonoUtils.overwrite((a=fn()),(b=ob()),false);
+  assert.equal(a.a,1,"Test no overwrite of attrs not set in src");
+  assert.equal(a.b,"3","Test overwrite existing attrs in unsafe mode");
+  assert.equal(b.b,"3","Test no overwrite on src in unsafe mode");
+  assert.propEqual(a.e,{},"Test overwrite non-existing attrs in unsafe mode");
 });
