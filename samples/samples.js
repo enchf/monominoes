@@ -4,29 +4,23 @@ var showSample = function(event) {
   var div = $("#place-sample");
   
   div.empty();
-  $.getJSON(item.id + ".json", function(cfg) {
-    Monominoes.build({
-      "target": "place-sample",
-      "data": cfg.data,
-      "layout": cfg.layout
-    });
+  Monominoes.build({
+    "target": "place-sample",
+    "data": item.data,
+    "layout": item.layout
   });
 };
 
 $(function() {
-  //<li><a href="#">Action</a></li>
-  $.getJSON("samples.json", function(data) {
-    var dropdown;
-    
-    dropdown = $("#dropdown-ul");
-    $.samples = data;
-    
-    for (var x in data.samples) {
-      var li = Monominoes.renders.LI().render("",dropdown);
-      var item = data.samples[x];
-      Monominoes.renders.A({
-        "click": showSample
-      }).render(item,li).data("item",item);
-    }
-  });
+  var dropdown;
+  dropdown = $("#dropdown-ul");
+
+  for (var x in DATA.samples) {
+    var li = Monominoes.renders.LI().render("",dropdown);
+    var item = DATA.samples[x];
+    var text = MonoUtils.capitalize(item.id) + " Sample";
+    Monominoes.renders.A({
+      "click": showSample,
+    }).render(text,li).data("item",item);
+  }
 });

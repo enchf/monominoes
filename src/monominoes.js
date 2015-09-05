@@ -3,7 +3,7 @@ function MonoUtils() {}
 
 /** Monominoes Utils definition */
 MonoUtils.assert = function(obj, msg) { if (!obj) throw msg || "assertion failed"; };
-MonoUtils.format = function() { $.validator.format.apply(null,arguments); };
+MonoUtils.format = function() { return $.validator.format.apply(null,arguments); };
 MonoUtils.append = function(str,app,sep) { return ((str||"") + (sep||" ") + (app||"")).trim(); };
 MonoUtils.getTag = function(tag) { return $(MonoUtils.format("<{0}></{0}>",tag)); };
 MonoUtils.clone  = function(obj) { var clon = {}; for (var x in obj) { clon[x] = obj[x] } return clon; }
@@ -28,6 +28,7 @@ MonoUtils.overwrite = function(obj,src,safe) {
     for (var x in src) 
       if (safe === false || ((safe == null || safe === true) && obj[x] == undefined)) obj[x] = src[x];
   }
+  return obj;
 };
 MonoUtils.path = function(obj,path) {
   var paths = path.split(".");
@@ -40,6 +41,7 @@ MonoUtils.path = function(obj,path) {
 };
 MonoUtils.self = function(x) { return x; };
 MonoUtils.nothing = function() {};
+MonoUtils.capitalize = function(str) { return str[0].toUpperCase() + str.substr(1); };
 
 /* Constants */
 Monominoes.cache = {};
@@ -48,7 +50,7 @@ Monominoes.tags = {};
                                                                     
 (Monominoes.init = function() {
   /* Static values */
-  var simpletags = ["div","h1","h2","h3","h4","h5","h6","span","li","header","strong"];
+  var simpletags = ["div","h1","h2","h3","h4","h5","h6","span","li","header","strong","p"];
   var complextags = ["img","ul","ol","br","a"];
   var tags = simpletags.concat(complextags);
   for (var x in tags) Monominoes.tags[tags[x].toUpperCase()] = tags[x];
@@ -122,9 +124,8 @@ Monominoes.tags = {};
     }
   };
   
-  Monominoes.renders.LIST_GROUP = MonoUtils.clone(Monominoes.renders.LIST);
-  MonoUtils.overwrite(
-    Monominoes.renders.LIST_GROUP,
+  Monominoes.renders.LIST_GROUP = MonoUtils.overwrite(
+    MonoUtils.clone(Monominoes.renders.LIST),
     { 
       "class": "list-group",
       "item-class": "list-group-item",
@@ -148,9 +149,8 @@ Monominoes.tags = {};
     }
   };
   
-  Monominoes.renders.PRICE = MonoUtils.clone(Monominoes.renders.TEXT_BLOCK);
-  MonoUtils.overwrite(
-    Monominoes.renders.PRICE,
+  Monominoes.renders.PRICE = MonoUtils.overwrite(
+    MonoUtils.clone(Monominoes.renders.TEXT_BLOCK),
     {
       "decimals": 2,
       "decimal-separator": ".",
@@ -246,10 +246,11 @@ Monominoes.tags = {};
   };
   
   for (var x in Monominoes.renders) {
-    render = Monominoes.renders[x];
-    Monominoes.renders[x] = function(cfg) {
-      return renderer(render,cfg);
-    };
+    Monominoes.renders[x] = function(item) {
+      return function(cfg) {
+        return renderer(item,cfg);
+      };
+    }(Monominoes.renders[x]);
   }
 })();
 
