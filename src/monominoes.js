@@ -39,6 +39,7 @@ MonoUtils.path = function(obj,path) {
   return el;
 };
 MonoUtils.self = function(x) { return x; };
+MonoUtils.nothing = function() {};
 
 /* Constants */
 Monominoes.cache = {};
@@ -48,7 +49,7 @@ Monominoes.tags = {};
 (Monominoes.init = function() {
   /* Static values */
   var simpletags = ["div","h1","h2","h3","h4","h5","h6","span","li","header","strong"];
-  var complextags = ["img","ul","ol","br"];
+  var complextags = ["img","ul","ol","br","a"];
   var tags = simpletags.concat(complextags);
   for (var x in tags) Monominoes.tags[tags[x].toUpperCase()] = tags[x];
   
@@ -60,9 +61,9 @@ Monominoes.tags = {};
   /* Renders */
   Monominoes.simpleTagFn = function(tag,clazz) {
     return function(data,parent) {
-      MonoUtils.getTag(tag)
+      return MonoUtils.getTag(tag)
         .addClass(this[(clazz || "class")])
-        .text(this.formatter ? this.formatter(data) : data)
+        .html(this.formatter ? this.formatter(data) : data)
         .appendTo(parent);
     };
   };
@@ -72,9 +73,31 @@ Monominoes.tags = {};
     Monominoes.renders[tag.toUpperCase()] = { 
       "class": MonoUtils.format("monominoes-{0}",tag),
       "formatter": MonoUtils.self, // Overwritable formatter. Returns data itself by default.
-      "fn": Monominoes.simpleTagFn(tag)
+      "render": Monominoes.simpleTagFn(tag)
     };
   } 
+  
+  Monominoes.renders.A = {
+    "class": "monominoes-a",
+    "href": "#",
+    "target": "",
+    "formatter": MonoUtils.self,
+    "click": null,
+    "render": function(data, parent) {
+      var a = MonoUtils.getTag(Monominoes.tags.A)
+        .addClass(this.class)
+        .html(this.formatter(data))
+        .attr("href", this.href)
+        .attr("target", this.target)
+        .appendTo(parent);
+      
+      if (this.click != undefined) {
+        a.click(this.click);
+      }
+      
+      return a;
+    }
+  };
   
   Monominoes.renders.LIST = {
     "class": "monominoes-list",
@@ -83,9 +106,9 @@ Monominoes.tags = {};
     "marked": true,
     "formatter": MonoUtils.self,
     "item-render": function(data, list) {
-      Monominoes.simpleTagFn(Monominoes.tags.LI,"item-class").call(this,data,list);
+      return Monominoes.simpleTagFn(Monominoes.tags.LI,"item-class").call(this,data,list);
     },
-    "fn": function(data, parent) {
+    "render": function(data, parent) {
       var list = MonoUtils.getTag(ordered ? Monominoes.tags.OL : Monominoes.tags.UL)
         .addClass(this.class)
         .appendTo(parent);
@@ -94,11 +117,14 @@ Monominoes.tags = {};
       else if (typeof this.marked == "string") list.css("list-style-type",this.marked);
 
       for (var x in data) this["item-render"].call(this, data[x], list);
+      
+      return list;
     }
   };
   
-  Monominoes.renders.LIST_GROUP = MonoUtils.overwrite(
-    MonoUtils.clone(Monominoes.renders.LIST),
+  Monominoes.renders.LIST_GROUP = MonoUtils.clone(Monominoes.renders.LIST);
+  MonoUtils.overwrite(
+    Monominoes.renders.LIST_GROUP,
     { 
       "class": "list-group",
       "item-class": "list-group-item",
@@ -112,18 +138,19 @@ Monominoes.tags = {};
     "color": "white",
     "background": "black",
     "formatter": MonoUtils.self,
-    "fn": function(data,parent) {
-      MonoUtils.getTag(Monominoes.tags.SPAN)
+    "render": function(data,parent) {
+      return MonoUtils.getTag(Monominoes.tags.SPAN)
         .addClass(this.class)
-        .text(this.formatter(data))
+        .html(this.formatter(data))
         .css("color", this.color)
         .css("background-color", this.background)
         .appendTo(parent);
     }
   };
   
-  Monominoes.renders.PRICE = MonoUtils.overwrite(
-    MonoUtils.clone(Monominoes.renders.TEXT_BLOCK),
+  Monominoes.renders.PRICE = MonoUtils.clone(Monominoes.renders.TEXT_BLOCK);
+  MonoUtils.overwrite(
+    Monominoes.renders.PRICE,
     {
       "decimals": 2,
       "decimal-separator": ".",
@@ -145,13 +172,15 @@ Monominoes.tags = {};
     "label": "", // Mandatory.
     "bold": true,
     "formatter": MonoUtils.self,
-    "fn": function(data,parent) {
+    "render": function(data,parent) {
+      var div = Monominoes.getTag(Monominoes.tags.DIV).appendTo(parent);
       if (this.bold) {
-        Monominoes.simpleTagFn(Monominoes.tags.STRONG)(MonoUtils.format("{0}:",this.label),parent);
-        Monominoes.simpleTagFn(Monominoes.tags.SPAN)(data,parent);
+        Monominoes.simpleTagFn(Monominoes.tags.STRONG)(MonoUtils.format("{0}:",this.label),div);
+        Monominoes.simpleTagFn(Monominoes.tags.SPAN)(data,div);
       } else {
-        Monominoes.simpleTagFn(Monominoes.tags.SPAN)(MonoUtils.format("{0}: {1}",this.label,data),parent);
+        Monominoes.simpleTagFn(Monominoes.tags.SPAN)(MonoUtils.format("{0}: {1}",this.label,data),div);
       }
+      return div;
     }
   };
   
@@ -171,7 +200,7 @@ Monominoes.tags = {};
           this["default-format"]); // Scope of the function will be config object itself.
     },
     "alt": function(data) { return ""; }, // Overwritable function to add alt img attribute.
-    "fn": function(data, parent) {
+    "render": function(data, parent) {
       var div;
       var scope = this;
       
@@ -195,6 +224,8 @@ Monominoes.tags = {};
           return true;
         })
         .appendTo(div);
+      
+      return div;
     }
   };
   
@@ -204,12 +235,14 @@ Monominoes.tags = {};
     var c = (cfg || {});
     var cloned = MonoUtils.clone(def);
     for (var x in cloned) {
-      if (x.indexOf("class") >= 0) {
-        cloned[x] = MonoUtils.append(cloned[x],cfg[x]);
-        delete cfg[x];
+      if (x.indexOf("class") >= 0 && c[x] != undefined) {
+        cloned[x] = MonoUtils.append(cloned[x],c[x]);
+        delete c[x];
       }
     }
-    return MonoUtils.overwrite(cloned, cfg, false);
+    
+    MonoUtils.overwrite(cloned, cfg, false);
+    return cloned;
   };
   
   for (var x in Monominoes.renders) {
@@ -271,7 +304,7 @@ Monominoes.prototype.render = function(cfg,parent,src) {
   var source = this.source(cfg,src);
   var data = MonoUtils.path(source,cfg.path);
   var rcfg = typeof cfg.render == "function" ? cfg.render() : cfg.render;
-  rcfg.fn(data,parent);
+  rcfg.render(data,parent);
 };
 
 Monominoes.prototype.getColStyle = function(cfg,cols,i) {
