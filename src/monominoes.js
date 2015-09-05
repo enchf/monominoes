@@ -269,7 +269,9 @@ Monominoes.validate = function(cfg) {
   }
 };
 
-Monominoes.prototype.source = function(cfg,src) { return (!src || cfg.absolute) ? this.data : src; };
+Monominoes.prototype.source = function(cfg,src) { 
+  return (!src || cfg.absolute) ? this.data : src; 
+};
 
 Monominoes.prototype.buildGrid = function(cfg,parent,src) {
   var source = this.source(cfg,src);
@@ -283,7 +285,7 @@ Monominoes.prototype.buildGrid = function(cfg,parent,src) {
     .appendTo(parent);
   
   for (var i = 0; i < data.length; i++) {
-    if (i % cols) row = MonoUtils.getTag(Monominoes.tags.DIV).addClass("row").appendTo(div);
+    if (i % cols == 0) row = MonoUtils.getTag(Monominoes.tags.DIV).addClass("row").appendTo(div);
     col = MonoUtils.getTag(Monominoes.tags.DIV)
       .addClass(this.getColStyle(cfg,cols,i))
       .appendTo(row);

@@ -12,6 +12,7 @@ var DATA = {
           "render": Monominoes.renders.P
         },{
           "path": "items",
+          "cols": 3,
           "elements": [{
             "path": "image",
             "render": Monominoes.renders.IMG({
