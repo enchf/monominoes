@@ -22,3 +22,4 @@ Directory structure:
 * src/ - Code in progress.
 * samples/ - Live samples of usage.
 * test/ - QUnit test cases.
+* docs/ - Documentation.
