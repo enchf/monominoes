@@ -1,5 +1,9 @@
 .monominoes {}
 
+.monominoes .container {
+  max-width: 100%;
+}
+
 /* Renderers */
 .monominoes-h2 {
   text-align: center;

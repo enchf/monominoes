@@ -212,6 +212,7 @@ Monominoes.tags = {};
         MonoUtils.getTag(Monominoes.tags.SPAN)
           .addClass("monominoes-img-helper")
           .appendTo(div);
+        div.css("text-align", "center");
       }
       
       MonoUtils.getTag(Monominoes.tags.IMG)
@@ -281,7 +282,7 @@ Monominoes.prototype.buildGrid = function(cfg,parent,src) {
   var items,item,el;
   
   div = MonoUtils.getTag(Monominoes.tags.DIV)
-    .addClass(MonoUtils.append("container",MonoUtils.path(cfg, "class.container")))
+    .addClass(MonoUtils.append("monominoes container",MonoUtils.path(cfg, "class.container")))
     .appendTo(parent);
   
   for (var i = 0; i < data.length; i++) {
