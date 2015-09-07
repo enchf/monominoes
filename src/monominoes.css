@@ -4,6 +4,11 @@
   max-width: 100%;
 }
 
+.monominoes-simple {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
 /* Renderers */
 .monominoes-h2 {
   text-align: center;

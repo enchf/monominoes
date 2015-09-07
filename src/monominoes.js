@@ -88,7 +88,7 @@ Monominoes.tags = {};
   for (var i in simpletags) {
     var tag = simpletags[i];
     Monominoes.renders[tag.toUpperCase()] = { 
-      "class": MonoUtils.format("monominoes-{0}",tag),
+      "class": MonoUtils.format("monominoes-{0} monominoes-simple",tag),
       "formatter": MonoUtils.self, // Overwritable formatter. Returns data itself by default.
       "render": Monominoes.simpleTagFn(tag)
     };
