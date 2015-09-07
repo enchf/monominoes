@@ -62,7 +62,45 @@ MonoUtils.clone  = function(obj) {
 Monominoes.cache = {};
 Monominoes.renders = {};
 Monominoes.tags = {};
-                                                                    
+
+/* Render helpers */
+Monominoes.validate = function(cfg) {
+  var val = ["target","div","data","layout"];
+  var typ = ["string","object","object","object"];
+  var man = [false,false,true,true];
+  var t;
+             
+  MonoUtils.assert(cfg.target || cfg.div,"Neither target ID or div is provided");
+  
+  for (var i=0; i<val.length; i++) {
+    if (man[i]) MonoUtils.assert(cfg[val[i]], MonoUtils.format("Property {0} is not provided",val[i]));
+    if (cfg[val[i]]) MonoUtils.assert((t = typeof cfg[val[i]]) === typ[i], 
+                                       MonoUtils.format("Property {0} type expected was {1} but is {2}",val[i],typ[i],t));
+  }
+};
+
+Monominoes.renderer = function(def,cfg) {
+  var c = (cfg || {});
+  var cloned = MonoUtils.clone(def);
+  
+  for (var x in cloned) {
+    if (x.indexOf("class") >= 0 && c[x] != undefined) {
+      cloned[x] = MonoUtils.append(cloned[x],c[x]);
+      delete c[x];
+    }
+  }
+
+  MonoUtils.overwrite(cloned, cfg, false);
+  return cloned;
+};
+
+Monominoes.createRender = function(rendercfg) {
+  return function(cfg) {
+    return Monominoes.renderer(rendercfg,cfg);
+  };
+};
+
+/* Initialization */                                                                    
 (Monominoes.init = function() {
   /* Static values */
   var simpletags = ["div","h1","h2","h3","h4","h5","h6","span","li","header","strong","p","pre"];
@@ -259,45 +297,11 @@ Monominoes.tags = {};
   
   Monominoes.renders.GRID = {}; // TODO.
   
-  /* Transform LIST,LABELED,etc. configs into renderer config functions. */
-  var render;
-  var renderer = function(def,cfg) {
-    var c = (cfg || {});
-    var cloned = MonoUtils.clone(def);
-    for (var x in cloned) {
-      if (x.indexOf("class") >= 0 && c[x] != undefined) {
-        cloned[x] = MonoUtils.append(cloned[x],c[x]);
-        delete c[x];
-      }
-    }
-    
-    MonoUtils.overwrite(cloned, cfg, false);
-    return cloned;
-  };
-  
+  // Render creation.
   for (var x in Monominoes.renders) {
-    Monominoes.renders[x] = function(item) {
-      return function(cfg) {
-        return renderer(item,cfg);
-      };
-    }(Monominoes.renders[x]);
+    Monominoes.renders[x] = Monominoes.createRender(Monominoes.renders[x]);
   }
 })();
-
-Monominoes.validate = function(cfg) {
-  var val = ["target","div","data","layout"];
-  var typ = ["string","object","object","object"];
-  var man = [false,false,true,true];
-  var t;
-             
-  MonoUtils.assert(cfg.target || cfg.div,"Neither target ID or div is provided");
-  
-  for (var i=0; i<val.length; i++) {
-    if (man[i]) MonoUtils.assert(cfg[val[i]], MonoUtils.format("Property {0} is not provided",val[i]));
-    if (cfg[val[i]]) MonoUtils.assert((t = typeof cfg[val[i]]) === typ[i], 
-                                       MonoUtils.format("Property {0} type expected was {1} but is {2}",val[i],typ[i],t));
-  }
-};
 
 Monominoes.prototype.source = function(cfg,src) { 
   return cfg.absolute ? this.data : (cfg["source-path"] ? MonoUtils.path(src,cfg["source-path"]) : src);
