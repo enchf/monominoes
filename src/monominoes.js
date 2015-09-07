@@ -238,13 +238,13 @@ Monominoes.createRender = function(rendercfg) {
   };
   
   Monominoes.renders.CODE = {
-    "class": "brush:",
-    "code-style": "js",
+    "class": "",
+    "language": "",
     "formatter": MonoUtils.self,
     "render": function(data,parent) {
       return MonoUtils.getTag(Monominoes.tags.PRE)
         .text(this.formatter(data))
-        .addClass(MonoUtils.append(this.class,this["code-style"]))
+        .addClass(MonoUtils.append(this.class,this["language"]))
         .appendTo(parent);
     }
   };

@@ -13,6 +13,7 @@ var showSample = function(event) {
     "elements": [{
       "path": "",
       "render": Monominoes.renders.CODE({
+        "language": "json",
         "formatter": function(item) {
           return JSON.stringify(item,null,2);
         },
@@ -26,8 +27,10 @@ var showSample = function(event) {
     "data": item,
     "layout": layout
   });
-    
-  SyntaxHighlighter.all();
+  
+  $('pre').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
 };
 
 $(function() {
