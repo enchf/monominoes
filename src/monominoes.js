@@ -6,7 +6,6 @@ MonoUtils.assert = function(obj, msg) { if (!obj) throw msg || "assertion failed
 MonoUtils.format = function() { return $.validator.format.apply(null,arguments); };
 MonoUtils.append = function(str,app,sep) { return ((str||"") + (sep||" ") + (app||"")).trim(); };
 MonoUtils.getTag = function(tag) { return $(MonoUtils.format("<{0}></{0}>",tag)); };
-MonoUtils.clone  = function(obj) { var clon = {}; for (var x in obj) { clon[x] = obj[x] } return clon; }
 MonoUtils.currency = function(num,nd,ds,ms){
   MonoUtils.assert(typeof num == "number", "Formatting a non-number");
   nd = nd !== "" && nd !== null && !isNaN((nd = Math.abs(nd))) ? nd : 2;
@@ -31,17 +30,33 @@ MonoUtils.overwrite = function(obj,src,safe) {
   return obj;
 };
 MonoUtils.path = function(obj,path) {
+  if (path === "") return obj;
   var paths = path.split(".");
   var el = obj;
   for (var p in paths) {
-    if (typeof el === "object" && el[paths[p]] !== undefined) el = el[paths[p]]; 
-    else { el = null; break }
+    if (typeof el === "object" && el[paths[p]] !== undefined) {
+      el = el[paths[p]]; 
+    } else { 
+      el = null;
+      break;
+    }
   }
   return el;
 };
 MonoUtils.self = function(x) { return x; };
 MonoUtils.nothing = function() {};
 MonoUtils.capitalize = function(str) { return str[0].toUpperCase() + str.substr(1); };
+MonoUtils.clone  = function(obj) { 
+  var clon = {};
+  var item;
+  for (var x in obj) { 
+    item = obj[x];
+    clon[x] = typeof item == "object" && item != undefined ? 
+      (item.constructor && item.constructor == Array ? item.slice(0) : MonoUtils.clone(item)) 
+      : obj[x];
+  } 
+  return clon; 
+};
 
 /* Constants */
 Monominoes.cache = {};
@@ -50,7 +65,7 @@ Monominoes.tags = {};
                                                                     
 (Monominoes.init = function() {
   /* Static values */
-  var simpletags = ["div","h1","h2","h3","h4","h5","h6","span","li","header","strong","p"];
+  var simpletags = ["div","h1","h2","h3","h4","h5","h6","span","li","header","strong","p","pre"];
   var complextags = ["img","ul","ol","br","a"];
   var tags = simpletags.concat(complextags);
   for (var x in tags) Monominoes.tags[tags[x].toUpperCase()] = tags[x];
@@ -173,7 +188,7 @@ Monominoes.tags = {};
     "bold": true,
     "formatter": MonoUtils.self,
     "render": function(data,parent) {
-      var div = Monominoes.getTag(Monominoes.tags.DIV).appendTo(parent);
+      var div = MonoUtils.getTag(Monominoes.tags.DIV).appendTo(parent);
       if (this.bold) {
         Monominoes.simpleTagFn(Monominoes.tags.STRONG)(MonoUtils.format("{0}:",this.label),div);
         Monominoes.simpleTagFn(Monominoes.tags.SPAN)(data,div);
@@ -181,6 +196,18 @@ Monominoes.tags = {};
         Monominoes.simpleTagFn(Monominoes.tags.SPAN)(MonoUtils.format("{0}: {1}",this.label,data),div);
       }
       return div;
+    }
+  };
+  
+  Monominoes.renders.CODE = {
+    "class": "brush:",
+    "code-style": "js",
+    "formatter": MonoUtils.self,
+    "render": function(data,parent) {
+      return MonoUtils.getTag(Monominoes.tags.PRE)
+        .text(this.formatter(data))
+        .addClass(MonoUtils.append(this.class,this["code-style"]))
+        .appendTo(parent);
     }
   };
   
@@ -230,6 +257,8 @@ Monominoes.tags = {};
     }
   };
   
+  Monominoes.renders.GRID = {}; // TODO.
+  
   /* Transform LIST,LABELED,etc. configs into renderer config functions. */
   var render;
   var renderer = function(def,cfg) {
@@ -271,36 +300,43 @@ Monominoes.validate = function(cfg) {
 };
 
 Monominoes.prototype.source = function(cfg,src) { 
-  return (!src || cfg.absolute) ? this.data : src; 
+  return cfg.absolute ? this.data : (cfg["source-path"] ? MonoUtils.path(src,cfg["source-path"]) : src);
 };
 
-Monominoes.prototype.buildGrid = function(cfg,parent,src) {
+Monominoes.prototype.buildGrid = function(parent,src,cfg) {
   var source = this.source(cfg,src);
-  var data = cfg.path ? MonoUtils.path(source, cfg.path) : [source];
+  var data = cfg.path != undefined ? MonoUtils.path(source, cfg.path) : [source];
   var cols = (cfg.cols || 1);
   var div,row,col,thm;
   var items,item,el;
+  var i = 0;
   
   div = MonoUtils.getTag(Monominoes.tags.DIV)
     .addClass(MonoUtils.append("monominoes container",MonoUtils.path(cfg, "class.container")))
     .appendTo(parent);
   
-  for (var i = 0; i < data.length; i++) {
+  for (var x in data) {
+    if (cfg.properties && cfg.properties.indexOf(x) < 0) continue;
     if (i % cols == 0) row = MonoUtils.getTag(Monominoes.tags.DIV).addClass("row").appendTo(div);
+    
     col = MonoUtils.getTag(Monominoes.tags.DIV)
       .addClass(this.getColStyle(cfg,cols,i))
       .appendTo(row);
+    
     thm = MonoUtils.getTag(Monominoes.tags.DIV)
       .addClass(MonoUtils.append("thumbnail",MonoUtils.path(cfg, "class.thumbnail")))
       .appendTo(col);
-    item = data[i];
+    
+    item = data[x];
     items = cfg.elements || [];
     
     for (var e = 0; e < items.length; e++) {
       el = items[e];
-      if (el.elements) this.buildGrid(el,thm,item);
+      if (el.elements) this.buildGrid(thm,item,el);
       else this.render(el,thm,item);
     }
+    
+    i++;
   }
 };
 
@@ -327,7 +363,7 @@ Monominoes.build = function(cfg) {
   
   m.div = (m.div) ? $(m.div) : $("#"+m.target);
   m.target = (m.target || (m.div.id || null));
-  m.buildGrid(m.layout, m.div);
+  m.buildGrid(m.div, m.data, m.layout);
   
   return m;
 };
