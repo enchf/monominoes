@@ -394,16 +394,18 @@ Monominoes.prototype.source = function(cfg,src) {
   return cfg.absolute ? this.data : (cfg["source-path"] ? MonoUtils.path(src,cfg["source-path"]) : src);
 };
 
-Monominoes.prototype.buildGrid = function(parent,src,cfg) {
+Monominoes.prototype.buildGrid = function(parent,src,cfg,root) {
+  var isroot = (root === true);
   var source = this.source(cfg,src);
   var data = cfg.path != undefined ? MonoUtils.path(source, cfg.path) : [source];
   var cols = (cfg.cols || 1);
-  var div,row,col,thm;
+  var css,div,row,col,thm;
   var items,item,el;
   var i = 0;
   
+  css = MonoUtils.append("monominoes container", isroot ? "monominoes-root" : "");
   div = MonoUtils.getTag(Monominoes.tags.DIV)
-    .addClass(MonoUtils.append("monominoes container",MonoUtils.path(cfg, "class.container")))
+    .addClass(MonoUtils.append(css,MonoUtils.path(cfg, "class.container")))
     .appendTo(parent);
   
   for (var x in data) {
@@ -454,7 +456,7 @@ Monominoes.build = function(cfg) {
   
   m.div = (m.div) ? $(m.div) : $("#"+m.target);
   m.target = (m.target || (m.div.id || null));
-  m.buildGrid(m.div, m.data, m.layout);
+  m.buildGrid(m.div, m.data, m.layout, true);
   
   return m;
 };

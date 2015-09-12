@@ -1,5 +1,10 @@
 .monominoes {}
 
+.monominoes-root {
+  padding: 0;
+  width: 100%
+}
+
 .monominoes .container {
   max-width: 100%;
 }
