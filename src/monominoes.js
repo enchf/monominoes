@@ -336,7 +336,7 @@ Monominoes.createRender = function(rendercfg) {
       var id,item,render;
       var div,button,ul;
       
-      id = Monominoes.genId();
+      id = (this.id || Monominoes.genId());
       if (this.label != undefined) {
         MonoUtils.getTag(Monominoes.tags.LABEL)
           .attr("for",id+"-ul")
@@ -346,6 +346,7 @@ Monominoes.createRender = function(rendercfg) {
       
       div = MonoUtils.getTag(Monominoes.tags.DIV)
         .addClass("dropdown")
+        .css("margin-left","0.5em")
         .attr("id", id)
         .appendTo(parent);
       
