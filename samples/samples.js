@@ -34,15 +34,12 @@ var showSample = function(event) {
 };
 
 $(function() {
-  var dropdown;
-  dropdown = $("#dropdown-ul");
-
-  for (var x in DATA.samples) {
-    var li = Monominoes.renders.LI().render("",dropdown);
-    var item = DATA.samples[x];
-    var text = MonoUtils.capitalize(item.id) + " Sample";
-    Monominoes.renders.A({
-      "click": showSample,
-    }).render(text,li).data("item",item);
-  }
+  Monominoes.renders.DROPDOWN({
+    "btn-class": "btn-primary",
+    "placeholder": "Monominoes Samples",
+    "id": "samples",
+    "formatter": function(item) { return MonoUtils.capitalize(item.id) + " Sample"; },
+    "item-click": showSample,
+    "datakey": "item",
+  }).render(DATA.samples,$("#samples-title"));
 });
