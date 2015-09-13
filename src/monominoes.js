@@ -46,14 +46,16 @@ MonoUtils.path = function(obj,path) {
 MonoUtils.self = function(x) { return x; };
 MonoUtils.nothing = function() {};
 MonoUtils.capitalize = function(str) { return str[0].toUpperCase() + str.substr(1); };
-MonoUtils.clone  = function(obj) { 
-  var clon = {};
-  var item;
+MonoUtils.isDate = function(date) { return date instanceof Date && !isNaN(date.valueOf()); };
+MonoUtils.isIterable = function(obj) { return typeof obj == "object" && obj != undefined && !MonoUtils.isDate(obj); };
+MonoUtils.isArray = function(obj) { return MonoUtils.isIterable(obj) && obj.constructor && obj.constructor == Array; };
+MonoUtils.clone  = function(obj) {
+  var clon,item;
+  if (!MonoUtils.isIterable(obj)) return obj;
+  clon = MonoUtils.isArray(obj) ? [] : {};
   for (var x in obj) { 
     item = obj[x];
-    clon[x] = typeof item == "object" && item != undefined ? 
-      (item.constructor && item.constructor == Array ? item.slice(0) : MonoUtils.clone(item)) 
-      : obj[x];
+    clon[x] = MonoUtils.isArray(item) ? item.slice(0) : MonoUtils.clone(item);
   } 
   return clon; 
 };
@@ -448,6 +450,11 @@ Monominoes.prototype.getColStyle = function(cfg,cols,i) {
   ).trim();
 };
 
+Monominoes.prototype.draw = function(data) {
+  this.data = (data || this.data);
+  this.buildGrid(this.div, this.data, this.layout, true);
+};
+
 Monominoes.build = function(cfg) {
   var m;
   
@@ -457,7 +464,7 @@ Monominoes.build = function(cfg) {
   
   m.div = (m.div) ? $(m.div) : $("#"+m.target);
   m.target = (m.target || (m.div.id || null));
-  m.buildGrid(m.div, m.data, m.layout, true);
+  m.draw();
   
   return m;
 };
