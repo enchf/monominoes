@@ -172,7 +172,7 @@ Monominoes.createRender = function(rendercfg) {
       return Monominoes.simpleTagFn(Monominoes.tags.LI,"item-class").call(this,data,list);
     },
     "render": function(data, parent) {
-      var list = MonoUtils.getTag(ordered ? Monominoes.tags.OL : Monominoes.tags.UL)
+      var list = MonoUtils.getTag(this.ordered ? Monominoes.tags.OL : Monominoes.tags.UL)
         .addClass(this.class)
         .appendTo(parent);
 
