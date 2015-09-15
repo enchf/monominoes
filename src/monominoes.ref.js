@@ -58,6 +58,7 @@ Monominoes.util.clone = function(obj) {
   return clon; 
 };
 Monominoes.util.apply = function(source,target) { for(var x in source) target[x] = Monominoes.util.clone(source[x]); };
+Monominoes.util.forceType = function(obj,clazz) { return obj instanceof clazz ? obj : new clazz(); };
 
 /** Init Helpers **/
 Monominoes.init = {};
@@ -80,10 +81,30 @@ Monominoes.tags.item = ["div","img","br","hr","a"];
 Monominoes.tags.noclose = ["img","br","hr","input"];
 Monominoes.tags.all = Monominoes.tags.text.concat(Monominoes.tags.list).concat(Monominoes.tags.form).concat(Monominoes.tags.item);
 
-Monominoes.Tag = function(cfg) { Monominoes.util.apply(cfg,this); };
+Monominoes.Tag = function(cfg) {
+  var t = Monominoes.util.forceType(this,Monominoes.Tag);
+  Monominoes.util.apply(cfg,t);
+  return t;
+};
 Monominoes.Tag.prototype.template = "<{0}></{0}>";
 Monominoes.Tag.prototype.simpleTemplate = "<{0}>";
 Monominoes.Tag.prototype.getTemplate = function() { return this.simple ? this.simpleTemplate : this.template; };
-Monominoes.Tag.prototype.build = function() { return $(Monominoes.util.format(this.getTemplate(),this.tag)); };
+Monominoes.Tag.prototype.build = function(cfg) {
+  var obj = $(Monominoes.util.format(this.getTemplate(),this.tag));
+  if (cfg && cfg.class) obj.addClass(cfg.class);
+  if (cfg && cfg.content) obj.html(cfg.content);
+  if (cfg && cfg.parent) obj.appendTo(cfg.parent);
+  return obj;
+};
 
 Monominoes.init.tags();
+
+/** Renders **/
+Monominoes.renders = {};
+Monominoes.Render = function(cfg) {
+  var r = Monominoes.util.forceType(this,Monominoes.Render);
+  Monominoes.util.apply(r.super,r);
+  Monominoes.util.apply(cfg,r);
+  return r;
+};
+Monominoes.Render.prototype.super = {};
