@@ -59,7 +59,7 @@ Monominoes.util.clone = function(obj) {
   } 
   return clon; 
 };
-Monominoes.util.apply = function(source,target) { for(var x in source) target[x] = Monominoes.util.clone(source[x]); };
+Monominoes.util.apply = function(source,target) { for(var x in source) target[x] = Monominoes.util.clone(source[x]); return target; };
 
 /** Tags **/
 Monominoes.tags.text = ["h1","h2","h3","h4","h5","h6","span","header","strong","p","pre","code"];
@@ -109,20 +109,21 @@ Monominoes.renders.isRender = function(obj) {
   
   return render;
 };
-
-Monominoes.renders.extend = function(renderClass,newClass) {};
-              
-/** Base abstract Render class **/
-Monominoes.Render = function(cfg) {
-  var t = Monominoes.renders.isRender(this) ? this : new Monominoes.Render();
-  Monominoes.util.apply(t.super,t);
+Monominoes.renders.create(obj,clazz,cfg) {
+  var t = Monominoes.renders.isRender(obj) ? obj : new clazz();
+  t.super = Monominoes.util.apply(t,{});
   Monominoes.util.apply(cfg,t);
   return t;
 };
-Monominoes.Render.prototype.super = {};
+Monominoes.renders.extend = function(renderClass,newClass) {};
+              
+/** Base abstract Render class **/
+Monominoes.Render = function(cfg) { return Monominoes.renders.create(this,Monominoes.Render,cfg); };
 Monominoes.Render.prototype.class = Monominoes.Render;
 Monominoes.Render.prototype.superclass = null;
 Monominoes.Render.prototype.render = function(item,parent) {};
 Monominoes.Render.prototype.formatChild = Monominoes.util.self;
 Monominoes.Render.prototype.attrs = {};
 Monominoes.Render.classtype = Monominoes.Render;
+
+Monominoes.TagRender = Monominoes.renders.extend(Monominoes.Render);
