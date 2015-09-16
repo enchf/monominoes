@@ -1,7 +1,9 @@
 function Monominoes() {}
+Monominoes.util = {};
+Monominoes.tags = {};
+Monominoes.renders = {};
 
 /** Utils **/
-Monominoes.util = {};
 Monominoes.util.assert = function(obj, msg) { if (!obj) throw msg || "assertion failed"; };
 Monominoes.util.format = function() { return $.validator.format.apply(null,arguments); };
 Monominoes.util.append = function(str,app,sep) { return ((str||"") + (sep||" ") + (app||"")).trim(); };
@@ -58,38 +60,30 @@ Monominoes.util.clone = function(obj) {
   return clon; 
 };
 Monominoes.util.apply = function(source,target) { for(var x in source) target[x] = Monominoes.util.clone(source[x]); };
-Monominoes.util.forceType = function(obj,clazz) { return obj instanceof clazz ? obj : new clazz(); };
-
-/** Init Helpers **/
-Monominoes.init = {};
-Monominoes.init.tags = function() {
-  var all = Monominoes.tags.all;
-  for(var x in all) {
-    Monominoes[all[x].toUpperCase()] = new Monominoes.Tag({
-      tag: all[x],
-      simple: Monominoes.tags.noclose.indexOf(all[x]) >= 0
-    });
-  }
-};
 
 /** Tags **/
-Monominoes.tags = {};
 Monominoes.tags.text = ["h1","h2","h3","h4","h5","h6","span","header","strong","p","pre","code"];
 Monominoes.tags.list = ["ul","ol","li"];
-Monominoes.tags.form = ["form","input","button","label"];
-Monominoes.tags.item = ["div","img","br","hr","a"];
+Monominoes.tags.item = ["div","form","button","a","label"];
 Monominoes.tags.noclose = ["img","br","hr","input"];
-Monominoes.tags.all = Monominoes.tags.text.concat(Monominoes.tags.list).concat(Monominoes.tags.form).concat(Monominoes.tags.item);
-
-Monominoes.Tag = function(cfg) {
-  var t = Monominoes.util.forceType(this,Monominoes.Tag);
-  Monominoes.util.apply(cfg,t);
-  return t;
+Monominoes.tags.all = Monominoes.tags.text.concat(Monominoes.tags.list).concat(Monominoes.tags.item).concat(Monominoes.tags.noclose);
+Monominoes.tags.open = "<{0}>";
+Monominoes.tags.close = "</{0}>";
+Monominoes.tags.template = Monominoes.tags.open + Monominoes.tags.close;
+Monominoes.tags.create = function(tag,simple) {
+  var t = function(){};
+  var obj = new t();
+  t.prototype.name = tag;
+  t.prototype.simple = simple;
+  t.prototype.template = (simple === true) ? Monominoes.tags.open : Monominoes.tags.template;
+  t.prototype.tag = Monominoes.util.format(t.prototype.template,tag);
+  t.prototype.object = $(t.prototype.tag);
+  t.prototype.classtype = t;
+  t.prototype.render = Monominoes.tags.render(obj);
+  return obj;
 };
-Monominoes.Tag.prototype.template = "<{0}></{0}>";
-Monominoes.Tag.prototype.simpleTemplate = "<{0}>";
-Monominoes.Tag.prototype.getTemplate = function() { return this.simple ? this.simpleTemplate : this.template; };
-Monominoes.Tag.prototype.build = function(cfg) {
+Monominoes.tags.render = function() {
+  //TODO fix.
   var obj = $(Monominoes.util.format(this.getTemplate(),this.tag));
   if (cfg && cfg.class) obj.addClass(cfg.class);
   if (cfg && cfg.content) obj.html(cfg.content);
@@ -97,14 +91,38 @@ Monominoes.Tag.prototype.build = function(cfg) {
   return obj;
 };
 
-Monominoes.init.tags();
+(function() {
+  var shortcut = Monominoes.tags;
+  var tags = shortcut.all;
+  for(var i in tags) shortcut[tags[i].toUpperCase()] = shortcut.create(tags[i],shortcut.noclose.indexOf(tags[i]) >= 0);
+})();
 
 /** Renders **/
-Monominoes.renders = {};
+Monominoes.renders.isRender = function(obj) {
+  var classtype = obj.class;
+  var render = false;
+  
+  while (!render && classtype) {
+    render = classtype === Monominoes.Render;
+    classtype = classtype.superclass;
+  }
+  
+  return render;
+};
+
+Monominoes.renders.extend = function(renderClass,newClass) {};
+              
+/** Base abstract Render class **/
 Monominoes.Render = function(cfg) {
-  var r = Monominoes.util.forceType(this,Monominoes.Render);
-  Monominoes.util.apply(r.super,r);
-  Monominoes.util.apply(cfg,r);
-  return r;
+  var t = Monominoes.renders.isRender(this) ? this : new Monominoes.Render();
+  Monominoes.util.apply(t.super,t);
+  Monominoes.util.apply(cfg,t);
+  return t;
 };
 Monominoes.Render.prototype.super = {};
+Monominoes.Render.prototype.class = Monominoes.Render;
+Monominoes.Render.prototype.superclass = null;
+Monominoes.Render.prototype.render = function(item,parent) {};
+Monominoes.Render.prototype.formatChild = Monominoes.util.self;
+Monominoes.Render.prototype.attrs = {};
+Monominoes.Render.classtype = Monominoes.Render;
