@@ -69,7 +69,8 @@ Monominoes.tags.noclose = ["img","br","hr","input"];
 Monominoes.tags.all = Monominoes.tags.text.concat(Monominoes.tags.list).concat(Monominoes.tags.item).concat(Monominoes.tags.noclose);
 Monominoes.tags.open = "<{0}>";
 Monominoes.tags.close = "</{0}>";
-Monominoes.tags.template = Monominoes.tags.open + Monominoes.tags.close;
+Monominoes.tags.template = Monominoes.tags.open.concat(Monominoes.tags.close);
+Monominoes.tags.isSimple = function(tag) { return Monominoes.tags.noclose.indexOf(tags[i]) >= 0; };
 Monominoes.tags.create = function(tag,simple) {
   var t = function(){};
   var obj = new t();
@@ -84,57 +85,45 @@ Monominoes.tags.create = function(tag,simple) {
 };
 
 (function() {
-  var shortcut = Monominoes.tags;
-  var tags = shortcut.all;
-  for(var i in tags) shortcut[tags[i].toUpperCase()] = shortcut.create(tags[i],shortcut.noclose.indexOf(tags[i]) >= 0);
+  var tags = Monominoes.tags.all;
+  for(var i in tags) {
+    Monominoes.tags[tags[i].toUpperCase()] = Monominoes.tags.create(tags[i], Monominoes.tags.isSimple(tags[i]));
+  }
 })();
 
 /** Renders **/
-Monominoes.renders.isRender = function(obj,clazz) {
-  var classtype = obj.class;
-  var render = false;
-  clazz = (clazz || Monominoes.Render);
-  
-  while (!render && classtype) {
-    render = classtype === Monominoes.Render;
-    classtype = classtype.superclass;
-  }
-  
+Monominoes.Render = function(){};
+Monominoes.Render.extend = function(ext) {
+  var ParentClass = this;
+  var render = function F(cfg) {
+    var instance = (this instanceof F) ? this : new F();
+    cfg = (cfg || {});
+    Monominoes.util.apply(cfg,instance);
+    return instance;
+  };
+  Monominoes.util.apply(ParentClass.prototype,render.prototype);
+  Monominoes.util.apply((ext || {}),render.prototype);
+  render.extend = Monominoes.Render.extend;
+  render.parentclass = ParentClass;
+  render.class = render;
   return render;
 };
-Monominoes.renders.create = function(obj,clazz,cfg) {
-  var t = Monominoes.renders.isRender(obj,clazz) ? obj : new clazz();
-  t.super = Monominoes.util.apply(t,{});
-  Monominoes.util.apply(cfg,t);
-  return t;
-};
-Monominoes.renders.extend = function(clazz,superclass,cfg) {
-  Monominoes.util.apply(superclass.prototype,clazz.prototype);
-  Monominoes.util.apply(cfg,clazz.prototype);
-  clazz.prototype.superclass = superclass;
-  clazz.prototype.class = clazz;
-  return clazz;
-};
-              
-/** Base abstract Render class **/
-Monominoes.Render = function(cfg) { return Monominoes.renders.create(this,Monominoes.Render,cfg); };
-Monominoes.Render.prototype.class = Monominoes.Render;
-Monominoes.Render.prototype.superclass = null;
-Monominoes.Render.prototype.render = function(item,parent) {};
-Monominoes.Render.prototype.formatChild = Monominoes.util.self;
 Monominoes.Render.prototype.attrs = {};
-Monominoes.Render.classtype = Monominoes.Render;
+Monominoes.Render.prototype.super = {};
 
+/** Tag renderers **/
+/*
 Monominoes.TagRender = function(cfg) { return Monominoes.renders.create(this,Monominoes.TagRender,cfg); };
 (function() {
   Monominoes.renders.extend(Monominoes.TagRender,Monominoes.Render,{
     render: function(item,parent) {
-      var tag = this.tag.build()
-        .html(this.formatChild(item));
-        .addClass(this.class);
-      
+      var tag = this.tag.build().addClass(this.class);
+      if (!this.tag.simple) tag.html(this.formatChild(item));
+      if (this["extra-class"]) tag.addClass(this["extra-class"]);
       if (parent) tag.appendTo(parent);
       return tag;
     }
   });
-})();
+  for (var t in Monominoes.tags.all) {
+    
+})();*/
