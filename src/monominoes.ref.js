@@ -65,23 +65,23 @@ Monominoes.util.apply = function(source,target) { for(var x in source) target[x]
 Monominoes.tags.text = ["h1","h2","h3","h4","h5","h6","span","header","strong","p","pre","code"];
 Monominoes.tags.list = ["ul","ol","li"];
 Monominoes.tags.item = ["div","form","button","a","label"];
-Monominoes.tags.noclose = ["img","br","hr","input"];
+Monominoes.tags.simple = ["br","hr"];
+Monominoes.tags.noclose = ["img","input"].concat(Monominoes.tags.simple);
 Monominoes.tags.all = Monominoes.tags.text.concat(Monominoes.tags.list).concat(Monominoes.tags.item).concat(Monominoes.tags.noclose);
 Monominoes.tags.open = "<{0}>";
 Monominoes.tags.close = "</{0}>";
-Monominoes.tags.template = Monominoes.tags.open.concat(Monominoes.tags.close);
+Monominoes.tags.template = Monominoes.tags.open + Monominoes.tags.close;
 Monominoes.tags.isSimple = function(tag) { return Monominoes.tags.noclose.indexOf(tags[i]) >= 0; };
 Monominoes.tags.create = function(tag,simple) {
-  var t = function(){};
-  var obj = new t();
-  t.prototype.name = tag;
-  t.prototype.simple = simple;
-  t.prototype.template = (simple === true) ? Monominoes.tags.open : Monominoes.tags.template;
-  t.prototype.tag = Monominoes.util.format(t.prototype.template,tag);
-  t.prototype.build = function() { return $(t.prototype.tag); };
-  t.prototype.classtype = t;
-  t.prototype.render = Monominoes.tags.render(obj);
-  return obj;
+  var Tag = function(){};
+  var t = new Tag();
+  Tag.prototype.name = tag;
+  Tag.prototype.simple = simple;
+  Tag.prototype.template = (simple === true) ? Monominoes.tags.open : Monominoes.tags.template;
+  Tag.prototype.tag = Monominoes.util.format(Tag.prototype.template,tag);
+  Tag.prototype.build = function() { return $(this.tag); };
+  Tag.prototype.classtype = Tag;
+  return t;
 };
 
 (function() {
@@ -108,22 +108,27 @@ Monominoes.Render.extend = function(ext) {
   render.class = render;
   return render;
 };
-Monominoes.Render.prototype.attrs = {};
+Monominoes.Render.prototype.properties = {};
 Monominoes.Render.prototype.super = {};
+Monominoes.Render.prototype.layout = {};
+Monominoes.Render.prototype.render = Monominoes.util.self;
+Monominoes.Render.prototype.processLayout = Monominoes.util.self;
 
 /** Tag renderers **/
-/*
-Monominoes.TagRender = function(cfg) { return Monominoes.renders.create(this,Monominoes.TagRender,cfg); };
 (function() {
-  Monominoes.renders.extend(Monominoes.TagRender,Monominoes.Render,{
-    render: function(item,parent) {
-      var tag = this.tag.build().addClass(this.class);
-      if (!this.tag.simple) tag.html(this.formatChild(item));
-      if (this["extra-class"]) tag.addClass(this["extra-class"]);
-      if (parent) tag.appendTo(parent);
-      return tag;
-    }
-  });
+  var tag;
   for (var t in Monominoes.tags.all) {
-    
-})();*/
+    tag = Monominoes.tags.all[t].toUpperCase();
+    Monominoes.renders[tag] = Monominoes.Render.extend({
+      "render": function(item,parent) {
+        var tag = this.type.build().addClass(this.class);
+        if (this.extraClass) tag.addClass(this.extraClass);
+        if (!this.type.simple) tag.html(this.processLayout(item));
+        if (parent) tag.appendTo(parent);
+        return tag;
+      },
+      "class": Monominoes.util.format("monominoes-{0}",tag.toLowerCase())
+    });
+    Monominoes.renders[tag].prototype.type = Monominoes.tags[tag];
+  }
+})();
