@@ -115,20 +115,29 @@ Monominoes.Render.prototype.render = Monominoes.util.self;
 Monominoes.Render.prototype.processLayout = Monominoes.util.self;
 
 /** Tag renderers **/
+Monominoes.Render.buildTagRender = function(tag,simple) {
+  var taguc = tag.toUpperCase();
+  var tagobj = (Monominoes.tags[taguc] || Monominoes.tags.create(tag,simple));
+  var render = Monominoes.Render.extend({
+    "render": function(item,parent) {
+      var tag = this.type.build().addClass(this.class);
+      if (this.extraClass) tag.addClass(this.extraClass);
+      if (!this.type.simple) tag.html(this.processLayout(item));
+      if (parent) tag.appendTo(parent);
+      if (this.attrs) for (var a in this.attrs) tag.attr(a, typeof this.attrs == "function" ? this.attrs[a](item) : this.attrs[a]);
+      if (this.events) for (var e in this.events) tag.on(e,this.events[e]);
+      return tag;
+    },
+    "class": Monominoes.util.format("monominoes-{0}",tag)
+  });
+  render.prototype.type = tagobj;
+  return render;
+};
+
 (function() {
   var tag;
   for (var t in Monominoes.tags.all) {
-    tag = Monominoes.tags.all[t].toUpperCase();
-    Monominoes.renders[tag] = Monominoes.Render.extend({
-      "render": function(item,parent) {
-        var tag = this.type.build().addClass(this.class);
-        if (this.extraClass) tag.addClass(this.extraClass);
-        if (!this.type.simple) tag.html(this.processLayout(item));
-        if (parent) tag.appendTo(parent);
-        return tag;
-      },
-      "class": Monominoes.util.format("monominoes-{0}",tag.toLowerCase())
-    });
-    Monominoes.renders[tag].prototype.type = Monominoes.tags[tag];
+    tag = Monominoes.tags.all[t];
+    Monominoes.renders[tag.toUpperCase()] = Monominoes.Render.buildTagRender(tag);
   }
 })();
