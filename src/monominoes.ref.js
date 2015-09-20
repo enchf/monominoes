@@ -76,7 +76,7 @@ Monominoes.tags.create = function(tag,simple) {
   var Tag = function(){};
   var t = new Tag();
   Tag.prototype.name = tag;
-  Tag.prototype.simple = simple;
+  Tag.prototype.simple = simple === true;
   Tag.prototype.template = (simple === true) ? Monominoes.tags.open : Monominoes.tags.template;
   Tag.prototype.tag = Monominoes.util.format(Tag.prototype.template,tag);
   Tag.prototype.build = function() { return $(this.tag); };
@@ -123,9 +123,9 @@ Monominoes.Render.buildTagRender = function(tag,simple) {
       var tag = this.type.build().addClass(this.class);
       if (this.extraClass) tag.addClass(this.extraClass);
       if (!this.type.simple) tag.html(this.processLayout(item));
-      if (parent) tag.appendTo(parent);
       if (this.attrs) for (var a in this.attrs) tag.attr(a, typeof this.attrs == "function" ? this.attrs[a](item) : this.attrs[a]);
       if (this.events) for (var e in this.events) tag.on(e,this.events[e]);
+      if (parent) tag.appendTo(typeof parent == "string" ? $("#"+parent) : $(parent));
       return tag;
     },
     "class": Monominoes.util.format("monominoes-{0}",tag)
