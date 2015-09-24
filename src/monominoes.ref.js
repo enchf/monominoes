@@ -80,7 +80,8 @@ Monominoes.tags.create = function(tag,simple) {
   Tag.prototype.template = (simple === true) ? Monominoes.tags.open : Monominoes.tags.template;
   Tag.prototype.tag = Monominoes.util.format(Tag.prototype.template,tag);
   Tag.prototype.build = function() { return $(this.tag); };
-  Tag.prototype.classtype = Tag;
+  Tag.prototype.class = Tag;
+  Tag.prototype.defaultcss = Monominoes.util.format("monominoes-{0}",tag);
   return t;
 };
 
@@ -141,6 +142,8 @@ Monominoes.Render.prototype.class = Monominoes.Render;
 Monominoes.Render.prototype.properties = {};
 Monominoes.Render.prototype.super = {};
 Monominoes.Render.prototype.defaults = {};
+Monominoes.Render.prototype.css = "";
+Monominoes.Render.prototype.extracss = null;
 Monominoes.Render.prototype.render = function(item,parent) {
   var layoutrender;
   var ret;
@@ -155,7 +158,8 @@ Monominoes.Render.prototype.render = function(item,parent) {
   }
   return ret;
 };
-Monominoes.Render.prototype.layout = null; // Should be a LAYOUT_RENDER config object or a LAYOUT_RENDER itself.
+// Can be a LAYOUT_RENDER config, a function, a Render constructor or a Render itself.
+Monominoes.Render.prototype.layout = null;
 
 Monominoes.renders.LAYOUT_RENDER = Monominoes.Render.extend({
   "elements": [],
@@ -165,29 +169,39 @@ Monominoes.renders.LAYOUT_RENDER = Monominoes.Render.extend({
     var items = [];
     for (var i in this.elements) {
       cfg = this.elements[i];
-      data = Monominoes.util.path(item,cfg);
+      data = cfg.path ? Monominoes.util.path(item,cfg.path) : item;
       items.push(Monominoes.Render.concrete(cfg.render).render(data,parent));
     }
     return items;
   }
 });
 
-/** Tag renderers **/
+Monominoes.renders.ARRAY_RENDER = Monominoes.Render.extend({
+  "render": function(items,parent) {
+    var rendered = [];
+    for (var i in items) {
+      rendered.push(this.super.render(items[i],parent));
+    }
+    return rendered;
+  }
+});
+
+/* Tag renderers */
 Monominoes.Render.buildTagRender = function(tag,simple) {
   var taguc = tag.toUpperCase();
   var tagobj = (Monominoes.tags[taguc] || Monominoes.tags.create(tag,simple));
   var render = Monominoes.Render.extend({
     "render": function(item,parent) {
-      var tag = this.type.build().addClass(this.class);
-      if (this.extraClass) tag.addClass(this.extraClass);
-      if (this.attrs) for (var a in this.attrs) tag.attr(a, typeof this.attrs == "function" ? this.attrs[a](item) : this.attrs[a]);
+      var tag = this.type.build().addClass(this.css);
+      if (this.extracss) tag.addClass(this.extracss);
+      if (this.attrs) for (var a in this.attrs) tag.attr(a, typeof this.attrs[a] == "function" ? this.attrs[a](item) : this.attrs[a]);
       if (this.events) for (var e in this.events) tag.on(e,this.events[e]);
       // Invoking default render which appends layout to a parent container.
       this.super.render(item,tag);
       Monominoes.Render.append(tag,parent);
       return tag;
     },
-    "class": Monominoes.util.format("monominoes-{0}",tag)
+    "css": tagobj.defaultcss
   });
   render.prototype.type = tagobj;
   return render;
