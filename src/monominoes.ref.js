@@ -134,6 +134,7 @@ Monominoes.Render.isRender = function(object) {
 };
 
 /* Class prototype */
+Monominoes.Render.prototype.iterable = false;
 Monominoes.Render.prototype.superclass = null;
 Monominoes.Render.prototype.class = Monominoes.Render;
 Monominoes.Render.prototype.properties = {};
@@ -145,15 +146,20 @@ Monominoes.Render.prototype.render = function(item,parent) {
   var layoutrender;
   var ret;
   var isFn,isRn;
+  var data = this.iterable ? item : [item];
+  var ret = [];
+  
+  for (var i = 0; i < data.length; i++) {
   if (this.layout) {
     isFn = typeof this.layout == "function";
     isRn = Monominoes.Render.isRender(this.layout);
-    ret = (isRn ? Monominoes.Render.concrete(this.layout).render(item,parent) :
-           isFn ? this.layout(item,parent) : Monominoes.renders.LAYOUT_RENDER(this.layout).render(item,parent));
-  } else {
-    ret = Monominoes.Render.append(subitem,parent);
+    ret.push(isRn ? Monominoes.Render.concrete(this.layout).render(item,parent) :
+             isFn ? this.layout(item,parent) : Monominoes.renders.LAYOUT_RENDER(this.layout).render(item,parent));
+    } else {
+      ret.push(Monominoes.Render.append(subitem,parent));
+    }
   }
-  return ret;
+  return this.iterable ? ret : ret[0];
 };
 // Can be a LAYOUT_RENDER config, a function, a Render constructor or a Render itself.
 Monominoes.Render.prototype.layout = null;
@@ -170,17 +176,6 @@ Monominoes.renders.LAYOUT_RENDER = Monominoes.Render.extend({
       items.push(Monominoes.Render.concrete(cfg.render).render(data,parent));
     }
     return items;
-  }
-});
-
-Monominoes.renders.ITERABLE = Monominoes.Render.extend({
-  "item-cfg": {},
-  "render": function(items,parent) {
-    var rendered = [];
-    for (var i in items) {
-      rendered.push(this.super.render(items[i],parent));
-    }
-    return rendered;
   }
 });
 
@@ -212,13 +207,14 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
 /* Overwrite of default tag renderers */
 Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
   "ordered": false,
-  "layout": Monominoes.renders.ITERABLE({
-    
-  }),
+  "iterable": true,
   "render": function(item,parent) {
-    this.type = this.ordered ? Monominoes.tags.OL : Monominoes.tags.LI;
+    this.type = this.ordered ? Monominoes.tags.OL : Monominoes.tags.UL;
+    this.layout = Monominoes.renders.LI({
+      "layout": this.layout
+    });
     this.super.render(item,parent); 
   }
 });
-Monominoes.renders.LI = Monominoes.renders.LIST.extend({ "ordered": false });
+Monominoes.renders.UL = Monominoes.renders.LIST.extend({ "ordered": false });
 Monominoes.renders.OL = Monominoes.renders.LIST.extend({ "ordered": true });
