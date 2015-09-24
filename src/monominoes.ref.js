@@ -144,10 +144,12 @@ Monominoes.Render.prototype.defaults = {};
 Monominoes.Render.prototype.render = function(item,parent) {
   var layoutrender;
   var ret;
+  var isFn,isRn;
   if (this.layout) {
-    ret = (Monominoes.Render.isRender(this.layout) ?
-      Monominoes.Render.concrete(this.layout) : 
-      Monominoes.renders.LAYOUT_RENDER(this.layout)).render(item,parent);
+    isFn = typeof this.layout == "function";
+    isRn = Monominoes.Render.isRender(this.layout);
+    ret = (isRn ? Monominoes.Render.concrete(this.layout).render(item,parent) :
+           isFn ? this.layout(item,parent) : Monominoes.renders.LAYOUT_RENDER(this.layout).render(item,parent));
   } else {
     ret = Monominoes.Render.append(subitem,parent);
   }
@@ -168,10 +170,6 @@ Monominoes.renders.LAYOUT_RENDER = Monominoes.Render.extend({
     }
     return items;
   }
-});
-
-Monominoes.renders.ARRAY_RENDER = Monominoes.Render.extend({
-  
 });
 
 /** Tag renderers **/
