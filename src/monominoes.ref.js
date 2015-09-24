@@ -60,6 +60,15 @@ Monominoes.util.clone = function(obj) {
   return clon; 
 };
 Monominoes.util.apply = function(source,target) { for(var x in source) target[x] = Monominoes.util.clone(source[x]); return target; };
+Monominoes.util.recursiveApply = function(source,target) {
+  for (var x in source) {
+    if (source[x] && typeof source[x] == "object" && target[x] && typeof target[x] == "object") {
+      Monominoes.util.recursiveApply(source[x],target[x]);
+    } else {
+      target[x] = source[x];
+    }
+  }
+};
 
 /** Tags **/
 Monominoes.Tag = function(name,simple){
@@ -100,8 +109,9 @@ Monominoes.Render.extend = function(ext) {
     var instance = (this instanceof F) ? this : new F();
     Monominoes.util.apply(instance,instance.defaults);
     cfg = (cfg || {});
-    return Monominoes.util.apply(cfg,instance);
+    return Monominoes.util.recursiveApply(cfg,instance);
   };
+  
   ext = (ext || {});
   ext.class = render;
   ext.superclass = SuperClass;
@@ -138,6 +148,7 @@ Monominoes.Render.prototype.iterable = false;
 Monominoes.Render.prototype.superclass = null;
 Monominoes.Render.prototype.class = Monominoes.Render;
 Monominoes.Render.prototype.properties = {};
+Monominoes.Render.prototype.style = {};
 Monominoes.Render.prototype.super = {};
 Monominoes.Render.prototype.defaults = {};
 Monominoes.Render.prototype.css = "";
@@ -150,11 +161,11 @@ Monominoes.Render.prototype.render = function(item,parent) {
   var ret = [];
   
   for (var i = 0; i < data.length; i++) {
-  if (this.layout) {
-    isFn = typeof this.layout == "function";
-    isRn = Monominoes.Render.isRender(this.layout);
-    ret.push(isRn ? Monominoes.Render.concrete(this.layout).render(item,parent) :
-             isFn ? this.layout(item,parent) : Monominoes.renders.LAYOUT_RENDER(this.layout).render(item,parent));
+    if (this.layout) {
+      isFn = typeof this.layout == "function";
+      isRn = Monominoes.Render.isRender(this.layout);
+      ret.push(isRn ? Monominoes.Render.concrete(this.layout).render(item,parent) :
+               isFn ? this.layout(item,parent) : Monominoes.renders.LAYOUT_RENDER(this.layout).render(item,parent));
     } else {
       ret.push(Monominoes.Render.append(subitem,parent));
     }
@@ -184,8 +195,16 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
   "render": function(item,parent) {
     var tag = this.type.build().addClass(this.css);
     if (this.extracss) tag.addClass(this.extracss);
-    if (this.attrs) for (var a in this.attrs) tag.attr(a, typeof this.attrs[a] == "function" ? this.attrs[a](item) : this.attrs[a]);
     if (this.events) for (var e in this.events) tag.on(e,this.events[e]);
+    if (this.properties) {
+    for (var a in this.properties) {
+    tag.attr(a, typeof this.properties[a] == "function" ? this.properties[a](item) : this.properties[a]);
+    }
+    }
+    if (this.style) {
+    for (var s in this.style) tag.css(s, this.style[s]);
+    }
+    
     // Invoking default render which appends layout to a parent container, in this case the tag, only if the tag is not self closing.
     if (!this.type.simple) this.super.render(item,tag);
     Monominoes.Render.append(tag,parent); // Appends the tag to the parent if any.
@@ -208,9 +227,11 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
 Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
   "ordered": false,
   "iterable": true,
+  "itemcss": null,
   "render": function(item,parent) {
     this.type = this.ordered ? Monominoes.tags.OL : Monominoes.tags.UL;
     this.layout = Monominoes.renders.LI({
+      "css": (this.itemcss || Monominoes.tags.LI.defaultcss),
       "layout": this.layout
     });
     this.super.render(item,parent); 
@@ -218,3 +239,10 @@ Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
 });
 Monominoes.renders.UL = Monominoes.renders.LIST.extend({ "ordered": false });
 Monominoes.renders.OL = Monominoes.renders.LIST.extend({ "ordered": true });
+
+/* Bootstrap List group render */
+Monominoes.renders.LIST_GROUP = Monominoes.renders.LIST.extend({
+  "class": "list-group",
+  "item-class": "list-group-item",
+  "marked": false
+});
