@@ -94,46 +94,85 @@ Monominoes.tags.create = function(tag,simple) {
 /** Renders **/
 /* Render abstract class */
 Monominoes.Render = function(){};
+
+/* Static methods */
 Monominoes.Render.extend = function(ext) {
-  var ParentClass = this;
+  var SuperClass = this;
   var render = function F(cfg) {
     var instance = (this instanceof F) ? this : new F();
     Monominoes.util.apply(instance,instance.defaults);
     cfg = (cfg || {});
     return Monominoes.util.apply(cfg,instance);
   };
-  Monominoes.util.apply(ParentClass.prototype,render.prototype);
-  Monominoes.util.apply(ParentClass.prototype,render.prototype.super);
-  Monominoes.util.apply((ext || {}),render.prototype);
+  ext = (ext || {});
+  ext.class = render;
+  ext.superclass = SuperClass;
+  
+  Monominoes.util.apply(SuperClass.prototype,render.prototype.super);
+  Monominoes.util.apply(SuperClass.prototype,render.prototype);
+  Monominoes.util.apply(ext,render.prototype);
+  
   render.extend = Monominoes.Render.extend;
-  render.parentclass = ParentClass;
+  render.superclass = SuperClass;
   render.class = render;
   return render;
 };
+Monominoes.Render.append = function(item,parent) {
+  if (parent) (typeof parent == "string" ? $("#"+parent) : $(parent)).html(item);
+  return item;
+};
+Monominoes.Render.concrete = function(render) { return typeof render == "function" ? render() : render; };
+Monominoes.Render.path = function(path) { return function(item) { return Monominoes.util.path(item,path); }; };
+Monominoes.Render.isRender = function(object) {
+  var isrender = false;
+  var clazz = object.class;
+  
+  while (clazz) {
+    if (object.class === Monominoes.Render) { isrender = true; break; }
+    else clazz = clazz.superclass;
+  }
+  
+  return isrender;
+};
+
+/* Class prototype */
+Monominoes.Render.prototype.superclass = null;
+Monominoes.Render.prototype.class = Monominoes.Render;
 Monominoes.Render.prototype.properties = {};
 Monominoes.Render.prototype.super = {};
 Monominoes.Render.prototype.defaults = {};
 Monominoes.Render.prototype.render = function(item,parent) {
-  var subitem;
+  var layoutrender;
+  var ret;
   if (this.layout) {
-    subitem = this.layout.render(item,parent);
+    ret = (Monominoes.Render.isRender(this.layout) ?
+      Monominoes.Render.concrete(this.layout) : 
+      Monominoes.renders.LAYOUT_RENDER(this.layout)).render(item,parent);
   } else {
-    subitem = item;
-    Monominoes.Render.append(subitem,parent);
+    ret = Monominoes.Render.append(subitem,parent);
   }
-  return subitem;
+  return ret;
 };
-Monominoes.Render.prototype.layout = null; // Should be a Render object.
-Monominoes.Render.append = function(item,parent) {
-  if (parent) (typeof parent == "string" ? $("#"+parent) : $(parent)).html(item);
-};
+Monominoes.Render.prototype.layout = null; // Should be a LAYOUT_RENDER config object or a LAYOUT_RENDER itself.
+
+Monominoes.renders.LAYOUT_RENDER = Monominoes.Render.extend({
+  "elements": [],
+  "render": function(item,parent) {
+    var data;
+    var cfg;
+    var items = [];
+    for (var i in this.elements) {
+      cfg = this.elements[i];
+      data = Monominoes.util.path(item,cfg);
+      items.push(Monominoes.Render.concrete(cfg.render).render(data,parent));
+    }
+    return items;
+  }
+});
 
 Monominoes.renders.ARRAY_RENDER = Monominoes.Render.extend({
   
 });
-
-/** Helper functions **/
-Monominoes.renders.path = function(path) { return function(item) { return Monominoes.util.path(item,path); }; };
 
 /** Tag renderers **/
 Monominoes.Render.buildTagRender = function(tag,simple) {
