@@ -47,8 +47,12 @@ Monominoes.util.self = function(x) { return x; };
 Monominoes.util.nothing = function() {};
 Monominoes.util.capitalize = function(str) { return str[0].toUpperCase() + str.substr(1); };
 Monominoes.util.isDate = function(date) { return date instanceof Date && !isNaN(date.valueOf()); };
-Monominoes.util.isIterable = function(obj) { return typeof obj == "object" && obj != undefined && !Monominoes.util.isDate(obj); };
-Monominoes.util.isArray = function(obj) { return Monominoes.util.isIterable(obj) && obj.constructor && obj.constructor == Array; };
+Monominoes.util.isIterable = function(obj) { 
+  return typeof obj == "object" && obj != undefined && !Monominoes.util.isDate(obj);
+};
+Monominoes.util.isArray = function(obj) { 
+  return Monominoes.util.isIterable(obj) && obj.constructor && obj.constructor == Array; 
+};
 Monominoes.util.clone = function(obj) {
   var clon,item;
   if (!Monominoes.util.isIterable(obj)) return obj;
@@ -59,7 +63,9 @@ Monominoes.util.clone = function(obj) {
   } 
   return clon; 
 };
-Monominoes.util.apply = function(source,target) { for(var x in source) target[x] = Monominoes.util.clone(source[x]); return target; };
+Monominoes.util.apply = function(source,target) {
+  for(var x in source) target[x] = Monominoes.util.clone(source[x]); return target;
+};
 Monominoes.util.recursiveApply = function(source,target) {
   for (var x in source) {
     if (source[x] && typeof source[x] == "object" && target[x] && typeof target[x] == "object") {
@@ -77,7 +83,9 @@ Monominoes.Tag = function(name,simple){
   this.tag = Monominoes.util.format(this.getTemplate(),name);
   this.defaultcss = Monominoes.util.format("monominoes monominoes-{0}",name);
 };
-Monominoes.Tag.prototype.getTemplate = function() { return this.simple ? Monominoes.Tag.open : Monominoes.Tag.template; };
+Monominoes.Tag.prototype.getTemplate = function() { 
+  return this.simple ? Monominoes.Tag.open : Monominoes.Tag.template;
+};
 Monominoes.Tag.prototype.build = function() { return $(this.tag); };
 
 /* Statics */
@@ -153,27 +161,33 @@ Monominoes.Render.prototype.super = {};
 Monominoes.Render.prototype.defaults = {};
 Monominoes.Render.prototype.css = "";
 Monominoes.Render.prototype.extracss = null;
+Monominoes.Render.prototype.layout = null; // LAYOUT_RENDER config, a function, a Render constructor or a Render itself.
+Monominoes.Render.prototype.item = null; // Used only on iterable renders.
 Monominoes.Render.prototype.render = function(item,parent) {
-  var layoutrender;
-  var ret;
   var isFn,isRn;
-  var data = this.iterable ? item : [item];
-  var ret = [];
+  var ret;
+  var itemRender
+  var data;
   
-  for (var i = 0; i < data.length; i++) {
+  if (this.iterable) {
+    itemRender = (Monominoes.Render.isRender(this.item)) ? this.item : this.item.render(this.item.config);
+    data = item;
+    ret = [];
+    for (var i = 0; i < data.length; i++) {
+      ret.push(itemRender.render(data[i],parent));
+    }
+  } else {
     if (this.layout) {
       isFn = typeof this.layout == "function";
       isRn = Monominoes.Render.isRender(this.layout);
-      ret.push(isRn ? Monominoes.Render.concrete(this.layout).render(item,parent) :
+      ret = (isRn ? Monominoes.Render.concrete(this.layout).render(item,parent) :
                isFn ? this.layout(item,parent) : Monominoes.renders.LAYOUT_RENDER(this.layout).render(item,parent));
     } else {
-      ret.push(Monominoes.Render.append(subitem,parent));
+      ret = Monominoes.Render.append(subitem,parent);
     }
   }
-  return this.iterable ? ret : ret[0];
+  return ret;
 };
-// Can be a LAYOUT_RENDER config, a function, a Render constructor or a Render itself.
-Monominoes.Render.prototype.layout = null;
 
 Monominoes.renders.LAYOUT_RENDER = Monominoes.Render.extend({
   "elements": [],
@@ -197,15 +211,15 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
     if (this.extracss) tag.addClass(this.extracss);
     if (this.events) for (var e in this.events) tag.on(e,this.events[e]);
     if (this.properties) {
-    for (var a in this.properties) {
-    tag.attr(a, typeof this.properties[a] == "function" ? this.properties[a](item) : this.properties[a]);
-    }
+      for (var a in this.properties) {
+        tag.attr(a, typeof this.properties[a] == "function" ? this.properties[a](item) : this.properties[a]);
+      }
     }
     if (this.style) {
-    for (var s in this.style) tag.css(s, this.style[s]);
+      for (var s in this.style) tag.css(s, this.style[s]);
     }
     
-    // Invoking default render which appends layout to a parent container, in this case the tag, only if the tag is not self closing.
+    // Invoking parent render to append layout to the tag, only if the tag is not self closing.
     if (!this.type.simple) this.super.render(item,tag);
     Monominoes.Render.append(tag,parent); // Appends the tag to the parent if any.
     return tag;
@@ -227,7 +241,10 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
 Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
   "ordered": false,
   "iterable": true,
-  "itemcss": null,
+  "item": {
+    "render": Monominoes.renders.LI,
+    "config": {}
+  },
   "render": function(item,parent) {
     this.type = this.ordered ? Monominoes.tags.OL : Monominoes.tags.UL;
     this.layout = Monominoes.renders.LI({
@@ -243,6 +260,10 @@ Monominoes.renders.OL = Monominoes.renders.LIST.extend({ "ordered": true });
 /* Bootstrap List group render */
 Monominoes.renders.LIST_GROUP = Monominoes.renders.LIST.extend({
   "class": "list-group",
-  "item-class": "list-group-item",
-  "marked": false
+  "item": {
+    "config": {
+      "class": "list-group-item",
+      "css": { "list-style-type": "none" }
+    }
+  }
 });
