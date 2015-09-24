@@ -92,16 +92,18 @@ Monominoes.tags.create = function(tag,simple) {
 })();
 
 /** Renders **/
+/* Render abstract class */
 Monominoes.Render = function(){};
 Monominoes.Render.extend = function(ext) {
   var ParentClass = this;
   var render = function F(cfg) {
     var instance = (this instanceof F) ? this : new F();
+    Monominoes.util.apply(instance,instance.defaults);
     cfg = (cfg || {});
-    Monominoes.util.apply(cfg,instance);
-    return instance;
+    return Monominoes.util.apply(cfg,instance);
   };
   Monominoes.util.apply(ParentClass.prototype,render.prototype);
+  Monominoes.util.apply(ParentClass.prototype,render.prototype.super);
   Monominoes.util.apply((ext || {}),render.prototype);
   render.extend = Monominoes.Render.extend;
   render.parentclass = ParentClass;
@@ -110,6 +112,7 @@ Monominoes.Render.extend = function(ext) {
 };
 Monominoes.Render.prototype.properties = {};
 Monominoes.Render.prototype.super = {};
+Monominoes.Render.prototype.defaults = {};
 Monominoes.Render.prototype.render = function(item,parent) {
   var subitem;
   if (this.layout) {
