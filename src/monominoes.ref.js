@@ -173,7 +173,8 @@ Monominoes.renders.LAYOUT_RENDER = Monominoes.Render.extend({
   }
 });
 
-Monominoes.renders.ARRAY_RENDER = Monominoes.Render.extend({
+Monominoes.renders.ITERABLE = Monominoes.Render.extend({
+  "item-cfg": {},
   "render": function(items,parent) {
     var rendered = [];
     for (var i in items) {
@@ -207,3 +208,17 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
     });
   }
 })();
+
+/* Overwrite of default tag renderers */
+Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
+  "ordered": false,
+  "layout": Monominoes.renders.ITERABLE({
+    
+  }),
+  "render": function(item,parent) {
+    this.type = this.ordered ? Monominoes.tags.OL : Monominoes.tags.LI;
+    this.super.render(item,parent); 
+  }
+});
+Monominoes.renders.LI = Monominoes.renders.LIST.extend({ "ordered": false });
+Monominoes.renders.OL = Monominoes.renders.LIST.extend({ "ordered": true });
