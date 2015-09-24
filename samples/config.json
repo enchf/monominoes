@@ -27,3 +27,19 @@ var cfg = {
     }]
   }
 };
+
+Monominoes.renders.MONOMINOES({
+  "target": "services-container",
+  "data": data,
+  "layout": {
+    "elements": [{
+      "title": Monominoes.renders.H2,
+      "subtitle": Monominoes.renders.P({ "centered": true }),
+      "categories": Monominoes.renders.MONOMINOES({
+        layout: {
+
+        }
+      })
+    }]
+  }
+}).render();

@@ -110,9 +110,24 @@ Monominoes.Render.extend = function(ext) {
 };
 Monominoes.Render.prototype.properties = {};
 Monominoes.Render.prototype.super = {};
-Monominoes.Render.prototype.layout = {};
-Monominoes.Render.prototype.render = Monominoes.util.self;
-Monominoes.Render.prototype.processLayout = Monominoes.util.self;
+Monominoes.Render.prototype.render = function(item,parent) {
+  var subitem;
+  if (this.layout) {
+    subitem = this.layout.render(item,parent);
+  } else {
+    subitem = item;
+    parent.html(subitem);
+  }
+  return subitem;
+};
+Monominoes.Render.prototype.layout = null; // Should be a Render object.
+
+Monominoes.renders.ARRAY_RENDER = Monominoes.Render.extend({
+  
+});
+
+/** Helper functions **/
+Monominoes.renders.path = function(path) { return function(item) { return Monominoes.util.path(item,path); }; };
 
 /** Tag renderers **/
 Monominoes.Render.buildTagRender = function(tag,simple) {
@@ -122,9 +137,9 @@ Monominoes.Render.buildTagRender = function(tag,simple) {
     "render": function(item,parent) {
       var tag = this.type.build().addClass(this.class);
       if (this.extraClass) tag.addClass(this.extraClass);
-      if (!this.type.simple) tag.html(this.processLayout(item));
       if (this.attrs) for (var a in this.attrs) tag.attr(a, typeof this.attrs == "function" ? this.attrs[a](item) : this.attrs[a]);
       if (this.events) for (var e in this.events) tag.on(e,this.events[e]);
+      if (!this.type.simple) this.processLayout(item,tag);
       if (parent) tag.appendTo(typeof parent == "string" ? $("#"+parent) : $(parent));
       return tag;
     },
