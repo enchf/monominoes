@@ -116,11 +116,14 @@ Monominoes.Render.prototype.render = function(item,parent) {
     subitem = this.layout.render(item,parent);
   } else {
     subitem = item;
-    parent.html(subitem);
+    Monominoes.Render.append(subitem,parent);
   }
   return subitem;
 };
 Monominoes.Render.prototype.layout = null; // Should be a Render object.
+Monominoes.Render.append = function(item,parent) {
+  if (parent) (typeof parent == "string" ? $("#"+parent) : $(parent)).html(item);
+};
 
 Monominoes.renders.ARRAY_RENDER = Monominoes.Render.extend({
   
@@ -139,8 +142,9 @@ Monominoes.Render.buildTagRender = function(tag,simple) {
       if (this.extraClass) tag.addClass(this.extraClass);
       if (this.attrs) for (var a in this.attrs) tag.attr(a, typeof this.attrs == "function" ? this.attrs[a](item) : this.attrs[a]);
       if (this.events) for (var e in this.events) tag.on(e,this.events[e]);
-      if (!this.type.simple) this.processLayout(item,tag);
-      if (parent) tag.appendTo(typeof parent == "string" ? $("#"+parent) : $(parent));
+      // Invoking default render which appends layout to a parent container.
+      this.super.render(item,tag);
+      Monominoes.Render.append(tag,parent);
       return tag;
     },
     "class": Monominoes.util.format("monominoes-{0}",tag)
