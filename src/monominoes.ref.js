@@ -62,33 +62,30 @@ Monominoes.util.clone = function(obj) {
 Monominoes.util.apply = function(source,target) { for(var x in source) target[x] = Monominoes.util.clone(source[x]); return target; };
 
 /** Tags **/
-Monominoes.tags.text = ["h1","h2","h3","h4","h5","h6","span","header","strong","p","pre","code"];
-Monominoes.tags.list = ["ul","ol","li"];
-Monominoes.tags.item = ["div","form","button","a","label"];
-Monominoes.tags.simple = ["br","hr"];
-Monominoes.tags.noclose = ["img","input"].concat(Monominoes.tags.simple);
-Monominoes.tags.all = Monominoes.tags.text.concat(Monominoes.tags.list).concat(Monominoes.tags.item).concat(Monominoes.tags.noclose);
-Monominoes.tags.open = "<{0}>";
-Monominoes.tags.close = "</{0}>";
-Monominoes.tags.template = Monominoes.tags.open + Monominoes.tags.close;
-Monominoes.tags.isSimple = function(tag) { return Monominoes.tags.noclose.indexOf(tags[i]) >= 0; };
-Monominoes.tags.create = function(tag,simple) {
-  var Tag = function(){};
-  var t = new Tag();
-  Tag.prototype.name = tag;
-  Tag.prototype.simple = simple === true;
-  Tag.prototype.template = (simple === true) ? Monominoes.tags.open : Monominoes.tags.template;
-  Tag.prototype.tag = Monominoes.util.format(Tag.prototype.template,tag);
-  Tag.prototype.build = function() { return $(this.tag); };
-  Tag.prototype.class = Tag;
-  Tag.prototype.defaultcss = Monominoes.util.format("monominoes-{0}",tag);
-  return t;
+Monominoes.Tag = function(name,simple){
+  this.name = name;
+  this.simple = simple === true;
+  this.tag = Monominoes.util.format(this.getTemplate(),name);
+  this.defaultcss = Monominoes.util.format("monominoes monominoes-{0}",name);
 };
+Monominoes.Tag.prototype.getTemplate = function() { return this.simple ? Monominoes.Tag.open : Monominoes.Tag.template; };
+Monominoes.Tag.prototype.build = function() { return $(this.tag); };
+
+/* Statics */
+Monominoes.Tag.text = ["h1","h2","h3","h4","h5","h6","span","header","strong","p","pre","code"];
+Monominoes.Tag.list = ["ul","ol","li"];
+Monominoes.Tag.item = ["div","form","button","a","label"];
+Monominoes.Tag.selfclose = ["img","input","br","hr"];
+Monominoes.Tag.all = Monominoes.Tag.text.concat(Monominoes.Tag.list).concat(Monominoes.Tag.item).concat(Monominoes.Tag.selfclose);
+Monominoes.Tag.open = "<{0}>";
+Monominoes.Tag.close = "</{0}>";
+Monominoes.Tag.template = Monominoes.Tag.open + Monominoes.Tag.close;
+Monominoes.Tag.isSimple = function(tag) { return Monominoes.Tag.selfclose.indexOf(tag) >= 0; };
 
 (function() {
-  var tags = Monominoes.tags.all;
+  var tags = Monominoes.Tag.all;
   for(var i in tags) {
-    Monominoes.tags[tags[i].toUpperCase()] = Monominoes.tags.create(tags[i], Monominoes.tags.isSimple(tags[i]));
+    Monominoes.tags[tags[i].toUpperCase()] = new Tag(tags[i],Monominoes.Tag.isSimple(tags[i]));
   }
 })();
 
@@ -187,30 +184,26 @@ Monominoes.renders.ARRAY_RENDER = Monominoes.Render.extend({
 });
 
 /* Tag renderers */
-Monominoes.Render.buildTagRender = function(tag,simple) {
-  var taguc = tag.toUpperCase();
-  var tagobj = (Monominoes.tags[taguc] || Monominoes.tags.create(tag,simple));
-  var render = Monominoes.Render.extend({
-    "render": function(item,parent) {
-      var tag = this.type.build().addClass(this.css);
-      if (this.extracss) tag.addClass(this.extracss);
-      if (this.attrs) for (var a in this.attrs) tag.attr(a, typeof this.attrs[a] == "function" ? this.attrs[a](item) : this.attrs[a]);
-      if (this.events) for (var e in this.events) tag.on(e,this.events[e]);
-      // Invoking default render which appends layout to a parent container.
-      this.super.render(item,tag);
-      Monominoes.Render.append(tag,parent);
-      return tag;
-    },
-    "css": tagobj.defaultcss
-  });
-  render.prototype.type = tagobj;
-  return render;
-};
+Monominoes.renders.TAG = Monominoes.Render.extend({
+  "render": function(item,parent) {
+    var tag = this.type.build().addClass(this.css);
+    if (this.extracss) tag.addClass(this.extracss);
+    if (this.attrs) for (var a in this.attrs) tag.attr(a, typeof this.attrs[a] == "function" ? this.attrs[a](item) : this.attrs[a]);
+    if (this.events) for (var e in this.events) tag.on(e,this.events[e]);
+    // Invoking default render which appends layout to a parent container, in this case the tag, only if the tag is not self closing.
+    if (!this.type.simple) this.super.render(item,tag);
+    Monominoes.Render.append(tag,parent); // Appends the tag to the parent if any.
+    return tag;
+  }
+});
 
 (function() {
   var tag;
-  for (var t in Monominoes.tags.all) {
-    tag = Monominoes.tags.all[t];
-    Monominoes.renders[tag.toUpperCase()] = Monominoes.Render.buildTagRender(tag);
+  for (var t in Monominoes.tags) {
+    tag = Monominoes.tags[t];
+    Monominoes.renders[t] = Monominoes.renders.TAG.extend({
+      "type": tag,
+      "css": tag.defaultcss
+    });
   }
 })();
