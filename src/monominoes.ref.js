@@ -241,16 +241,17 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
 Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
   "ordered": false,
   "iterable": true,
+  "marker": undefined,
   "item": {
     "render": Monominoes.renders.LI,
     "config": {}
   },
   "render": function(item,parent) {
     this.type = this.ordered ? Monominoes.tags.OL : Monominoes.tags.UL;
-    this.layout = Monominoes.renders.LI({
-      "css": (this.itemcss || Monominoes.tags.LI.defaultcss),
-      "layout": this.layout
-    });
+    if (this.marker != undefined && this.marker !== true) {
+    	if (this.marker === false) this.marker = "none";
+    	if (typeof this.marker == "string") this.css["list-style-type"] = this.marker;
+    } 
     this.super.render(item,parent); 
   }
 });
@@ -260,10 +261,10 @@ Monominoes.renders.OL = Monominoes.renders.LIST.extend({ "ordered": true });
 /* Bootstrap List group render */
 Monominoes.renders.LIST_GROUP = Monominoes.renders.LIST.extend({
   "class": "list-group",
+  "marker": "none",
   "item": {
     "config": {
-      "class": "list-group-item",
-      "css": { "list-style-type": "none" }
+      "class": "list-group-item"
     }
   }
 });
