@@ -139,6 +139,7 @@ Monominoes.Render.append = function(item,parent) {
 };
 Monominoes.Render.concrete = function(render) { return typeof render == "function" ? render() : render; };
 Monominoes.Render.path = function(path) { return function(item) { return Monominoes.util.path(item,path); }; };
+Monominoes.Render.currency = function(nd,ds,ms) { return function(num) { return Monominoes.util.currency(num,nd,ds,ms); };
 Monominoes.Render.isRender = function(object) {
   var isrender = false;
   var clazz = object.class;
@@ -177,15 +178,16 @@ Monominoes.Render.prototype.render = function(item,parent) {
       ret.push(itemRender.render(data[i],parent));
     }
   } else {
-    if (this.layout) {
-      isFn = typeof this.layout == "function";
-      isRn = Monominoes.Render.isRender(this.layout);
-      ret = (isRn ? Monominoes.Render.concrete(this.layout).render(item,parent) :
-               isFn ? this.layout(item,parent) : Monominoes.renders.LAYOUT_RENDER(this.layout).render(item,parent));
-    } else {
-      ret = Monominoes.Render.append(subitem,parent);
-    }
+    ret = Monominoes.Render.append(subitem,parent);
   }
+  
+  if (this.layout) {
+    isFn = typeof this.layout == "function";
+    isRn = Monominoes.Render.isRender(this.layout);
+    ret = (isRn ? Monominoes.Render.concrete(this.layout).render(item,parent) :
+             isFn ? this.layout(item,parent) : Monominoes.renders.LAYOUT_RENDER(this.layout).render(item,parent));
+  }
+  
   return ret;
 };
 
@@ -258,7 +260,19 @@ Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
 Monominoes.renders.UL = Monominoes.renders.LIST.extend({ "ordered": false });
 Monominoes.renders.OL = Monominoes.renders.LIST.extend({ "ordered": true });
 
-/* Bootstrap List group render */
+/* Custom tags renderers */
+Monominoes.renders.TEXT_BLOCK = Monominoes.renders.SPAN.extend({
+  "class": "monominoes-text-block",
+  "font-color": "white",
+  "background": "black",
+  "render": function(item,parent) {
+    this.css.color = this["font-color"];
+    this.css["background-color"] = this.background;
+    this.super.render(item,parent);
+  }
+});
+
+/* Bootstrap renderers */
 Monominoes.renders.LIST_GROUP = Monominoes.renders.LIST.extend({
   "class": "list-group",
   "marker": "none",
