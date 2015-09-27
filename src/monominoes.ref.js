@@ -89,7 +89,7 @@ Monominoes.Tag.prototype.getTemplate = function() {
 Monominoes.Tag.prototype.build = function() { return $(this.tag); };
 
 /* Statics */
-Monominoes.Tag.text = ["h1","h2","h3","h4","h5","h6","span","header","strong","p","pre","code"];
+Monominoes.Tag.text = ["h1","h2","h3","h4","h5","h6","span","header","strong","i","p","pre","code"];
 Monominoes.Tag.list = ["ul","ol","li"];
 Monominoes.Tag.item = ["div","form","button","a","label"];
 Monominoes.Tag.selfclose = ["img","input","br","hr"];
@@ -228,7 +228,9 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
     if (this.events) for (var e in this.events) tag.on(e,this.events[e]);
     if (this.properties) {
       for (var a in this.properties) {
-        tag.attr(a, typeof this.properties[a] == "function" ? this.properties[a](item) : this.properties[a]);
+        tag.attr(a, typeof this.properties[a] == "function" ? 
+                 this.properties[a].call(this,item) : 
+                 this.properties[a]);
       }
     }
     if (this.style) {
@@ -313,6 +315,61 @@ Monominoes.renders.LABELED = Monominoes.renders.TAG.extend({
                  (this.bold === true) ? "700" : "400";
     this.layout.elements[0].config.css["font-weight"] = weight;
     this.type = this.inline ? Monominoes.tags.SPAN : Monominoes.tags.DIV;
+    this.super.render(item,parent);
+  }
+});
+
+Monominoes.renders.IMG_BLOCK = Monominoes.renders.DIV.extend({
+  "centered": true,
+  "height": "auto",
+  "width": "auto",
+  "default": "",
+  "sourcedir": "",
+  "format": "",
+  "imageindex": 1,
+  "sourcefn": function(name,dir,ext) {
+    dir = (dir || this.sourcedir);
+    ext = (ext || this.format);
+    var lch = dir[dir.length-1];
+    var fch = ext[0];
+    dir += (lch !== "/" && lch !=="\\" ? "/" : "");
+    ext = ext ? (fch === "." ? ext : "." + ext) : "";
+    return Monominoes.util.format("{0}{1}{2}",dir,name,ext);
+  },
+  "error": function(img) {
+    img.onerror = "";
+    if (this.default) img.src = this.sourcefn(this.default);
+    return true;
+  },
+  "layout": {
+    "elements": [{
+      "config": {
+        "class": "monominoes-img-helper"
+      },
+      "render": Monominoes.renders.SPAN
+    },{
+      "class": "monominoes-img img-responsive",
+      "layout": function(item,parent) {
+        var scope = this;
+        parent.error(function(img) { scope.error.call(scope,img); });
+      },
+      "config": {
+        "properties": {
+          "src": function(item) { this.sourcefn(item); }
+        }
+      },
+      "render": Monominoes.renders.IMG
+    }]
+  },
+  "render": function(item,parent) {
+    var img;
+    var tocopy = ["default","sourcedir","format","error","sourcefn"];
+    this.css.width = this.width;
+    this.css.height = this.height;
+    if (this.centered) this.css["text-align"] = "center";
+    
+    img = this.layout.elements[this.imageindex];
+    for (var i = 0; i < tocopy.length; i++) { img.config[tocopy[i]] = this[tocopy[i]]; }
     this.super.render(item,parent);
   }
 });
