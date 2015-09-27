@@ -274,6 +274,14 @@ Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
 Monominoes.renders.UL = Monominoes.renders.LIST.extend({ "ordered": false });
 Monominoes.renders.OL = Monominoes.renders.LIST.extend({ "ordered": true });
 
+Monominoes.renders.PRE = Monominoes.renders.TAG.extend({
+  "language": "",
+  "render": function(item,render) {
+    Monominoes.util.append(this.extracss,this.language);
+    this.super.render(item,parent);
+  }
+});
+
 /* Custom tags renderers */
 Monominoes.renders.TEXT_BLOCK = Monominoes.renders.SPAN.extend({
   "class": "monominoes-text-block",
