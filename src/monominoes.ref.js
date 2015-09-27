@@ -75,6 +75,7 @@ Monominoes.util.recursiveApply = function(source,target) {
     }
   }
 };
+Monominoes.util.isAnyOf = function(item) { return arguments.slice(1).indexOf(item) >= 0; };
 
 /** Tags **/
 Monominoes.Tag = function(name,simple){
@@ -268,7 +269,7 @@ Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
     this.type = this.ordered ? Monominoes.tags.OL : Monominoes.tags.UL;
     if (this.marker != undefined && this.marker !== true) {
     	if (this.marker === false) this.marker = "none";
-    	if (typeof this.marker == "string") this.css["list-style-type"] = this.marker;
+    	if (typeof this.marker == "string") this.style["list-style-type"] = this.marker;
     } 
     this.super.render(item,parent); 
   }
@@ -279,19 +280,19 @@ Monominoes.renders.OL = Monominoes.renders.LIST.extend({ "ordered": true });
 Monominoes.renders.PRE = Monominoes.renders.TAG.extend({
   "language": "",
   "render": function(item,render) {
-    Monominoes.util.append(this.extracss,this.language);
+    this.extracss = Monominoes.util.append(this.extracss,this.language);
     this.super.render(item,parent);
   }
 });
 
 /* Custom tags renderers */
 Monominoes.renders.TEXT_BLOCK = Monominoes.renders.SPAN.extend({
-  "class": "monominoes-text-block",
+  "css": "monominoes-text-block",
   "font-color": "white",
   "background": "black",
   "render": function(item,parent) {
-    this.css.color = this["font-color"];
-    this.css["background-color"] = this.background;
+    this.style.color = this["font-color"];
+    this.style["background-color"] = this.background;
     this.super.render(item,parent);
   }
 });
@@ -313,7 +314,7 @@ Monominoes.renders.LABELED = Monominoes.renders.TAG.extend({
   "render": function(item,parent) {
     var weight = (typeof this.bold == "string") ? this.bold :
                  (this.bold === true) ? "700" : "400";
-    this.layout.elements[0].config.css["font-weight"] = weight;
+    this.layout.elements[0].config.style["font-weight"] = weight;
     this.type = this.inline ? Monominoes.tags.SPAN : Monominoes.tags.DIV;
     this.super.render(item,parent);
   }
@@ -344,11 +345,11 @@ Monominoes.renders.IMG_BLOCK = Monominoes.renders.DIV.extend({
   "layout": {
     "elements": [{
       "config": {
-        "class": "monominoes-img-helper"
+        "css": "monominoes-img-helper"
       },
       "render": Monominoes.renders.SPAN
     },{
-      "class": "monominoes-img img-responsive",
+      "css": "monominoes-img img-responsive",
       "layout": function(item,parent) {
         var scope = this;
         parent.error(function(img) { scope.error.call(scope,img); });
@@ -364,9 +365,9 @@ Monominoes.renders.IMG_BLOCK = Monominoes.renders.DIV.extend({
   "render": function(item,parent) {
     var img;
     var tocopy = ["default","sourcedir","format","error","sourcefn"];
-    this.css.width = this.width;
-    this.css.height = this.height;
-    if (this.centered) this.css["text-align"] = "center";
+    this.style.width = this.width;
+    this.style.height = this.height;
+    if (this.centered) this.style["text-align"] = "center";
     
     img = this.layout.elements[this.imageindex];
     for (var i = 0; i < tocopy.length; i++) { img.config[tocopy[i]] = this[tocopy[i]]; }
@@ -376,11 +377,43 @@ Monominoes.renders.IMG_BLOCK = Monominoes.renders.DIV.extend({
 
 /* Bootstrap renderers */
 Monominoes.renders.LIST_GROUP = Monominoes.renders.LIST.extend({
-  "class": "list-group",
+  "css": "list-group",
   "marker": "none",
   "item": {
     "config": {
-      "class": "list-group-item"
+      "css": "list-group-item"
     }
   }
 });
+
+/* Renderers for FontAwesome icons */
+Monominoes.renders.ICON = Monominoes.renders.I.extend({
+  "class": "fa",
+  "icon": "", // Mandatory, name from library (example: "camera-retro", without "fa").
+  "size": "", // Add size: lg, 2x, 3x, 4x, 5x.
+  "fixed-width": false,
+  "border": false,
+  "align": "",
+  "color": "", // Default existent.
+  "background": "", // Default existent.
+  "animated": "",
+  "rotate": "",
+  "flip": "",
+  "fafn": function(str) {
+    if (str) {
+      this.extracss = Monominoes.util.append(this.extracss,Monominoes.util.format("fa-{0}",str)); 
+    }
+  },
+  "render": function(item,parent) {
+    this.fafn(this.icon);
+    this.fafn(this.size)
+    if (this["fixed-width"]) this.fafn("fw");
+    if (this.border) this.fafn("border");
+    if (Monominoes.util.isAnyOf(this.align,"left")) this.fafn("pull-"+this.align);
+    if (Monominoes.util.isAnyOf(this.animated,"pulse","spin")) this.fafn(this.animated);
+    if (Monominoes.util.isAnyOf(this.rotate,"90","180","270")) this.fafn("rotate-"+this.rotate);
+    if (Monominoes.util.isAnyOf(this.flip,"horizontal","vertical")) this.fafn("flip-"+this.flip);
+  }
+});
+
+/** Monominoes Grid Render **/
