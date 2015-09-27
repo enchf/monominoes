@@ -137,9 +137,13 @@ Monominoes.Render.append = function(item,parent) {
   if (parent) (typeof parent == "string" ? $("#"+parent) : $(parent)).html(item);
   return item;
 };
-Monominoes.Render.concrete = function(render) { return typeof render == "function" ? render() : render; };
+Monominoes.Render.concrete = function(render,cfg) { 
+  return typeof render == "function" ? render(cfg) : render;
+};
 Monominoes.Render.path = function(path) { return function(item) { return Monominoes.util.path(item,path); }; };
-Monominoes.Render.currency = function(nd,ds,ms) { return function(num) { return Monominoes.util.currency(num,nd,ds,ms); };
+Monominoes.Render.currency = function(nd,ds,ms) { 
+  return function(num) { return Monominoes.util.currency(num,nd,ds,ms); };
+};
 Monominoes.Render.isRender = function(object) {
   var isrender = false;
   var clazz = object.class;
@@ -150,6 +154,15 @@ Monominoes.Render.isRender = function(object) {
   }
   
   return isrender;
+};
+Monominoes.Render.multitype = function(obj,renderType) {
+  return function(item,parent) {
+    var isFn,isRn;
+    isFn = typeof obj == "function";
+    isRn = Monominoes.Render.isRender(obj);
+    return (isRn ? Monominoes.Render.concrete(obj).render(item,parent) :
+            isFn ? obj(item,parent) : renderType(obj).render(item,parent));
+  };
 };
 
 /* Class prototype */
@@ -165,7 +178,6 @@ Monominoes.Render.prototype.extracss = null;
 Monominoes.Render.prototype.layout = null; // LAYOUT_RENDER config, a function, a Render constructor or a Render itself.
 Monominoes.Render.prototype.item = null; // Used only on iterable renders.
 Monominoes.Render.prototype.render = function(item,parent) {
-  var isFn,isRn;
   var ret;
   var itemRender
   var data;
@@ -178,18 +190,20 @@ Monominoes.Render.prototype.render = function(item,parent) {
       ret.push(itemRender.render(data[i],parent));
     }
   } else {
-    ret = Monominoes.Render.append(subitem,parent);
+    ret = Monominoes.Render.append(item,parent);
   }
-  
   if (this.layout) {
-    isFn = typeof this.layout == "function";
-    isRn = Monominoes.Render.isRender(this.layout);
-    ret = (isRn ? Monominoes.Render.concrete(this.layout).render(item,parent) :
-             isFn ? this.layout(item,parent) : Monominoes.renders.LAYOUT_RENDER(this.layout).render(item,parent));
+    ret = Monominoes.Render.multitype(this.layout,Monominoes.renders.LAYOUT_RENDER)(item,parent);
   }
   
   return ret;
 };
+
+Monominoes.renders.SELF = Monominoes.Render.extend({ 
+  "render": function(item,parent) {
+    return Monominoes.Render.append(item,parent);
+  }
+}); 
 
 Monominoes.renders.LAYOUT_RENDER = Monominoes.Render.extend({
   "elements": [],
@@ -200,7 +214,7 @@ Monominoes.renders.LAYOUT_RENDER = Monominoes.Render.extend({
     for (var i in this.elements) {
       cfg = this.elements[i];
       data = cfg.path ? Monominoes.util.path(item,cfg.path) : item;
-      items.push(Monominoes.Render.concrete(cfg.render).render(data,parent));
+      items.push(Monominoes.Render.concrete(cfg.render,cfg.config).render(data,parent));
     }
     return items;
   }
@@ -268,6 +282,29 @@ Monominoes.renders.TEXT_BLOCK = Monominoes.renders.SPAN.extend({
   "render": function(item,parent) {
     this.css.color = this["font-color"];
     this.css["background-color"] = this.background;
+    this.super.render(item,parent);
+  }
+});
+
+Monominoes.renders.LABELED = Monominoes.renders.TAG.extend({
+  "inline": false,
+  "bold": true,
+  "layout": {
+    "elements": [{
+      "path": "",
+      "layout": function(item,parent) { return Monominoes.Render.append(item + ": ",parent); },
+      "config": {},
+      "render": Monominoes.renders.SPAN
+    },{
+      "path": "",
+      "render": Monominoes.renders.SPAN
+    }]
+  },
+  "render": function(item,parent) {
+    var weight = (typeof this.bold == "string") ? this.bold :
+                 (this.bold === true) ? "700" : "400";
+    this.layout.elements[0].config.css["font-weight"] = weight;
+    this.type = this.inline ? Monominoes.tags.SPAN : Monominoes.tags.DIV;
     this.super.render(item,parent);
   }
 });
