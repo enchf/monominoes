@@ -47,6 +47,7 @@ Monominoes.util.self = function(x) { return x; };
 Monominoes.util.nothing = function() {};
 Monominoes.util.capitalize = function(str) { return str[0].toUpperCase() + str.substr(1); };
 Monominoes.util.isDate = function(date) { return date instanceof Date && !isNaN(date.valueOf()); };
+Monominoes.util.isFunction = function(obj) { return typeof obj == "function"; };
 Monominoes.util.isIterable = function(obj) { 
   return typeof obj == "object" && obj != undefined && !Monominoes.util.isDate(obj);
 };
@@ -68,7 +69,8 @@ Monominoes.util.apply = function(source,target) {
 };
 Monominoes.util.recursiveApply = function(source,target) {
   for (var x in source) {
-    if (source[x] && typeof source[x] == "object" && target[x] && typeof target[x] == "object") {
+    if (Monominoes.util.isIterable(source[x])) {
+      if (target[x] == undefined) target[x] = Monominoes.util.isArray(source[x]) ? [] : {};
       Monominoes.util.recursiveApply(source[x],target[x]);
     } else {
       target[x] = source[x];
@@ -139,7 +141,7 @@ Monominoes.Render.append = function(item,parent) {
   return item;
 };
 Monominoes.Render.concrete = function(render,cfg) { 
-  return typeof render == "function" ? render(cfg) : render;
+  return Monominoes.util.isFunction(render) ? render(cfg) : render;
 };
 Monominoes.Render.path = function(path) { return function(item) { return Monominoes.util.path(item,path); }; };
 Monominoes.Render.currency = function(nd,ds,ms) { 
@@ -158,11 +160,8 @@ Monominoes.Render.isRender = function(object) {
 };
 Monominoes.Render.multitype = function(obj,renderType) {
   return function(item,parent) {
-    var isFn,isRn;
-    isFn = typeof obj == "function";
-    isRn = Monominoes.Render.isRender(obj);
-    return (isRn ? Monominoes.Render.concrete(obj).render(item,parent) :
-            isFn ? obj(item,parent) : renderType(obj).render(item,parent));
+    return (Monominoes.Render.isRender(obj) ? Monominoes.Render.concrete(obj).render(item,parent) :
+            Monominoes.util.isFunction(obj) ? obj(item,parent) : renderType(obj).render(item,parent));
   };
 };
 
@@ -229,7 +228,7 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
     if (this.events) for (var e in this.events) tag.on(e,this.events[e]);
     if (this.properties) {
       for (var a in this.properties) {
-        tag.attr(a, typeof this.properties[a] == "function" ? 
+        tag.attr(a, Monominoes.util.isFunction(this.properties[a]) ? 
                  this.properties[a].call(this,item) : 
                  this.properties[a]);
       }
@@ -405,7 +404,7 @@ Monominoes.renders.ICON = Monominoes.renders.I.extend({
     }
   },
   "render": function(item,parent) {
-    this.fafn(this.icon);
+    this.fafn(Monominoes.util.isFunction(this.icon) ? this.icon(item) : this.icon);
     this.fafn(this.size)
     if (this["fixed-width"]) this.fafn("fw");
     if (this.border) this.fafn("border");
@@ -413,6 +412,21 @@ Monominoes.renders.ICON = Monominoes.renders.I.extend({
     if (Monominoes.util.isAnyOf(this.animated,"pulse","spin")) this.fafn(this.animated);
     if (Monominoes.util.isAnyOf(this.rotate,"90","180","270")) this.fafn("rotate-"+this.rotate);
     if (Monominoes.util.isAnyOf(this.flip,"horizontal","vertical")) this.fafn("flip-"+this.flip);
+    this.super.render(item,parent);
+  }
+});
+
+Monominoes.renders.ICON_LIST = Monominoes.renders.UL.extend({
+  "class": "fa-ul",
+  "marker": "none",
+  "item": {
+    "config": {
+      "layout": {
+        "elements": [{
+          "render": Monominoes.renders.ICON
+        }]
+      }
+    }
   }
 });
 
