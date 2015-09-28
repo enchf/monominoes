@@ -48,6 +48,9 @@ Monominoes.util.nothing = function() {};
 Monominoes.util.capitalize = function(str) { return str[0].toUpperCase() + str.substr(1); };
 Monominoes.util.isDate = function(date) { return date instanceof Date && !isNaN(date.valueOf()); };
 Monominoes.util.isFunction = function(obj) { return typeof obj == "function"; };
+Monominoes.util.concrete = function(fn,scope) { 
+  return Monominoes.util.isFunction(fn) ? fn.apply(scope,arguments.slice(2)) : fn; 
+};
 Monominoes.util.isIterable = function(obj) { 
   return typeof obj == "object" && obj != undefined && !Monominoes.util.isDate(obj);
 };
@@ -140,9 +143,6 @@ Monominoes.Render.append = function(item,parent) {
   if (parent) (typeof parent == "string" ? $("#"+parent) : $(parent)).html(item);
   return item;
 };
-Monominoes.Render.concrete = function(render,cfg) { 
-  return Monominoes.util.isFunction(render) ? render(cfg) : render;
-};
 Monominoes.Render.path = function(path) { return function(item) { return Monominoes.util.path(item,path); }; };
 Monominoes.Render.currency = function(nd,ds,ms) { 
   return function(num) { return Monominoes.util.currency(num,nd,ds,ms); };
@@ -160,7 +160,7 @@ Monominoes.Render.isRender = function(object) {
 };
 Monominoes.Render.multitype = function(obj,renderType) {
   return function(item,parent) {
-    return (Monominoes.Render.isRender(obj) ? Monominoes.Render.concrete(obj).render(item,parent) :
+    return (Monominoes.Render.isRender(obj) ? Monominoes.util.concrete(obj).render(item,parent) :
             Monominoes.util.isFunction(obj) ? obj(item,parent) : renderType(obj).render(item,parent));
   };
 };
@@ -214,7 +214,7 @@ Monominoes.renders.LAYOUT_RENDER = Monominoes.Render.extend({
     for (var i in this.elements) {
       cfg = this.elements[i];
       data = cfg.path ? Monominoes.util.path(item,cfg.path) : item;
-      items.push(Monominoes.Render.concrete(cfg.render,cfg.config).render(data,parent));
+      items.push(Monominoes.util.concrete(cfg.render,null,cfg.config).render(data,parent));
     }
     return items;
   }
@@ -387,7 +387,7 @@ Monominoes.renders.LIST_GROUP = Monominoes.renders.LIST.extend({
 
 /* Renderers for FontAwesome icons */
 Monominoes.renders.ICON = Monominoes.renders.I.extend({
-  "class": "fa",
+  "css": "fa",
   "icon": "", // Mandatory, name from library (example: "camera-retro", without "fa").
   "size": "", // Add size: lg, 2x, 3x, 4x, 5x.
   "fixed-width": false,
@@ -398,36 +398,73 @@ Monominoes.renders.ICON = Monominoes.renders.I.extend({
   "animated": "",
   "rotate": "",
   "flip": "",
-  "fafn": function(str) {
-    if (str) {
-      this.extracss = Monominoes.util.append(this.extracss,Monominoes.util.format("fa-{0}",str)); 
-    }
-  },
   "render": function(item,parent) {
-    this.fafn(Monominoes.util.isFunction(this.icon) ? this.icon(item) : this.icon);
-    this.fafn(this.size)
-    if (this["fixed-width"]) this.fafn("fw");
-    if (this.border) this.fafn("border");
-    if (Monominoes.util.isAnyOf(this.align,"left")) this.fafn("pull-"+this.align);
-    if (Monominoes.util.isAnyOf(this.animated,"pulse","spin")) this.fafn(this.animated);
-    if (Monominoes.util.isAnyOf(this.rotate,"90","180","270")) this.fafn("rotate-"+this.rotate);
-    if (Monominoes.util.isAnyOf(this.flip,"horizontal","vertical")) this.fafn("flip-"+this.flip);
+    var appendFn = Monominoes.renders.ICON.appendClass;
+    appendFn(this,Monominoes.util.concrete(this.icon,this,item));
+    if (Monominoes.util.isAnyOf(this.size,"lg","2x","3x","4x","5x")) appendFn(this,this.size);
+    if (this["fixed-width"]) appendFn(this,"fw");
+    if (this.border) appendFn(this,"border");
+    if (Monominoes.util.isAnyOf(this.align,"left")) appendFn(this,"pull-"+this.align);
+    if (Monominoes.util.isAnyOf(this.animated,"pulse","spin")) appendFn(this,this.animated);
+    if (Monominoes.util.isAnyOf(this.rotate,"90","180","270")) appendFn(this,"rotate-"+this.rotate);
+    if (Monominoes.util.isAnyOf(this.flip,"horizontal","vertical")) appendFn(this,"flip-"+this.flip);
+    if (this.color) this.style.color = this.color;
+    if (this.background) this.style["background-color"] = this.background;
     this.super.render(item,parent);
   }
 });
+Monominoes.renders.ICON.appendClass = function(render,str) {
+  if (str) {
+    render.extracss = Monominoes.util.append(render.extracss,Monominoes.util.format("fa-{0}",str));
+  }
+};
 
 Monominoes.renders.ICON_LIST = Monominoes.renders.UL.extend({
-  "class": "fa-ul",
+  "css": "fa-ul",
   "marker": "none",
   "item": {
     "config": {
       "layout": {
         "elements": [{
           "render": Monominoes.renders.ICON
+        },{
+          "render": Monominoes.renders.SELF
         }]
       }
     }
   }
 });
 
+Monominoes.renders.STACKED_ICON = Monominoes.renders.SPAN.extend({
+  "css": "fa-stack",
+  "size": "",
+  "inverse": false,
+  "parent": "",
+  "child": "",
+  "layout": {
+    "elements": [{
+      "config": {
+        "css": "fa fa-stack-2x"
+      },
+      "render": Monominoes.util.ICON
+    },{
+      "config": {
+        "css": "fa fa-stack-1x"
+      },
+      "render": Monominoes.util.ICON
+    }]
+  },
+  "render": function(item,parent) {
+    var appendFn = Monominoes.renders.ICON.appendClass;
+    if (Monominoes.util.isAnyOf(this.size,"lg","2x","3x","4x","5x")) appendFn(this,this.size);
+    if (this.inverse) appendFn(this.layout.elements[1].config,"inverse");
+    this.layout.elements[0].config.icon = this.parent;
+    this.layout.elements[1].config.icon = this.child;
+    this.super.render(item,parent);
+  }
+});
+
 /** Monominoes Grid Render **/
+Monominoes.renders.MONOMINOES = Monominoes.renders.DIV.extend({
+  
+});
