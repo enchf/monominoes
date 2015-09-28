@@ -158,12 +158,6 @@ Monominoes.Render.isRender = function(object) {
   
   return isrender;
 };
-Monominoes.Render.multitype = function(obj,renderType) {
-  return function(item,parent) {
-    return (Monominoes.Render.isRender(obj) ? Monominoes.util.concrete(obj).render(item,parent) :
-            Monominoes.util.isFunction(obj) ? obj(item,parent) : renderType(obj).render(item,parent));
-  };
-};
 
 /* Class prototype */
 Monominoes.Render.prototype.iterable = false;
@@ -193,7 +187,9 @@ Monominoes.Render.prototype.render = function(item,parent) {
     ret = Monominoes.Render.append(item,parent);
   }
   if (this.layout) {
-    ret = Monominoes.Render.multitype(this.layout,Monominoes.renders.LAYOUT_RENDER)(item,parent);
+    ret = (Monominoes.Render.isRender(this.layout) ? Monominoes.util.concrete(this.layout).render(item,parent) :
+           Monominoes.util.isFunction(this.layout) ? this.layout(item,parent) : 
+           Monominoes.renders.LAYOUT_RENDER(this.layout).render(item,parent));
   }
   
   return ret;
@@ -400,7 +396,7 @@ Monominoes.renders.ICON = Monominoes.renders.I.extend({
   "flip": "",
   "render": function(item,parent) {
     var appendFn = Monominoes.renders.ICON.appendClass;
-    appendFn(this,Monominoes.util.concrete(this.icon,this,item));
+    appendFn(this,Monominoes.util.concrete(this.icon,this,this,item));
     if (Monominoes.util.isAnyOf(this.size,"lg","2x","3x","4x","5x")) appendFn(this,this.size);
     if (this["fixed-width"]) appendFn(this,"fw");
     if (this.border) appendFn(this,"border");
