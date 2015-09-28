@@ -381,6 +381,72 @@ Monominoes.renders.LIST_GROUP = Monominoes.renders.LIST.extend({
   }
 });
 
+Monominoes.renders.DROPDOWN = Monominoes.renders.DIV.extend({
+  "css": "dropdown",
+  "style": {
+    "margin-left": "0.5em"
+  },
+  "id": "",
+  "selected": null,
+  "iterable": true,
+  "datakey": "dd-data",
+  "click": function(event) {
+    var clicked = $(event.target);
+    this.component.selected = clicked.data(this.datakey);
+  },
+  "inline": false,
+  "placeholder": "",
+  "display": Monominoes.util.self,
+  "layout": {
+    "elements": [{
+      "config": {
+        "css": "btn dropdown-toggle",
+        "properties": {
+          "type": "button",
+          "data-toggle": "dropdown",
+          "aria-haspopup": "true",
+          "aria-expanded": "true"
+        },
+        "render": function(item,render) { 
+          return this.super.render(item,render).text(this.placeholder);
+        },
+        "layout": Monominoes.renders.SPAN({ "css": "caret" })
+      },
+      "render": Monominoes.renders.BUTTON
+    },{
+      "config": {
+        "css": "dropdown-menu",
+        "item": {
+          "config": {
+            "render": function(item,parent) {
+              return this.super.render(item,parent)
+                .text(Monominoes.util.concrete(this.display,this,item))
+                .data(this.datakey,item);
+            }
+          }
+        }
+      },
+      "render": Monominoes.renders.UL
+    }]
+  },
+  "render": function(item,parent) {
+    this.properties.id = Monominoes.util.concrete((this.id || Monominoes.renders.DROPDOWN.id),this);
+    if (this.inline) this.style.display = "inline-block";
+    this.layout.elements[0].config.placeholder = this.placeholder;
+    this.layout.elements[0].config.properties.id = this.id + "-btn";
+    this.layout.elements[1].config.properties.id = this.id + "-ul";
+    this.layout.elements[1].config.properties["aria-labeledby"] = this.id + "-btn";
+    this.layout.elements[1].config.item.config.events.click = this.click;
+    this.layout.elements[1].config.item.config.datakey = this.datakey;
+    this.layout.elements[1].config.item.config.display = this.display;
+    this.layout.elements[1].config.item.config.component = this;
+  }
+});
+Monominoes.renders.DROPDOWN.counter = 1;
+Monominoes.renders.DROPDOWN.id = function() { 
+  return Monominoes.util.format("monominoes-dd-{0}",Monominoes.renders.DROPDOWN.counter++);
+};
+
 /* Renderers for FontAwesome icons */
 Monominoes.renders.ICON = Monominoes.renders.I.extend({
   "css": "fa",
