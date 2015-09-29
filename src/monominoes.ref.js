@@ -323,7 +323,7 @@ Monominoes.renders.IMG_BLOCK = Monominoes.renders.DIV.extend({
   "centered": true,
   "height": "auto",
   "width": "auto",
-  "default": "",
+  "defaultimg": "",
   "sourcedir": "",
   "format": "",
   "imageindex": 1,
@@ -338,7 +338,7 @@ Monominoes.renders.IMG_BLOCK = Monominoes.renders.DIV.extend({
   },
   "error": function(img) {
     img.onerror = "";
-    if (this.default) img.src = this.sourcefn(this.default);
+    if (this.defaultimg) img.src = this.sourcefn(this.defaultimg);
     return true;
   },
   "layout": {
