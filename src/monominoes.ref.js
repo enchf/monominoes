@@ -167,6 +167,7 @@ Monominoes.Render.prototype.properties = {};
 Monominoes.Render.prototype.style = {};
 Monominoes.Render.prototype.super = {};
 Monominoes.Render.prototype.defaults = {};
+Monominoes.Render.prototype.count = 0;
 Monominoes.Render.prototype.css = "";
 Monominoes.Render.prototype.extracss = null;
 Monominoes.Render.prototype.layout = null; // LAYOUT_RENDER config, a function, a Render constructor or a Render itself.
@@ -180,7 +181,10 @@ Monominoes.Render.prototype.render = function(item,parent) {
     itemRender = (Monominoes.Render.isRender(this.item)) ? this.item : this.item.render(this.item.config);
     data = item;
     ret = [];
+    this.count = 0;
     for (var i = 0; i < data.length; i++) {
+      this.count++;
+      itemRender.count = this.count;
       ret.push(itemRender.render(data[i],parent));
     }
   } else {
@@ -528,5 +532,31 @@ Monominoes.renders.STACKED_ICON = Monominoes.renders.SPAN.extend({
 
 /** Monominoes Grid Render **/
 Monominoes.renders.MONOMINOES = Monominoes.renders.DIV.extend({
-  
+  "css": "monominoes container monominoes-root",
+  "cols": 1,
+  "iterable": true,
+  "item": {
+    "config": {
+      "render": function(item,parent) {
+        var row;
+        if (this.count % this.cols == 0) {
+          row = Monominoes.renders.DIV({ "css": "row" }).render(item,parent);
+        } else {
+          row = parent;
+        }
+        this.super.render(item,row);
+      }
+    }
+  },
+  "render": function(item,parent) {
+    this.item.config.cols = this.cols;
+  }
 });
+
+Monominoes.renders.MONOMINOES.cols = ["col-lg-12","col-lg-6","col-md-6 col-lg-4", // 1,2,3,
+                                      "col-sm-6 col-md-4 col-lg-3","col-sm-6 col-md-4 col-lg-2", // 4,5,
+                                      "col-xs-6 col-sm-4 col-md-3 col-lg-2","","col-lg-1", // 6,7,8,
+                                      "","col-lg-1", "", "col-lg-1" ]; // 9,10,11,12.
+Monominoes.renders.MONOMINOES.offsets = ["","","","",
+                                         "col-lg-offset-1","","","col-lg-offset-2",
+                                         "","col-lg-offset-1","",""];
