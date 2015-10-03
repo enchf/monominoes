@@ -24,3 +24,16 @@ QUnit.test("Append util function", function(assert) {
   
   Komunalne.test.execute(suite, Monominoes.util.append, new Komunalne.helper.Method(assert.equal,assert));
 });
+
+QUnit.test("Path lookup function", function(assert) {
+  var obj = { "a": 1, "b": [1,2,3], "c": "str", "d": { "e": "e", "f": { "g": false }, "h": true }, "i": -1 };
+  var suite = new Komunalne.test.Suite();
+  
+  suite.add([obj,"a"],1,"Test simple path ['a']");
+  suite.add([obj,"d.e"],"e","Test one depth ['d.e']");
+  suite.add([obj,"d.f.g"],false,"Test two depth ['d.f.g']");
+  suite.add([obj,"d.i.f"],null,"Test unreachable path === null");
+  suite.add([obj,"a.b"],null,"Test try to go deep into a non object");
+  
+  Komunalne.test.execute(suite,Monominoes.util.path,new Komunalne.helper.Method(assert.strictEqual,assert)); 
+});

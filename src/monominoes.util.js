@@ -22,3 +22,25 @@ Monominoes.util.format = function() {
 Monominoes.util.append = function(str,app,sep) { 
   return ((str||"") + (sep||" ") + (app||"")).trim();
 };
+
+/**
+ * Lookup in obj for the dot-separated path element.
+ * If at some point the current reference is null, the result is null.
+ * Pass an empty string as 'path' argument to return 'obj' itself.
+ * @param obj The object to lookup.
+ * @param path Dot-separated path reference ("a.b.c...")
+ */
+Monominoes.util.path = function(obj,path) {
+  if (path === "") return obj;
+  var paths = path.split(".");
+  var el = obj;
+  for (var p in paths) {
+    if (typeof el === "object" && el[paths[p]] !== undefined) {
+      el = el[paths[p]]; 
+    } else { 
+      el = null;
+      break;
+    }
+  }
+  return el;
+};
