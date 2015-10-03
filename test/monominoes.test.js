@@ -10,17 +10,17 @@ QUnit.test("Monominoes Arguments", function(assert) {
 });
 
 QUnit.test("Append util function", function(assert) {
-  var cases = [];
+  var suite = new Komunalne.test.Suite();
   
-  cases.push({ "args": [], "expected": "", "msg": "Call to append without arguments" });
-  cases.push({ "args": [""], "expected": "", "msg": "Call to append with empty string" });
-  cases.push({ "args": ["Str"], "expected": "Str", "msg": "Call to append with single string" });
-  cases.push({ "args": ["A","B"], "expected": "A B", "msg": "Call to append with two strings" });
-  cases.push({ "args": ["A","B","C"], "expected": "ACB", "msg": "Call to append with three strings" });
-  cases.push({ "args": ["A",null], "expected": "A", "msg": "Append null to string" });
-  cases.push({ "args": ["A",null,"C"], "expected": "AC", "msg": "Append null with separator" });
-  cases.push({ "args": [null,"B"], "expected": "B", "msg": "Append string to null" });
-  cases.push({ "args": [null,"B","C"], "expected": "CB", "msg": "Append string to null with separator" });
+  suite.add([],"","Call to append without arguments");
+  suite.add([""],"","Call to append with empty string");
+  suite.add(["Str"],"Str","Call to append with single string");
+  suite.add(["A","B"],"A B","Call to append with two strings");
+  suite.add(["A","B","C"],"ACB","Call to append with three strings");
+  suite.add(["A",null],"A","Append null to string");
+  suite.add(["A",null,"C"],"AC","Append null with separator");
+  suite.add([null,"B"],"B","Append string to null");
+  suite.add([null,"B","C"],"CB","Append string to null with separator");
   
-  Komunalne.test.execute(cases, Monominoes.util.append, { "fn": assert.equal, "scope": assert });
+  Komunalne.test.execute(suite, Monominoes.util.append, new Komunalne.helper.Method(assert.equal,assert));
 });
