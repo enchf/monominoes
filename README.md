@@ -21,7 +21,6 @@ The quality assurance testing is supported by QUnit.
 * jQuery (api.jquery.com)
 * jQuery validator (jqueryvalidation.org)
 * Bootstrap (getbootstrap.com)
-* Underscore.js (underscorejs.org)
 * Komunalne.js (github.com/enchf/komunalne.js)
 
 ## Directory structure:

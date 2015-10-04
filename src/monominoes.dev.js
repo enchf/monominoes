@@ -1,18 +1,14 @@
 /**
- * Monominoes Init file.
- * Creates Monominoes object and "packages" properties.
- * All Monominoes packages should be created here.
+ * Monominoes definition.
+ * Modules:
+ * .util: Common util functions used in renderers.
+ * .tags: HTML tags objects.
+ * .renders: Base renders.
  */
-
 function Monominoes() {}
 Monominoes.util = {};
 Monominoes.tags = {};
 Monominoes.renders = {};
-
-/**
- * Monominoes Utils.
- * Defines common util functions used in renderers.
- */
 
 /**
  * Placeholder replacer formatter, replica from jquery.validator.format.
@@ -21,3 +17,11 @@ Monominoes.renders = {};
 Monominoes.util.format = function() { 
   return $.validator.format.apply(null,arguments);
 };
+
+/**
+ * Returns what the first argument passed.
+ * @param x Argument to be returned as it is.
+ */
+Monominoes.util.self = function(x) { return x; };
+
+
