@@ -24,6 +24,6 @@ Monominoes.Tag.isSimple = function(tag) { return Monominoes.Tag.selfclose.indexO
 (function() {
   var tags = Monominoes.Tag.all;
   for(var i in tags) {
-    Monominoes.tags[tags[i].toUpperCase()] = new Tag(tags[i],Monominoes.Tag.isSimple(tags[i]));
+    Monominoes.tags[tags[i].toUpperCase()] = new Monominoes.Tag(tags[i],Monominoes.Tag.isSimple(tags[i]));
   }
 })();

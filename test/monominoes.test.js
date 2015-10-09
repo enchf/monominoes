@@ -7,6 +7,7 @@ QUnit.test("Monominoes Arguments", function(assert) {
   assert.ok(Monominoes.util,"Monominoes util container defined");
   assert.ok(Monominoes.tags,"Monominoes tags container defined");
   assert.ok(Monominoes.renders,"Monominoes renders container defined");
+  assert.ok(Monominoes.Tag,"Monominoes Tag class defined");
 });
 
 QUnit.test("Concrete method from util", function(assert) {
