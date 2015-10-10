@@ -52,8 +52,8 @@ QUnit.test("Tag class definition", function(assert) {
   custom = new Monominoes.Tag("foo");
   customSimple = new Monominoes.Tag("roo",true);
   
-  assert.notOk(tag.simple,"H1 tag is recognized as a not self-close tag");
-  assert.ok(simple.simple,"BR tag is recognized as a self-close tag");
+  assert.strictEqual(tag.simple,false,"H1 tag is recognized as a not self-close tag");
+  assert.strictEqual(simple.simple,true,"BR tag is recognized as a self-close tag");
   assert.notOk(custom.simple,"Declared not self-close tag");
   assert.ok(customSimple.simple,"Declared self-close tag");
   
