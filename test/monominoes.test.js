@@ -26,12 +26,24 @@ QUnit.test("Concrete method from util", function(assert) {
 });
 
 QUnit.test("Tag class definition", function(assert) {
-  var tag,simple;
-  var custom,customSimple;
   var Tag = Monominoes.Tag;
-  var f = function(simple) { 
-    return function(tag) { assert.strictEqual(Monominoes.Tag.isSimple(tag),simple,"Self-close definition for " + tag); };
-  };
+  assert.ok(Monominoes.Tag,"Monominoes Tag class defined");
+  assert.ok(Komunalne.util.isArray(Monominoes.Tag.content),"Content tags list");
+  assert.ok(Komunalne.util.isArray(Monominoes.Tag.inline),"Inline tags list");
+  assert.ok(Komunalne.util.isArray(Monominoes.Tag.text),"Text tags list");
+  assert.ok(Komunalne.util.isArray(Monominoes.Tag.embed),"Embed tags list");
+  assert.ok(Komunalne.util.isArray(Monominoes.Tag.form),"Form tags list");
+  assert.ok(Komunalne.util.isArray(Monominoes.Tag.noend),"No-end tags lists");
+  assert.ok(Komunalne.util.isArray(Monominoes.Tag.all),"All tags array");
+  assert.equal(Monominoes.Tag.all.length,
+               Tag.content.length + Tag.inline.length + Tag.text.length + Tag.embed.length + Tag.form.length,
+               "All tags contained in Monominoes.Tag.all");
+});
+
+QUnit.test("Tag class methods", function(assert) {
+  var Tag = Monominoes.Tag;
+  var tag,simple,custom,customSimple;
+  var iterator,i,end;
   var indicator = 0;
   var fn = function() { indicator++; };
   var clasz = "fake";
@@ -42,25 +54,23 @@ QUnit.test("Tag class definition", function(assert) {
   var config = { "class": clasz, "attrs": attrs, "events": events, "style": style };
   var item;
   
-  assert.ok(Monominoes.Tag,"Monominoes Tag class defined");
-  assert.ok(Monominoes.Tag.all,"All tags array");
-  assert.equal(Monominoes.Tag.all.length,
-               Tag.text.length + Tag.list.length + Tag.item.length + Tag.selfclose.length,
-               "All tags contained in Monominoes.Tag.all");
   tag = new Monominoes.Tag("h1");
   simple = new Monominoes.Tag("br");
   custom = new Monominoes.Tag("foo");
   customSimple = new Monominoes.Tag("roo",true);
   
-  assert.strictEqual(tag.simple,false,"H1 tag is recognized as a not self-close tag");
-  assert.strictEqual(simple.simple,true,"BR tag is recognized as a self-close tag");
-  assert.notOk(custom.simple,"Declared not self-close tag");
-  assert.ok(customSimple.simple,"Declared self-close tag");
+  assert.strictEqual(tag.requireEnd,true,"H1 tag is recognized as a not self-close tag");
+  assert.strictEqual(simple.requireEnd,false,"BR tag is recognized as a self-close tag");
+  assert.ok(custom.requireEnd,"Declared not self-close tag");
+  assert.notOk(customSimple.requireEnd,"Declared self-close tag");
   
-  Monominoes.Tag.text.forEach(f(false));
-  Monominoes.Tag.list.forEach(f(false));
-  Monominoes.Tag.item.forEach(f(false));
-  Monominoes.Tag.selfclose.forEach(f(true));
+  iterator = new Komunalne.helper.Iterator(Tag.all);
+  while (iterator.hasNext()) {
+    i = iterator.next();
+    end = !Komunalne.util.arrayContains(i,Monominoes.Tag.noend);
+    assert.strictEqual(Monominoes.Tag.requireEnd(i), end,
+                       Monominoes.util.format("End needed for tag {0} validation: {1}",i,end));
+  }
   
   item = tag.build(emptyCfg);
   assert.notOk(item.hasClass(clasz),"Tag creation without class specification");

@@ -1,12 +1,12 @@
 /**
  * Tag class definition.
  * @param name Tag name.
- * @param simple True to build as a self-closing, no-content tag. 
- *        If no flag specified, it will be determined using Monominoes.Tag.isSimple method.
+ * @param noEnd True to build as a no close empty tag. 
+ *        If no flag specified, it will be determined using Monominoes.Tag.requireEnd method.
  */
-Monominoes.Tag = function(name,simple){
+Monominoes.Tag = function(name,noEnd){
   this.name = name;
-  this.simple = simple === true || Monominoes.Tag.isSimple(name);
+  this.requireEnd = (noEnd === true) ? false : Monominoes.Tag.requireEnd(name);
   this.tag = Monominoes.util.format(this.template(),name);
 };
 
@@ -14,7 +14,7 @@ Monominoes.Tag = function(name,simple){
  * Determines the string template to use depending tag self-closability.
  */
 Monominoes.Tag.prototype.template = function() { 
-  return this.simple ? Monominoes.Tag.simple : Monominoes.Tag.full;
+  return this.requireEnd ? Monominoes.Tag.open : Monominoes.Tag.full;
 };
 
 /**
@@ -36,17 +36,20 @@ Monominoes.Tag.prototype.build = function(config) {
 };
 
 /* Statics */
-Monominoes.Tag.text = ["h1","h2","h3","h4","h5","h6","span","header","strong","i","p","pre","code"];
-Monominoes.Tag.list = ["ul","ol","li"];
-Monominoes.Tag.item = ["div","form","button","a","label"];
-Monominoes.Tag.selfclose = ["img","input","br","hr"];
-Monominoes.Tag.isSimple = function(tag) { return Komunalne.util.arrayContains(tag,this.selfclose); };
-Monominoes.Tag.simple = "<{0}>";
-Monominoes.Tag.full = Monominoes.Tag.simple + "</{0}>";
+Monominoes.Tag.content = ["address","article","header","h1","h2","h3","h4","h5","h6","nav","section"];
+Monominoes.Tag.text = ["dl","dd","div","dl","dt","hr","li","main","ol","p","pre","ul"];
+Monominoes.Tag.inline = ["a","abbr","b","br","cite","code","data","em","i",
+                         "mark","q","span","strong","sub","sup","time","u","var"];
+Monominoes.Tag.embed = ["embed","iframe","img","object"];
+Monominoes.Tag.form = ["button","form","input","label","legend","output","textarea"];
+Monominoes.Tag.noend = ["hr","br","img","input","embed"];
+Monominoes.Tag.requireEnd = function(tag) { return !Komunalne.util.arrayContains(tag,this.noend); };
+Monominoes.Tag.open = "<{0}>";
+Monominoes.Tag.full = Monominoes.Tag.open + "</{0}>";
 
 (function() {
   var Tag = Monominoes.Tag;
-  Tag.all = Komunalne.util.arrayConcat(Tag.text,Tag.list,Tag.item,Tag.selfclose);
+  Tag.all = Komunalne.util.arrayConcat(Tag.content,Tag.text,Tag.inline,Tag.embed,Tag.form);
   var tag;
   for(var i in Tag.all) {
     tag = Tag.all[i];
