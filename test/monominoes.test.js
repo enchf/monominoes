@@ -13,15 +13,18 @@ QUnit.test("Concrete method from util", function(assert) {
   var suite;
   
   suite = new Komunalne.test.Suite();
-  suite.add([function(){ return -1; }],-1,"Function returning -1 passed as argument");
-  suite.add([function(){ return this.a; },{a:1}],1,"Scope passed as argument");
-  suite.add([function(a,b) { return a+b; },null,1,2],3,"Function with arguments");
-  suite.add([function(a,b,c) { return this.d+c+a+b; },{d:4},1,2,3],10,"Function with arguments and scope");
-  suite.add(["string"],"string","Non object passed as argument");
-  suite.add(["string",{a:1},4,5],"string","Other arguments ignored if argument is a concrete object");
-  suite.add(["string",null,4,5],"string","Other arguments ignored if argument is a concrete object with scope as null");
+  suite.add({ "args": [function(){ return -1; }], "expected": -1, "msg": "Function returning -1 passed as argument" });
+  suite.add({ "args": [function(){ return this.a; },{a:1}], "expected": 1, "msg": "Scope passed as argument" });
+  suite.add({ "args": [function(a,b) { return a+b; },null,1,2], "expected": 3, "msg": "Function with arguments" });
+  suite.add({ "args": [function(a,b,c) { return this.d+c+a+b; },{d:4},1,2,3], "expected": 10,
+               "msg": "Function with arguments and scope" });
+  suite.add({ "args": ["string"], "expected": "string", "msg": "Non object passed as argument" });
+  suite.add({ "args": ["string",{a:1},4,5], "expected": "string",
+               "msg": "Other arguments ignored if argument is a concrete object" });
+  suite.add({ "args": ["string",null,4,5], "expected": "string",
+               "msg": "Other arguments ignored if argument is a concrete object with scope as null" });
   
-  suite.execute(Monominoes.util.concrete,assert.buildFor("strictEqual"));
+  suite.execute(assert.buildFor("strictEqual"),Monominoes.util.concrete);
   assert.strictEqual(Monominoes.util.concrete(),undefined,"Undefined returned if concrete is called with no arguments");
 });
 
