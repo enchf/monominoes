@@ -35,6 +35,22 @@ Monominoes.util.concrete = function(fn,scope) {
 };
 
 /**
+ * Checks if a class or an object is part of a Render hierarchical structure.
+ */
+Monominoes.util.isRender = function(obj) {
+  var is = false;
+  var seen = [];
+  while (!is && obj != null && obj.class != null) {
+    if (seen.indexOf(obj.class) >= 0) break;
+    seen.push(obj.class);
+    is = obj.class === Monominoes.Render && 
+         (obj === Monominoes.Render || Komunalne.util.isInstanceOf(obj,Monominoes.Render));
+    obj = obj.superclass;
+  }
+  return is;
+};
+
+/**
  * Tag class definition.
  * @param name Tag name.
  * @param noEnd True to build as a no close empty tag. 
@@ -115,6 +131,8 @@ Monominoes.Render.prototype.config = null;    /* Config object used to build the
 Monominoes.Render.prototype.class = Monominoes.Render; 
 Monominoes.Render.prototype.superclass = null;
 Monominoes.Render.prototype.parent = null;
+Monominoes.Render.class = Monominoes.Render;
+Monominoes.Render.superclass = null;
 
 /**
  * Render statics: Extend.
@@ -123,6 +141,7 @@ Monominoes.Render.prototype.parent = null;
  */
 Monominoes.Render.extend = function(ext) {
   var extendedType = this;
+  var type,holder;
   var constructor = function R(cfg) {
     var instance = Komunalne.util.isInstanceOf(this,R) ? this : new R();
     cfg = (cfg || {});
@@ -131,15 +150,23 @@ Monominoes.Render.extend = function(ext) {
     return instance;
   };
   
-  Komunalne.util.apply(extendedType.prototype,{ "deep": true, "into": constructor.prototype });
-  Komunalne.util.apply(ext,{ "into": constructor.prototype, "deep": true });
+  Komunalne.util.clone(extendedType.prototype,{ "deep": true, "into": constructor.prototype });
+  Komunalne.util.clone(ext,{ "into": constructor.prototype, "deep": true });
   
   constructor.extend = Monominoes.Render.extend;
   constructor.prototype.class = constructor;
   constructor.prototype.superclass = extendedType;
   constructor.class = constructor;
   constructor.superclass = extendedType;
-  // TODO: Replicate superclass defaults recursively into constructor.parent object.
+  
+  // Replicate superclass defaults recursively into constructor.parent object.
+  type = constructor;
+  holder = constructor.prototype;
+  while (type.superclass) {
+    holder.parent = Komunalne.util.clone(type.superclass.prototype.defaults, {"deep": true});
+    type = type.superclass;
+    holder = holder.parent;
+  }
   
   return constructor;
 };

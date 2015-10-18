@@ -101,3 +101,7 @@ QUnit.test("Tag class methods", function(assert) {
   item.trigger("resize");
   assert.equal(indicator,2,"Tag creation with resize event");
 });
+
+QUnit.test("Is render function",function(assert) {
+  assert.ok(Monominoes.util.isRender(Monominoes.Render),"Monominoes.Render abstract class is a Render");
+});

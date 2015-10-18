@@ -21,3 +21,19 @@ Monominoes.util.self = function(x) { return x; };
 Monominoes.util.concrete = function(fn,scope) { 
   return K.util.isFunction(fn) ? fn.apply(scope,Array.prototype.slice.call(arguments,2)) : fn; 
 };
+
+/**
+ * Checks if a class or an object is part of a Render hierarchical structure.
+ */
+Monominoes.util.isRender = function(obj) {
+  var is = false;
+  var seen = [];
+  while (!is && obj != null && obj.class != null) {
+    if (seen.indexOf(obj.class) >= 0) break;
+    seen.push(obj.class);
+    is = obj.class === Monominoes.Render && 
+         (obj === Monominoes.Render || Komunalne.util.isInstanceOf(obj,Monominoes.Render));
+    obj = obj.superclass;
+  }
+  return is;
+};
