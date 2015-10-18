@@ -20,3 +20,31 @@ Monominoes.Render.prototype.config = null;    /* Config object used to build the
 Monominoes.Render.prototype.class = Monominoes.Render; 
 Monominoes.Render.prototype.superclass = null;
 Monominoes.Render.prototype.parent = null;
+
+/**
+ * Render statics: Extend.
+ * Extends a current render, creating a new constructor object overriding its properties.
+ * It preserves the type hierarchy keeping a reference to the superclass and the prototype through super property.
+ */
+Monominoes.Render.extend = function(ext) {
+  var extendedType = this;
+  var constructor = function R(cfg) {
+    var instance = Komunalne.util.isInstanceOf(this,R) ? this : new R();
+    cfg = (cfg || {});
+    Komunalne.util.clone(instance.defaults,{ "into": cfg, "deep": true, "safe": true });
+    Komunalne.util.clone(cfg,{ "into": instance });
+    return instance;
+  };
+  
+  Komunalne.util.apply(extendedType.prototype,{ "deep": true, "into": constructor.prototype });
+  Komunalne.util.apply(ext,{ "into": constructor.prototype, "deep": true });
+  
+  constructor.extend = Monominoes.Render.extend;
+  constructor.prototype.class = constructor;
+  constructor.prototype.superclass = extendedType;
+  constructor.class = constructor;
+  constructor.superclass = extendedType;
+  // TODO: Replicate superclass defaults recursively into constructor.parent object.
+  
+  return constructor;
+};
