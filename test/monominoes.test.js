@@ -102,6 +102,31 @@ QUnit.test("Tag class methods", function(assert) {
   assert.equal(indicator,2,"Tag creation with resize event");
 });
 
+QUnit.test("Extend function", function(assert) {
+  var i = 0;
+  var ext = {
+    "render": function(parent,data) { i++; },
+    "property": { "foo": "bar" }
+  };
+  var Custom = Monominoes.Render.extend(ext);
+  var Sub = Custom.extend({ "attribute": false, "property": "path" });
+  var renders = [Custom(),new Custom({ "property": 1 })];
+  var properties = [ext.property,1];
+  var subrenders = [Sub({ "attribute": true }),new Sub()];
+  var subattrs = [true,false];
+  
+  assert.ok(Custom.extend === Monominoes.Render.extend,"Extend function copied into new class");
+  assert.ok(Monominoes.util.isRender(Custom),"Custom class tested against isRender function");
+  assert.strictEqual(Custom.class,Custom,"Class property set on class definition");
+  assert.strictEqual(Custom.superclass,Monominoes.Render,"Superclass property set on class definition");
+  
+  assert.ok(Sub.extend === Monominoes.Render.extend,"Extend function copied into extended new class");
+  assert.ok(Monominoes.util.isRender(Sub),"Extended subclass is Render too");
+  assert.strictEqual(Sub.class,Sub,"Class property set on extended subclass definition");
+  assert.strictEqual(Sub.superclass,Custom,"Superclass property set on extended subclass definition");
+  assert.strictEqual(Sub.superclass.superclass,Monominoes.Render,"Superclass superclass equal to Monominoes.Render");
+});
+
 QUnit.test("Is render function",function(assert) {
   assert.ok(Monominoes.util.isRender(Monominoes.Render),"Monominoes.Render abstract class is a Render");
 });

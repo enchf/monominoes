@@ -39,8 +39,9 @@ Monominoes.Render.extend = function(ext) {
     return instance;
   };
   
-  Komunalne.util.clone(extendedType.prototype,{ "deep": true, "into": constructor.prototype });
+  Komunalne.util.clone(extendedType.prototype,{ "into": constructor.prototype, "deep": true });
   Komunalne.util.clone(ext,{ "into": constructor.prototype, "deep": true });
+  Komunalne.util.clone(constructor.prototype,{ "into": constructor.prototype.defaults, "deep": true });
   
   constructor.extend = Monominoes.Render.extend;
   constructor.prototype.class = constructor;
