@@ -114,6 +114,7 @@ QUnit.test("Extend function", function(assert) {
   var properties = [{"property": ext.property},{"property": 1},{"attribute":true},{"attribute":false}];
   var classes = [Custom,Custom,Sub,Sub];
   var superclasses = [Monominoes.Render,Monominoes.Render,Custom,Custom];
+  var l,sc,rp,prev;
   
   assert.ok(Custom.extend === Monominoes.Render.extend,"Extend function copied into new class");
   assert.ok(Monominoes.util.isRender(Custom),"Custom class tested against isRender function");
@@ -147,6 +148,21 @@ QUnit.test("Extend function", function(assert) {
       if (m == "defaults") continue;
       assert.deepEqual(r.defaults[m],classes[k].prototype[m],"Property " + m + " against prototype in object " + k);
     }
+    
+    // Superclass defaults into parent object.
+    sc = superclasses[k];
+    rp = r.parent;
+    l = 1;
+    while (sc != null) {
+      for (var m in sc.prototype) {
+        if (m === "parent") continue;
+        assert.deepEqual(rp[m],sc.prototype[m],
+                         Monominoes.util.format("Superclass property {0} in parent object {1}, level {2}", m,k,l));
+      }
+      l++;
+      rp = rp.parent;
+      sc = sc.superclass;
+    } 
   }
 });
 
