@@ -32,31 +32,32 @@ Monominoes.Render.extend = function(ext) {
   var extendedType = this;
   var type,holder;
   var constructor = function R(cfg) {
-    var instance = Komunalne.util.isInstanceOf(this,R) ? this : new R();
-    cfg = (cfg || {});
-    instance.defaults = {};
-    Komunalne.util.clone(instance,{ "into": instance.defaults, "deep": true });
-    Komunalne.util.clone(cfg,{ "into": instance, "deep": true });
+    var instance;
+    if (Komunalne.util.isInstanceOf(this,R)) {
+      instance = this;
+      cfg = (cfg || {});
+      instance.defaults = {};
+      Komunalne.util.clone(instance,{ "into": instance.defaults, "deep": true });
+      Komunalne.util.clone(cfg,{ "into": instance, "deep": true });
+
+      // Replicate superclass defaults recursively into constructor.parent object.
+      type = instance.class;
+      holder = instance;
+      while (type.superclass) {
+        holder.parent = Komunalne.util.clone(type.superclass.prototype,{"deep": true});
+        type = type.superclass;
+        holder = holder.parent;
+      }
+    } else instance = new R(cfg);
     return instance;
   };
   
   Komunalne.util.clone(extendedType.prototype,{ "into": constructor.prototype, "deep": true });
   Komunalne.util.clone(ext,{ "into": constructor.prototype, "deep": true });
-  
   constructor.extend = Monominoes.Render.extend;
   constructor.class = constructor;
   constructor.superclass = extendedType;
   constructor.prototype.class = constructor;
   constructor.prototype.superclass = extendedType;
-  
-  /* Replicate superclass defaults recursively into constructor.parent object.
-  type = constructor;
-  holder = constructor.prototype;
-  while (type.superclass) {
-    holder.parent = Komunalne.util.clone(type.superclass.prototype.defaults, {"deep": true});
-    type = type.superclass;
-    holder = holder.parent;
-  }*/
-  
   return constructor;
 };
