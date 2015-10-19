@@ -103,28 +103,49 @@ QUnit.test("Tag class methods", function(assert) {
 });
 
 QUnit.test("Extend function", function(assert) {
-  var i = 0;
+  var i,j=0,r,k;
   var ext = {
-    "render": function(parent,data) { i++; },
+    "render": function(parent,data) { j++; },
     "property": { "foo": "bar" }
   };
   var Custom = Monominoes.Render.extend(ext);
   var Sub = Custom.extend({ "attribute": false, "property": "path" });
-  var renders = [Custom(),new Custom({ "property": 1 })];
-  var properties = [ext.property,1];
-  var subrenders = [Sub({ "attribute": true }),new Sub()];
-  var subattrs = [true,false];
+  var renders = [Custom(),new Custom({ "property": 1 }),Sub({ "attribute": true }),new Sub()];
+  var properties = [{"property": ext.property},{"property": 1},{"attribute":true},{"attribute":false}];
+  var classes = [Custom,Custom,Sub,Sub];
+  var superclasses = [Monominoes.Render,Monominoes.Render,Custom,Custom];
   
   assert.ok(Custom.extend === Monominoes.Render.extend,"Extend function copied into new class");
   assert.ok(Monominoes.util.isRender(Custom),"Custom class tested against isRender function");
   assert.strictEqual(Custom.class,Custom,"Class property set on class definition");
-  assert.strictEqual(Custom.superclass,Monominoes.Render,"Superclass property set on class definition");
+  assert.strictEqual(Custom.superclass,Monominoes.Render,"Superclass property set on class prototype");
+  assert.strictEqual(Custom.prototype.class,Custom,"Class property set on class prototype");
+  assert.strictEqual(Custom.prototype.superclass,Monominoes.Render,"Superclass property set on class prototype");
+  assert.strictEqual(Custom.prototype.defaults.class,Custom,"Custom class defaults for class are set");
+  assert.strictEqual(Custom.prototype.defaults.superclass,Monominoes.Render,
+                     "Custom class defaults for superclass are set");
   
   assert.ok(Sub.extend === Monominoes.Render.extend,"Extend function copied into extended new class");
   assert.ok(Monominoes.util.isRender(Sub),"Extended subclass is Render too");
   assert.strictEqual(Sub.class,Sub,"Class property set on extended subclass definition");
   assert.strictEqual(Sub.superclass,Custom,"Superclass property set on extended subclass definition");
   assert.strictEqual(Sub.superclass.superclass,Monominoes.Render,"Superclass superclass equal to Monominoes.Render");
+  assert.strictEqual(Sub.prototype.class,Sub,"Class property set on extended subclass prototype");
+  assert.strictEqual(Sub.prototype.superclass,Custom,"Superclass property set on extended subclass prototype");
+  assert.strictEqual(Sub.prototype.superclass.superclass,Monominoes.Render,
+                     "Superclass superclass in prototype equal to Monominoes.Render");
+  assert.strictEqual(Sub.prototype.defaults.class,Sub,"Class property set on extended subclass prototype defaults");
+  assert.strictEqual(Sub.prototype.defaults.superclass,Custom,
+                     "Superclass property set on extended subclass prototype defaults");
+  
+  i = new Komunalne.helper.Iterator(renders);
+  while (i.hasNext()) {
+    r = i.next();
+    k = i.currentKey();
+    assert.ok(Monominoes.util.isRender(r),"Check if render instance passes render test for item " + k);
+    assert.strictEqual(r.class,classes[k],"Check correct class of instance: " + classes[k].name);
+    assert.strictEqual(r.superclass,superclasses[k],"Check correct superclass of instance: " + superclasses[k].name);
+  }
 });
 
 QUnit.test("Is render function",function(assert) {
