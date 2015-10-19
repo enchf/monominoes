@@ -121,9 +121,6 @@ QUnit.test("Extend function", function(assert) {
   assert.strictEqual(Custom.superclass,Monominoes.Render,"Superclass property set on class prototype");
   assert.strictEqual(Custom.prototype.class,Custom,"Class property set on class prototype");
   assert.strictEqual(Custom.prototype.superclass,Monominoes.Render,"Superclass property set on class prototype");
-  assert.strictEqual(Custom.prototype.defaults.class,Custom,"Custom class defaults for class are set");
-  assert.strictEqual(Custom.prototype.defaults.superclass,Monominoes.Render,
-                     "Custom class defaults for superclass are set");
   
   assert.ok(Sub.extend === Monominoes.Render.extend,"Extend function copied into extended new class");
   assert.ok(Monominoes.util.isRender(Sub),"Extended subclass is Render too");
@@ -134,9 +131,6 @@ QUnit.test("Extend function", function(assert) {
   assert.strictEqual(Sub.prototype.superclass,Custom,"Superclass property set on extended subclass prototype");
   assert.strictEqual(Sub.prototype.superclass.superclass,Monominoes.Render,
                      "Superclass superclass in prototype equal to Monominoes.Render");
-  assert.strictEqual(Sub.prototype.defaults.class,Sub,"Class property set on extended subclass prototype defaults");
-  assert.strictEqual(Sub.prototype.defaults.superclass,Custom,
-                     "Superclass property set on extended subclass prototype defaults");
   
   i = new Komunalne.helper.Iterator(renders);
   while (i.hasNext()) {
