@@ -139,9 +139,19 @@ QUnit.test("Extend function", function(assert) {
     assert.ok(Monominoes.util.isRender(r),"Check if render instance passes render test for item " + k);
     assert.strictEqual(r.class,classes[k],"Check correct class of instance: " + classes[k].name);
     assert.strictEqual(r.superclass,superclasses[k],"Check correct superclass of instance: " + superclasses[k].name);
+    for (var m in properties[k]) {
+      assert.deepEqual(r[m],properties[k][m],"Property " + m + " test in object " + k);
+    }
+    assert.ok(("defaults" in r),"Defaults object created for object " + k);
+    for (var m in classes[k].prototype) {
+      if (m == "defaults") continue;
+      assert.deepEqual(r.defaults[m],classes[k].prototype[m],"Property " + m + " against prototype in object " + k);
+    }
   }
 });
 
 QUnit.test("Is render function",function(assert) {
+  var i = new Komunalne.helper.Iterator(Monominoes.renders);
   assert.ok(Monominoes.util.isRender(Monominoes.Render),"Monominoes.Render abstract class is a Render");
+  while (i.hasNext()) assert.ok(Monominoes.util.isRender(i.next()),i.currentKey() + " render against isRender test");
 });
