@@ -187,12 +187,12 @@ Monominoes.Render.prototype.redraw = function(data,key) {};
  */
 Monominoes.Render.extend = function(ext) {
   var extendedType = this;
-  var type,holder;
-  var constructor = function R(cfg) {
+  var constructor = function R() {
     var instance;
+    var type,holder;
+    var cfg = (arguments[0] || {});
     if (Komunalne.util.isInstanceOf(this,R)) {
       instance = this;
-      cfg = (cfg || {});
       instance.defaults = {};
       Komunalne.util.clone(instance,{ "into": instance.defaults, "deep": true });
       Komunalne.util.clone(cfg,{ "into": instance, "deep": true });
@@ -201,7 +201,8 @@ Monominoes.Render.extend = function(ext) {
       type = instance.class;
       holder = instance;
       while (type.superclass) {
-        holder.parent = Komunalne.util.clone(type.superclass.prototype,{"deep": true});
+        holder.parent = {};
+        Komunalne.util.clone(type.superclass.prototype,{"deep": true,"into": holder.parent});
         type = type.superclass;
         holder = holder.parent;
       }
