@@ -28,6 +28,11 @@ QUnit.test("Concrete method from util", function(assert) {
   assert.strictEqual(Monominoes.util.concrete(),undefined,"Undefined returned if concrete is called with no arguments");
 });
 
+QUnit.test("Monominoes.util.format accepts null and undefined", function(assert) {
+  assert.strictEqual(Monominoes.util.format("Test {0} {1}",null,undefined), "Test null undefined", 
+                     "Null and undefined as formatter arguments");
+});
+
 QUnit.test("Tag class definition", function(assert) {
   var Tag = Monominoes.Tag;
   assert.ok(Monominoes.Tag,"Monominoes Tag class defined");
@@ -60,11 +65,11 @@ QUnit.test("Tag class methods", function(assert) {
   tag = new Monominoes.Tag("h1");
   simple = new Monominoes.Tag("br");
   custom = new Monominoes.Tag("foo");
-  customSimple = new Monominoes.Tag("roo",true);
+  customSimple = new Monominoes.Tag({"name": "roo", "noEnd": true});
   
   assert.strictEqual(tag.requireEnd,true,"H1 tag is recognized as a not self-close tag");
   assert.strictEqual(simple.requireEnd,false,"BR tag is recognized as a self-close tag");
-  assert.ok(custom.requireEnd,"Declared not self-close tag");
+  assert.ok(custom.requireEnd,"Custom tag not explicitly set as self-close will require to be closed");
   assert.notOk(customSimple.requireEnd,"Declared self-close tag");
   
   iterator = new Komunalne.helper.Iterator(Tag.all);

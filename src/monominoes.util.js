@@ -2,7 +2,10 @@
  * Placeholder replacer formatter, replica from jquery.validator.format.
  * @see http://jqueryvalidation.org/jQuery.validator.format/
  */
-Monominoes.util.format = function() { 
+Monominoes.util.format = function() {
+  for (var i = 1; i < arguments.length; i++) {
+    if (arguments[i] == null) arguments[i] = "" + arguments[i];
+  }
   return $.validator.format.apply(null,arguments);
 };
 

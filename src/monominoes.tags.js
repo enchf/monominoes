@@ -1,14 +1,25 @@
 /**
  * Tag class definition.
- * @param name Tag name.
- * @param noEnd True to build as a no close empty tag. 
- *        If no flag specified, it will be determined using Monominoes.Tag.requireEnd method.
+ * @param config A string with the tag name or a configuration object with the following properties:
+ * - name (mandatory):  Tag name.
+ * - noend (optional): True to build as a no close empty tag, otherwise is determined using Monominoes.Tag.requireEnd.
+ * - defaultcss (optional): Default css class name.
  */
-Monominoes.Tag = function(name,noEnd){
-  this.name = name;
-  this.requireEnd = (noEnd === true) ? false : Monominoes.Tag.requireEnd(name);
-  this.tag = Monominoes.util.format(this.template(),name);
+Monominoes.Tag = function(cfg) {
+  if (Komunalne.util.isInstanceOf(cfg,"string")) {
+    this.name = cfg;
+    this.requireEnd = Monominoes.Tag.requireEnd(cfg);
+  } else if (cfg != null && Komunalne.util.isInstanceOf(cfg,"object")) {
+    if (!("name" in cfg)) throw Monominoes.Tag.missingName;
+    this.name = cfg.name;
+    this.requireEnd = (cfg.noEnd === true) ? false : Monominoes.Tag.requireEnd(cfg.name);
+    this.defaultcss = cfg.defaultcss;
+  } else throw Monominoes.util.format(Monominoes.Tag.invalidArguments,((cfg == null) ? cfg : typeof cfg));
+  this.tag = Monominoes.util.format(this.template(),this.name);
 };
+
+Monominoes.Tag.invalidArguments = "Invalid constructor argument type: {0}";
+Monominoes.Tag.missingName = "Missing name in tag configuration";
 
 /**
  * Determines the string template to use depending tag self-closability.

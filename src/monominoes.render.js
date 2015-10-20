@@ -8,7 +8,7 @@ Monominoes.Render.prototype.item = null;      /* The underlying jQuery object pr
 Monominoes.Render.prototype.data = null;      /* The data used to produce the render object */
 Monominoes.Render.prototype.iterable = false; /* True if the children elements are produced from iterable data */
 Monominoes.Render.prototype.children = null;  /* Underlying array of Renders of the children items */
-Monominoes.Render.prototype.defaults = null;    /* Default configuration object */
+Monominoes.Render.prototype.defaults = null;  /* Default configuration object */
 Monominoes.Render.prototype.config = null;    /* Config object used to build the render. */
 
 /**
@@ -22,6 +22,38 @@ Monominoes.Render.prototype.superclass = null;
 Monominoes.Render.prototype.parent = null;
 Monominoes.Render.class = Monominoes.Render;
 Monominoes.Render.superclass = null;
+
+/* Render Functions definition, overridable at extension point, and available in defaults and parent objects */
+
+/**
+ * Build item function. Mandatory to be overriden if not defined yet.
+ * Takes the constructor configuration and builds the inner object, returning it.
+ * It is limited to only create the underlying render object, not its children or the attachment to its container.
+ */
+Monominoes.Render.prototype.buildItem = function(config) { return null; }; 
+
+/**
+ * Renders the object. Takes care of the render children, and its attachment to the container object.
+ * @param container Container object. Can be any of the following types:
+ * - string: Used as a jQuery selector, creating a jQuery object from it and used as container.
+ * - jQuery object: Used directly as the inner render item container.
+ * - DOM Object: Transformed to a jQuery object to be used as the container.
+ * - Render Object: If the function detects it is a Render, 
+ * - Otherwise, render function ignores the parameter.
+ * @param data Data to be used during the render. Can be any type of object.
+ * @return Returns the Render object itself.
+ */
+Monominoes.Render.prototype.render = function(container,data) {
+  return this;
+};
+
+/**
+ * Redraws the inner produced objects using new data. 
+ * Takes care of removing from the DOM the existing objects and mantains the same parent object.
+ * @param data Data to be used to redraw the object.
+ * @param key (optional) The key of the children render to be updated, remaining the rest intact.
+ */
+Monominoes.Render.prototype.redraw = function(data,key) {};
 
 /**
  * Render statics: Extend.
@@ -61,3 +93,23 @@ Monominoes.Render.extend = function(ext) {
   constructor.prototype.superclass = extendedType;
   return constructor;
 };
+
+/* Tag renderers */
+Monominoes.renders.TAG = Monominoes.Render.extend({
+  "tag": null, // To be overriden by concrete Tag render definition.
+  "def": null, // Object containing Tag configuration as per defined in Monominoes.Tag.
+  "buildItem": function(config) {
+    return this.tag.build(config.def);
+  }
+});
+
+(function() {
+  var tag;
+  for (var t in Monominoes.tags) {
+    tag = Monominoes.tags[t];
+    Monominoes.renders[t] = Monominoes.renders.TAG.extend({
+      "tag": tag,
+      "css": tag.defaultcss
+    });
+  }
+})();
