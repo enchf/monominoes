@@ -187,10 +187,10 @@ Monominoes.Render.prototype.redraw = function(data,key) {};
  */
 Monominoes.Render.extend = function(ext) {
   var extendedType = this;
-  var constructor = function R() {
+  var constructor = function R(cfg) {
     var instance;
     var type,holder;
-    var cfg = (arguments[0] || {});
+    cfg = (cfg || {});
     if (Komunalne.util.isInstanceOf(this,R)) {
       instance = this;
       instance.defaults = {};
