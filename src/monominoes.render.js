@@ -71,6 +71,7 @@ Monominoes.Render.extend = function(ext) {
       instance.defaults = {};
       Komunalne.util.clone(instance,{ "into": instance.defaults, "deep": true });
       Komunalne.util.clone(cfg,{ "into": instance, "deep": true });
+      instance.config = cfg;
 
       // Replicate superclass defaults recursively into constructor.parent object.
       type = instance.class;
