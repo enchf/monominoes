@@ -4,13 +4,16 @@
  * iterative definition of sub-elements.
  */
 Monominoes.Render = function(){};
-Monominoes.Render.prototype.path = null;      /* The path to be used to get the rendered data */
-Monominoes.Render.prototype.item = null;      /* The underlying jQuery object produced by the render */
 Monominoes.Render.prototype.data = null;      /* The data used to produce the render object */
+Monominoes.Render.prototype.path = null;      /* The path to be used to get the rendered data */
 Monominoes.Render.prototype.iterable = false; /* True if the children elements are produced from iterable data */
+Monominoes.Render.prototype.item = null;      /* The underlying jQuery object produced by the render */
 Monominoes.Render.prototype.children = null;  /* Underlying array of Renders of the children items */
 Monominoes.Render.prototype.defaults = null;  /* Default configuration object */
 Monominoes.Render.prototype.config = null;    /* Config object used to build the render. */
+Monominoes.Render.prototype.layout = null;    /* Configuration of the sub-elements */
+Monominoes.Render.prototype.rules = null;     /* Rules to assign to key-mapped elements */
+Monominoes.Render.prototype.key = null;       /* Internal sub-render id */
 
 /**
  * Render Type hierarchy definition:
