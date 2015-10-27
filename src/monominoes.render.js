@@ -4,6 +4,7 @@
  * iterative definition of sub-elements.
  */
 Monominoes.Render = function(){};
+Monominoes.Render.prototype.path = null;      /* The path to be used to get the rendered data */
 Monominoes.Render.prototype.item = null;      /* The underlying jQuery object produced by the render */
 Monominoes.Render.prototype.data = null;      /* The data used to produce the render object */
 Monominoes.Render.prototype.iterable = false; /* True if the children elements are produced from iterable data */
@@ -34,16 +35,20 @@ Monominoes.Render.prototype.buildItem = function(config) { return null; };
 
 /**
  * Renders the object. Takes care of the render children, and its attachment to the container object.
+ * @param data Data to be used during the render. Can be any type of object.
  * @param container Container object. Can be any of the following types:
  * - string: Used as a jQuery selector, creating a jQuery object from it and used as container.
  * - jQuery object: Used directly as the inner render item container.
  * - DOM Object: Transformed to a jQuery object to be used as the container.
  * - Render Object: If the function detects it is a Render, 
  * - Otherwise, render function ignores the parameter.
- * @param data Data to be used during the render. Can be any type of object.
  * @return Returns the Render object itself.
  */
-Monominoes.Render.prototype.render = function(container,data) {
+Monominoes.Render.prototype.render = function(data,container) {
+  var _container = Monominoes.Render.getItemFrom(container);
+  var _data = this.path ? Komunalne.util.path(data,this.path) : data;
+  this.item = this.buildItem(this.config);
+  
   return this;
 };
 
@@ -60,6 +65,23 @@ Monominoes.Render.prototype.redraw = function(data,key) {};
  * Validates that the render argument is one of the accepted types defined in M.R.render function.
  */
 Monominoes.Render.prototype.append = function(render) {};
+
+/**
+ * Gets a jQuery object using the following rules, regarding the type of 'object' argument:
+ * - String: Used as a selector, retrieving the first object selected, using jQuery $ function.
+ * - HTML String: Used to build a newly HTML jQuery object, using jQuery $ function.
+ * - jQuery Object: Returned itself.
+ * - DOM Element: Creates a jQuery object from it.
+ * - Render: Returns the inner Render jQuery item.
+ * - Otherwise: Returns null.
+ */
+Monominoes.Render.getItemFrom = function(object) {
+  var aux;
+  return (Komunalne.util.isInstanceOf(object,"string")) ? ((aux = $(object)).length > 0 ? $(aux).get(0) : null) :
+         (Komunalne.util.isInstanceOf(object,jQuery)) ? object :
+         (object instanceof Element) ? $(object) :
+         (Monominoes.util.isRender(object)) ? object.item : null;
+};
 
 /**
  * Render statics: Extend.
