@@ -103,8 +103,10 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
   "defaultcss": "", // Default class. Used if no class is specified in config.def.class.
   "extracss": "", // Extra class. Used to append a class without removing the default one.
   "buildItem": function(config) {
-    var tagcfg = Komunalne.util.clone(config.def || {});
-    tagcfg.class = Komunalne.util.append((config.def.class || config.defaultcss),config.extracss);
+    config = config || {};
+    config.def = config.def || {};
+    var tagcfg = Komunalne.util.clone(config.def);
+    tagcfg.class = Komunalne.util.append((config.def.class || this.defaultcss),config.extracss);
     return this.tag.build(tagcfg);
   }
 });

@@ -189,8 +189,9 @@ QUnit.test("Is render function",function(assert) {
   while (i.hasNext()) assert.ok(Monominoes.util.isRender(i.next()),i.currentKey() + " render against isRender test");
 });
 
-QUnit.test("Tag renders",function(assert) {
-  var c,r;
+QUnit.test("Tag renders default settings",function(assert) {
+  var c,r,t;
+  var clazz;
   var i = new Komunalne.helper.Iterator(Monominoes.renders);
   while(i.hasNext()) {
     c = i.next();
@@ -198,7 +199,10 @@ QUnit.test("Tag renders",function(assert) {
       r = c();
       assert.ok(r.tag === c.prototype.tag,"Correct Tag builder is set on render " + i.currentKey());
       if (r.tag != null) {
-        assert.ok(r.defaultcss === "monominoes-" + c.prototype.tag.name,"Default css is set properly " + r.defaultcss);
+        t = r.buildItem();
+        clazz = "monominoes-" + c.prototype.tag.name;
+        assert.ok(r.defaultcss === clazz,"Default css is set properly " + r.defaultcss);
+        assert.ok(t.hasClass(clazz),"Class " + clazz + " is set when building the item " + r.tag.name);
       }
     }
   }
