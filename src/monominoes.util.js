@@ -27,15 +27,22 @@ Monominoes.util.concrete = function(fn,scope) {
 
 /**
  * Checks if a class or an object is part of a Render hierarchical structure.
+ * @param obj Object to compare, either a Render constructor or instance.
+ * @param type (optional) Render constructor to compare against. Checks if the constructor/instance is a subclass
+ * or instance of a subclass of this type. The type is itself validated to be a Render constructor.
  */
-Monominoes.util.isRender = function(obj) {
+Monominoes.util.isRender = function(obj,type) {
   var is = false;
   var seen = [];
+  var Type = (type || Monominoes.Render);
+  if (Type !== Monominoes.Render) {
+    if (!Monominoes.util.isRender(Type)) throw "Type comparison against a non Render type";
+  }
   while (!is && obj != null && obj.class != null) {
     if (seen.indexOf(obj.class) >= 0) break;
     seen.push(obj.class);
-    is = obj.class === Monominoes.Render && 
-         (obj === Monominoes.Render || Komunalne.util.isInstanceOf(obj,Monominoes.Render));
+    is = obj.class === Type && 
+         (obj === Type || Komunalne.util.isInstanceOf(obj,Type));
     obj = obj.superclass;
   }
   return is;

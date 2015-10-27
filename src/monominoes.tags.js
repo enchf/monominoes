@@ -3,7 +3,6 @@
  * @param config A string with the tag name or a configuration object with the following properties:
  * - name (mandatory):  Tag name.
  * - noend (optional): True to build as a no close empty tag, otherwise is determined using Monominoes.Tag.requireEnd.
- * - defaultcss (optional): Default css class name.
  */
 Monominoes.Tag = function(cfg) {
   if (Komunalne.util.isInstanceOf(cfg,"string")) {
@@ -13,7 +12,6 @@ Monominoes.Tag = function(cfg) {
     if (!("name" in cfg)) throw Monominoes.Tag.missingName;
     this.name = cfg.name;
     this.requireEnd = (cfg.noEnd === true) ? false : Monominoes.Tag.requireEnd(cfg.name);
-    this.defaultcss = cfg.defaultcss;
   } else throw Monominoes.util.format(Monominoes.Tag.invalidArguments,((cfg == null) ? cfg : typeof cfg));
   this.tag = Monominoes.util.format(this.template(),this.name);
 };

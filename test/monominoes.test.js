@@ -188,3 +188,18 @@ QUnit.test("Is render function",function(assert) {
   assert.ok(Monominoes.util.isRender(Monominoes.Render),"Monominoes.Render abstract class is a Render");
   while (i.hasNext()) assert.ok(Monominoes.util.isRender(i.next()),i.currentKey() + " render against isRender test");
 });
+
+QUnit.test("Tag renders",function(assert) {
+  var c,r;
+  var i = new Komunalne.helper.Iterator(Monominoes.renders);
+  while(i.hasNext()) {
+    c = i.next();
+    if (Monominoes.util.isRender(c,Monominoes.renders.TAG)) {
+      r = c();
+      assert.ok(r.tag === c.prototype.tag,"Correct Tag builder is set on render " + i.currentKey());
+      if (r.tag != null) {
+        assert.ok(r.defaultcss === "monominoes-" + c.prototype.tag.name,"Default css is set properly " + r.defaultcss);
+      }
+    }
+  }
+});

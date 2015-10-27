@@ -100,8 +100,12 @@ Monominoes.Render.extend = function(ext) {
 Monominoes.renders.TAG = Monominoes.Render.extend({
   "tag": null, // To be overriden by concrete Tag render definition.
   "def": null, // Object containing Tag configuration as per defined in Monominoes.Tag.
+  "defaultcss": "", // Default class. Used if no class is specified in config.def.class.
+  "extracss": "", // Extra class. Used to append a class without removing the default one.
   "buildItem": function(config) {
-    return this.tag.build(config.def);
+    var tagcfg = Komunalne.util.clone(config.def || {});
+    tagcfg.class = Komunalne.util.append((config.def.class || config.defaultcss),config.extracss);
+    return this.tag.build(tagcfg);
   }
 });
 
@@ -111,7 +115,7 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
     tag = Monominoes.tags[t];
     Monominoes.renders[t] = Monominoes.renders.TAG.extend({
       "tag": tag,
-      "css": tag.defaultcss
+      "defaultcss": Monominoes.util.format("monominoes-{0}",tag.name)
     });
   }
 })();

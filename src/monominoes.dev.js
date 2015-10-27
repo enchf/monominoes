@@ -39,15 +39,22 @@ Monominoes.util.concrete = function(fn,scope) {
 
 /**
  * Checks if a class or an object is part of a Render hierarchical structure.
+ * @param obj Object to compare, either a Render constructor or instance.
+ * @param type (optional) Render constructor to compare against. Checks if the constructor/instance is a subclass
+ * or instance of a subclass of this type. The type is itself validated to be a Render constructor.
  */
-Monominoes.util.isRender = function(obj) {
+Monominoes.util.isRender = function(obj,type) {
   var is = false;
   var seen = [];
+  var Type = (type || Monominoes.Render);
+  if (Type !== Monominoes.Render) {
+    if (!Monominoes.util.isRender(Type)) throw "Type comparison against a non Render type";
+  }
   while (!is && obj != null && obj.class != null) {
     if (seen.indexOf(obj.class) >= 0) break;
     seen.push(obj.class);
-    is = obj.class === Monominoes.Render && 
-         (obj === Monominoes.Render || Komunalne.util.isInstanceOf(obj,Monominoes.Render));
+    is = obj.class === Type && 
+         (obj === Type || Komunalne.util.isInstanceOf(obj,Type));
     obj = obj.superclass;
   }
   return is;
@@ -58,7 +65,6 @@ Monominoes.util.isRender = function(obj) {
  * @param config A string with the tag name or a configuration object with the following properties:
  * - name (mandatory):  Tag name.
  * - noend (optional): True to build as a no close empty tag, otherwise is determined using Monominoes.Tag.requireEnd.
- * - defaultcss (optional): Default css class name.
  */
 Monominoes.Tag = function(cfg) {
   if (Komunalne.util.isInstanceOf(cfg,"string")) {
@@ -68,7 +74,6 @@ Monominoes.Tag = function(cfg) {
     if (!("name" in cfg)) throw Monominoes.Tag.missingName;
     this.name = cfg.name;
     this.requireEnd = (cfg.noEnd === true) ? false : Monominoes.Tag.requireEnd(cfg.name);
-    this.defaultcss = cfg.defaultcss;
   } else throw Monominoes.util.format(Monominoes.Tag.invalidArguments,((cfg == null) ? cfg : typeof cfg));
   this.tag = Monominoes.util.format(this.template(),this.name);
 };
@@ -225,8 +230,12 @@ Monominoes.Render.extend = function(ext) {
 Monominoes.renders.TAG = Monominoes.Render.extend({
   "tag": null, // To be overriden by concrete Tag render definition.
   "def": null, // Object containing Tag configuration as per defined in Monominoes.Tag.
+  "defaultcss": "", // Default class. Used if no class is specified in config.def.class.
+  "extracss": "", // Extra class. Used to append a class without removing the default one.
   "buildItem": function(config) {
-    return this.tag.build(config.def);
+    var tagcfg = Komunalne.util.clone(config.def || {});
+    tagcfg.class = Komunalne.util.append((config.def.class || config.defaultcss),config.extracss);
+    return this.tag.build(tagcfg);
   }
 });
 
@@ -236,7 +245,7 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
     tag = Monominoes.tags[t];
     Monominoes.renders[t] = Monominoes.renders.TAG.extend({
       "tag": tag,
-      "css": tag.defaultcss
+      "defaultcss": Monominoes.util.format("monominoes-{0}",tag.name)
     });
   }
 })();
