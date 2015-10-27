@@ -198,6 +198,8 @@ QUnit.test("Tag renders default settings",function(assert) {
     if (Monominoes.util.isRender(c,Monominoes.renders.TAG)) {
       r = c();
       assert.ok(r.tag === c.prototype.tag,"Correct Tag builder is set on render " + i.currentKey());
+      assert.ok(Monominoes.util.isRender(r),"Tag render instance is a Render");
+      assert.ok(Monominoes.util.isRender(r,Monominoes.renders.TAG),"Tag render is a TAG Render instance");
       if (r.tag != null) {
         t = r.buildItem();
         clazz = "monominoes-" + c.prototype.tag.name;
@@ -205,5 +207,40 @@ QUnit.test("Tag renders default settings",function(assert) {
         assert.ok(t.hasClass(clazz),"Class " + clazz + " is set when building the item " + r.tag.name);
       }
     }
+  }
+});
+
+QUnit.test("Tag render creation and property validation", function(assert) {
+  var c,r,s;
+  var i = new Komunalne.helper.Iterator(Monominoes.renders);
+  var count = 0,msg;
+  var fn = function() { count++; };
+  while(i.hasNext()) {
+    c = i.next();
+    if (c === Monominoes.renders.TAG || !Monominoes.util.isRender(c,Monominoes.renders.TAG)) continue;
+    r = c({ 
+      "extracss": "fake-css", 
+      "def": {
+        "attrs": { "id": "id-" + count },
+        "events": { "click": fn }
+      }
+    });
+    s = c({
+      "def": {
+        "class": "custom-class",
+        "style": { "color": "black" }
+      }
+    });
+    msg = "Render Tag " + i.currentKey();
+    assert.strictEqual(r.class,c,"Class correctly set on " + msg);
+    assert.strictEqual(r.superclass,Monominoes.renders.TAG,"Superclass is TAG for " + msg);
+    assert.strictEqual(s.class,c,"Class correctly set on " + msg);
+    assert.strictEqual(s.superclass,Monominoes.renders.TAG,"Superclass is TAG for " + msg);
+    assert.strictEqual(r.tag,Monominoes.tags[i.currentKey()],"Tag builder object is assigned to instance for " + msg);
+    assert.strictEqual(s.tag,Monominoes.tags[i.currentKey()],"Tag builder object is assigned to instance for " + msg);
+    assert.strictEqual(r.defaults.defaultcss,"monominoes-" + r.tag.name,"Default class set in defaults for " + msg);
+    assert.strictEqual(s.defaults.defaultcss,"monominoes-" + s.tag.name,"Default class set in defaults for " + msg);
+    //assert.ok(r.item,"Validate inner item object creation for " + msg);
+    //assert.ok(s.item,"Validate inner item object creation for " + msg);
   }
 });

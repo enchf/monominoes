@@ -56,6 +56,12 @@ Monominoes.Render.prototype.render = function(container,data) {
 Monominoes.Render.prototype.redraw = function(data,key) {};
 
 /**
+ * Appends a render to the children object.
+ * Validates that the render argument is one of the accepted types defined in M.R.render function.
+ */
+Monominoes.Render.prototype.append = function(render) {};
+
+/**
  * Render statics: Extend.
  * Extends a current render, creating a new constructor object overriding its properties.
  * It preserves the type hierarchy keeping a reference to the superclass and the prototype through super property.
@@ -100,8 +106,8 @@ Monominoes.Render.extend = function(ext) {
 Monominoes.renders.TAG = Monominoes.Render.extend({
   "tag": null, // To be overriden by concrete Tag render definition.
   "def": null, // Object containing Tag configuration as per defined in Monominoes.Tag.
-  "defaultcss": "", // Default class. Used if no class is specified in config.def.class.
-  "extracss": "", // Extra class. Used to append a class without removing the default one.
+  "defaultcss": null, // Default class. Used if no class is specified in config.def.class.
+  "extracss": null, // Extra class. Used to append a class without removing the default one.
   "buildItem": function(config) {
     config = config || {};
     config.def = config.def || {};
