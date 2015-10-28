@@ -74,7 +74,8 @@ Monominoes.Render.prototype.append = function(render) {};
  */
 Monominoes.Render.prototype.init = function(cfg) {
   cfg = (cfg || {});
-  this.populateDefaults(cfg);
+  this.populateDefaults();
+  this.applyConfig(cfg);
   this.buildParent();
   return this;
 };
@@ -82,16 +83,23 @@ Monominoes.Render.prototype.init = function(cfg) {
 /**
  * Creates the defaults object, holding the original prototype defined for the Render.
  */
-Monominoes.Render.prototype.populateDefaults = function(cfg) {
-  cfg = (cfg || {});
+Monominoes.Render.prototype.populateDefaults = function() {
   this.defaults = {};
   Komunalne.util.clone(this,{ "into": this.defaults, "deep": true });
+};
+
+/**
+ * Applies the instance configuration object.
+ * Overridable to apply custom rules for overriden properties.
+ */
+Monominoes.Render.prototype.applyConfig = function(cfg) {
+  cfg = (cfg || {});
   Komunalne.util.clone(cfg,{ "into": this, "deep": true });
   this.config = cfg;
 };
 
 /**
- * Replicate superclass defaults recursively into constructor.parent object.
+ * Replicates superclass defaults recursively into constructor.parent object.
  */
 Monominoes.Render.prototype.buildParent = function() {
   var type,holder;
