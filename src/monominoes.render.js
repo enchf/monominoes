@@ -70,6 +70,42 @@ Monominoes.Render.prototype.redraw = function(data,key) {};
 Monominoes.Render.prototype.append = function(render) {};
 
 /**
+ * Overridable initialization function, used in constructor.
+ */
+Monominoes.Render.prototype.init = function(cfg) {
+  cfg = (cfg || {});
+  this.populateDefaults(cfg);
+  this.buildParent();
+  return this;
+};
+
+/**
+ * Creates the defaults object, holding the original prototype defined for the Render.
+ */
+Monominoes.Render.prototype.populateDefaults = function(cfg) {
+  cfg = (cfg || {});
+  this.defaults = {};
+  Komunalne.util.clone(this,{ "into": this.defaults, "deep": true });
+  Komunalne.util.clone(cfg,{ "into": this, "deep": true });
+  this.config = cfg;
+};
+
+/**
+ * Replicate superclass defaults recursively into constructor.parent object.
+ */
+Monominoes.Render.prototype.buildParent = function() {
+  var type,holder;
+  type = this.class;
+  holder = this;
+  while (type.superclass) {
+    holder.parent = {};
+    Komunalne.util.clone(type.superclass.prototype,{"deep": true,"into": holder.parent});
+    type = type.superclass;
+    holder = holder.parent;
+  }
+};
+
+/**
  * Gets a jQuery object using the following rules, regarding the type of 'object' argument:
  * - String: Used as a selector, retrieving the first object selected, using jQuery $ function.
  * - HTML String: Used to build a newly HTML jQuery object, using jQuery $ function.
@@ -94,29 +130,8 @@ Monominoes.Render.getItemFrom = function(object) {
 Monominoes.Render.extend = function(ext) {
   var extendedType = this;
   var constructor = function R(cfg) {
-    var instance;
-    var type,holder;
-    cfg = (cfg || {});
-    if (Komunalne.util.isInstanceOf(this,R)) {
-      instance = this;
-      instance.defaults = {};
-      Komunalne.util.clone(instance,{ "into": instance.defaults, "deep": true });
-      Komunalne.util.clone(cfg,{ "into": instance, "deep": true });
-      instance.config = cfg;
-
-      // Replicate superclass defaults recursively into constructor.parent object.
-      type = instance.class;
-      holder = instance;
-      while (type.superclass) {
-        holder.parent = {};
-        Komunalne.util.clone(type.superclass.prototype,{"deep": true,"into": holder.parent});
-        type = type.superclass;
-        holder = holder.parent;
-      }
-    } else instance = new R(cfg);
-    return instance;
+    return (Komunalne.util.isInstanceOf(this,R)) ? this.init(cfg) : new R(cfg);
   };
-  
   Komunalne.util.clone(extendedType.prototype,{ "into": constructor.prototype, "deep": true });
   Komunalne.util.clone(ext,{ "into": constructor.prototype, "deep": true });
   constructor.extend = Monominoes.Render.extend;
