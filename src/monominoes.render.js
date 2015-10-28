@@ -119,7 +119,28 @@ Monominoes.Render.prototype.updateData = function(data) {
  * Takes the constructor configuration and builds the inner object, returning it.
  * It is limited to only create the underlying render object, not its children or the attachment to its container.
  */
-Monominoes.Render.prototype.buildItem = function(config) { return null; }; 
+Monominoes.Render.prototype.buildItem = function(config) { 
+  throw "M.Render.buildItem should be overriden by subclass Render";
+};
+
+/**
+ * Process the layout definition, creating the children renders array with the newly instantiated sub-renders
+ * and appending children renders into the render item object.
+ */
+Monominoes.Render.prototype.processLayout = function() {
+};
+
+/**
+ * Update the key map with the sub-renders identifiers (key attribute).
+ */
+Monominoes.Render.prototype.updateKeyMap = function() {
+};
+
+/**
+ * Apply the Render rules to the underlying elements according to the rules array.
+ */
+Monominoes.Render.prototype.applyRules = function() {
+};
 
 /**
  * Redraws the inner produced objects using new data. 
