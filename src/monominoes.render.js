@@ -101,7 +101,7 @@ Monominoes.Render.prototype.render = function(data,container) {
  */
 Monominoes.Render.prototype.appendTo = function(container) {
   this.container = Monominoes.Render.getItemFrom(container);
-  this.container.append(this.item);
+  if (this.container) this.container.append(this.item);
 };
 
 /**
