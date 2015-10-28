@@ -8,6 +8,7 @@ Monominoes.Render.prototype.data = null;      /* The data used to produce the re
 Monominoes.Render.prototype.path = null;      /* The path to be used to get the rendered data */
 Monominoes.Render.prototype.iterable = false; /* True if the children elements are produced from iterable data */
 Monominoes.Render.prototype.item = null;      /* The underlying jQuery object produced by the render */
+Monominoes.Render.prototype.container = null; /* Render item container, if any formally defined */
 Monominoes.Render.prototype.children = null;  /* Underlying array of Renders of the children items */
 Monominoes.Render.prototype.defaults = null;  /* Default configuration object */
 Monominoes.Render.prototype.config = null;    /* Config object used to build the render. */
@@ -28,46 +29,6 @@ Monominoes.Render.class = Monominoes.Render;
 Monominoes.Render.superclass = null;
 
 /* Render Functions definition, overridable at extension point, and available in defaults and parent objects */
-
-/**
- * Build item function. Mandatory to be overriden if not defined yet.
- * Takes the constructor configuration and builds the inner object, returning it.
- * It is limited to only create the underlying render object, not its children or the attachment to its container.
- */
-Monominoes.Render.prototype.buildItem = function(config) { return null; }; 
-
-/**
- * Renders the object. Takes care of the render children, and its attachment to the container object.
- * @param data Data to be used during the render. Can be any type of object.
- * @param container Container object. Can be any of the following types:
- * - string: Used as a jQuery selector, creating a jQuery object from it and used as container.
- * - jQuery object: Used directly as the inner render item container.
- * - DOM Object: Transformed to a jQuery object to be used as the container.
- * - Render Object: If the function detects it is a Render, 
- * - Otherwise, render function ignores the parameter.
- * @return Returns the Render object itself.
- */
-Monominoes.Render.prototype.render = function(data,container) {
-  var _container = Monominoes.Render.getItemFrom(container);
-  var _data = this.path ? Komunalne.util.path(data,this.path) : data;
-  this.item = this.buildItem(this.config);
-  
-  return this;
-};
-
-/**
- * Redraws the inner produced objects using new data. 
- * Takes care of removing from the DOM the existing objects and mantains the same parent object.
- * @param data Data to be used to redraw the object.
- * @param key (optional) The key of the children render to be updated, remaining the rest intact.
- */
-Monominoes.Render.prototype.redraw = function(data,key) {};
-
-/**
- * Appends a render to the children object.
- * Validates that the render argument is one of the accepted types defined in M.R.render function.
- */
-Monominoes.Render.prototype.append = function(render) {};
 
 /**
  * Overridable initialization function, used in constructor.
@@ -112,6 +73,71 @@ Monominoes.Render.prototype.buildParent = function() {
     holder = holder.parent;
   }
 };
+
+/**
+ * Renders the object. Takes care of the render children, and its attachment to the container object.
+ * @param data Data to be used during the render. Can be any type of object.
+ * @param container Container object. Can be any of the following types:
+ * - string: Used as a jQuery selector, creating a jQuery object from it and used as container.
+ * - jQuery object: Used directly as the inner render item container.
+ * - DOM Object: Transformed to a jQuery object to be used as the container.
+ * - Render Object: If the function detects it is a Render, 
+ * - Otherwise, render function ignores the parameter.
+ * @return Returns the Render object itself.
+ */
+Monominoes.Render.prototype.render = function(data,container) {
+  this.appendTo(container);
+  this.updateData(data);
+  this.clear();
+  this.buildItem();
+  this.processLayout();
+  this.updateKeyMap();
+  this.applyRules();
+  return this;
+};
+
+/**
+ * Appends the render to a specific container.
+ */
+Monominoes.Render.prototype.appendTo = function(container) {
+  this.container = Monominoes.Render.getItemFrom(container);
+  this.container.append(this.item);
+};
+
+/**
+ * Updates the data to be rendered.
+ * Throws an exception if the data results into null/undefined.
+ */
+Monominoes.Render.prototype.updateData = function(data) {
+  this.data = (data || this.data);
+  this.data = this.path ? Komunalne.util.path(this.data,this.path) : this.data;
+  if (this.data == null) throw "No data to render";
+};
+
+/**
+ * Build item function. Mandatory to be overriden if not defined yet.
+ * Takes the constructor configuration and builds the inner object, returning it.
+ * It is limited to only create the underlying render object, not its children or the attachment to its container.
+ */
+Monominoes.Render.prototype.buildItem = function(config) { return null; }; 
+
+/**
+ * Redraws the inner produced objects using new data. 
+ * Takes care of removing from the DOM the existing objects and mantains the same parent object.
+ * @param data Data to be used to redraw the object.
+ * @param key (optional) The key of the children render to be updated, remaining the rest intact.
+ */
+Monominoes.Render.prototype.redraw = function(data,key) {
+};
+
+/**
+ * Appends a render to the children object.
+ * Validates that the render argument is one of the accepted types defined in M.R.render function.
+ */
+Monominoes.Render.prototype.append = function(render) {
+};
+
+/** Statics **/
 
 /**
  * Gets a jQuery object using the following rules, regarding the type of 'object' argument:
