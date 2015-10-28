@@ -57,7 +57,7 @@ QUnit.test("Tag class methods", function(assert) {
   var clasz = "fake";
   var attrs = { "id": "fake", "title": "name" };
   var events = { "click": fn, "resize": fn };
-  var style = { "width": "100px", "display": "block" };
+  var style = { "width": "100px" };
   var emptyCfg = {};
   var config = { "class": clasz, "attrs": attrs, "events": events, "style": style };
   var item;
@@ -81,26 +81,24 @@ QUnit.test("Tag class methods", function(assert) {
   }
   
   item = tag.build(emptyCfg);
-  assert.notOk(item.hasClass(clasz),"Tag creation without class specification");
-  assert.notOk(item.attr("id"),"Tag creation without attributes");
-  assert.notOk(item.prop("id"),"Tag creation without attributes");
-  assert.notOk(item.attr("title"),"Tag creation without attributes");
-  assert.notOk(item.prop("title"),"Tag creation without attributes");
-  assert.equal(item.css("width"),"0px","Tag creation without css properties");
-  assert.notOk(item.css("display"),"Tag creation without css properties");
+  assert.notOk(item.hasClass(clasz),"Tag creation without class specification: class not specifed");
+  assert.notOk(item.attr("id"),"Tag creation without attributes: no id set as attribute");
+  assert.notOk(item.prop("id"),"Tag creation without attributes: no property id is set");
+  assert.notOk(item.attr("title"),"Tag creation without attributes: no title set as attribute");
+  assert.notOk(item.prop("title"),"Tag creation without attributes: no property title is set");
+  assert.equal(item.css("width"),"0px","Tag creation without css properties: no width set");
   item.trigger("click");
   assert.equal(indicator,0,"Tag creation without click event");
   item.trigger("resize");
   assert.equal(indicator,0,"Tag creation without resize event");
   
   item = tag.build(config);
-  assert.ok(item.hasClass(clasz),"Tag creation with class specification");
-  assert.ok(item.attr("id"),"Tag creation with attributes");
-  assert.equal(item.prop("id"),"fake","Tag creation with attributes");
-  assert.ok(item.attr("title"),"Tag creation with attributes");
-  assert.equal(item.prop("title"),"name","Tag creation with attributes");
-  assert.equal(item.css("width"),"100px","Tag creation with css properties");
-  assert.equal(item.css("display"),"block","Tag creation with css properties");
+  assert.ok(item.hasClass(clasz),"Tag creation with class specification: have class " + clasz);
+  assert.ok(item.attr("id"),"Tag creation with attributes: id exists");
+  assert.equal(item.prop("id"),"fake","Tag creation with attributes: checking id");
+  assert.ok(item.attr("title"),"Tag creation with attributes: title exists");
+  assert.equal(item.prop("title"),"name","Tag creation with attributes: checking title");
+  assert.equal(item.css("width"),"100px","Tag creation with css properties: checking width");
   item.trigger("click");
   assert.equal(indicator,1,"Tag creation with click event");
   item.trigger("resize");

@@ -52,9 +52,15 @@ Monominoes.Render.prototype.populateDefaults = function() {
 /**
  * Applies the instance configuration object.
  * Overridable to apply custom rules for overriden properties.
+ * Children property is excluded from deep cloning to avoid recloning subrenders.
  */
 Monominoes.Render.prototype.applyConfig = function(cfg) {
   cfg = (cfg || {});
+  if (cfg.children) {
+	this.children = Komunalne.util.clone(cfg.children);
+	delete cfg.children;
+	// TODO Avoid deleting and instead of use clone with skip config property.
+  }
   Komunalne.util.clone(cfg,{ "into": this, "deep": true });
   this.config = cfg;
 };
@@ -125,9 +131,15 @@ Monominoes.Render.prototype.buildItem = function(config) {
 
 /**
  * Process the layout definition, creating the children renders array with the newly instantiated sub-renders
- * and appending children renders into the render item object.
+ * and appending children renders into the render item object. It is processed only in the immediate lower dimension.
+ * Each Render will recursively iterating over its immediate lower dimension by themselves.
+ * Children config property is an array of any of the following:
+ * - Plain object with "render" and "config" properties: A render will be created with the render constructor using configuration object.
+ * - A render class. A render will be created executing the render class with default parameters.
+ * - A render instance. It will be taken itself.
  */
 Monominoes.Render.prototype.processLayout = function() {
+  
 };
 
 /**
