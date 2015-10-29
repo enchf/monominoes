@@ -134,12 +134,25 @@ Monominoes.Render.prototype.buildItem = function(config) {
  * and appending children renders into the render item object. It is processed only in the immediate lower dimension.
  * Each Render will recursively iterating over its immediate lower dimension by themselves.
  * Children config property is an array of any of the following:
- * - Plain object with "render" and "config" properties: A render will be created with the render constructor using configuration object.
+ * - Plain object with render (constructor) and config properties, to instantiate a new render.
  * - A render class. A render will be created executing the render class with default parameters.
  * - A render instance. It will be taken itself.
  */
 Monominoes.Render.prototype.processLayout = function() {
-  
+  var i,r;
+  var config = this.children;
+  this.children = [];
+  if (Komunalne.util.isArray(config)) {
+    i = new Komunalne.helper.Iterator(config);
+    while (i.hasNext()) {
+      r = i.next();
+      if (Monominoes.util.isRender(r)) r = Monominoes.util.concrete(r);
+      else if (r != null && Komunalne.util.isInstanceOf(r,"object") && Monominoes.util.isRender(r.render))
+        r = r.render(r.config);
+      else throw "Incorrect render configuration at Render children " + i.currentKey();
+      this.children.push(r);
+    }
+  }
 };
 
 /**

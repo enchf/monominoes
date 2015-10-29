@@ -22,7 +22,7 @@ Monominoes.util.self = function(x) { return x; };
  * @param arguments... Pass any number of arguments after scope if they are required to execute the function.
  */
 Monominoes.util.concrete = function(fn,scope) { 
-  return K.util.isFunction(fn) ? fn.apply(scope,Array.prototype.slice.call(arguments,2)) : fn; 
+  return Komunalne.util.isFunction(fn) ? fn.apply(scope,Array.prototype.slice.call(arguments,2)) : fn; 
 };
 
 /**
