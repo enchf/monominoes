@@ -221,7 +221,6 @@ Monominoes.Render.prototype.render = function(data,container) {
   this.updateData(data);
   this.processLayout();
   this.applyRules();
-  this.item = this.buildItem();
   this.appendTo(container);
   return this;
 };
@@ -267,6 +266,7 @@ Monominoes.Render.prototype.processLayout = function() {
   var i,r;
   var config = this.config.children;
   this.clear();
+  this.item = this.buildItem();
   if (Komunalne.util.isArray(config)) {
     i = new Komunalne.helper.Iterator(config);
     while (i.hasNext()) {
