@@ -187,6 +187,27 @@ QUnit.test("Is render function",function(assert) {
   while (i.hasNext()) assert.ok(Monominoes.util.isRender(i.next()),i.currentKey() + " render against isRender test");
 });
 
+QUnit.test("Helper function getItemFrom", function(assert) {
+  var suite = new Komunalne.test.Suite();
+  suite.add({ "args": ["div"], "msg": "Using jQuery selectors" });
+  suite.add({ "args": ["<div></div>"], "msg": "Using HTML string" });
+  suite.add({ "args": [$("#qunit")], "msg": "Using jQuery objects" });
+  suite.add({ "args": [document.getElementsByTagName("script")[0]], "msg": "Using HTML DOM Element objects" });
+  //suite.add({ "args": [Monominoes.renders.DIV()], "msg": "Using Render itself" });
+  suite.execute(assert.buildFor("ok"),Monominoes.Render.getItemFrom);
+  
+  suite.clear();
+  suite.add({ "args": [1], "msg": "Null for numbers" });
+  suite.add({ "args": [true], "msg": "Null for booleans" });
+  suite.add({ "args": [function(){}], "msg": "Null for functions" });
+  suite.add({ "args": [new Date()], "msg": "Null for Dates/objects" });
+  suite.add({ "args": [{}], "msg": "Null for plain objects" });
+  suite.add({ "args": [[]], "msg": "Null for arrays" });
+  suite.add({ "args": [null], "msg": "Null for null" });
+  suite.add({ "args": ["inexistent-id"], "msg": "Null for inexistent elements using selector" });
+  suite.execute(assert.buildFor("notOk"),Monominoes.Render.getItemFrom);
+});
+
 QUnit.test("Tag renders default settings",function(assert) {
   var c,r,t;
   var clazz;
@@ -241,25 +262,4 @@ QUnit.test("Tag render creation and property validation", function(assert) {
     //assert.ok(r.item,"Validate inner item object creation for " + msg);
     //assert.ok(s.item,"Validate inner item object creation for " + msg);
   }
-});
-
-QUnit.test("Helper function getItemFrom", function(assert) {
-  var suite = new Komunalne.test.Suite();
-  suite.add({ "args": ["div"], "msg": "Using jQuery selectors" });
-  suite.add({ "args": ["<div></div>"], "msg": "Using HTML string" });
-  suite.add({ "args": [$("#qunit")], "msg": "Using jQuery objects" });
-  suite.add({ "args": [document.getElementsByTagName("script")[0]], "msg": "Using HTML DOM Element objects" });
-  //suite.add({ "args": [Monominoes.renders.DIV()], "msg": "Using Render itself" });
-  suite.execute(assert.buildFor("ok"),Monominoes.Render.getItemFrom);
-  
-  suite.clear();
-  suite.add({ "args": [1], "msg": "Null for numbers" });
-  suite.add({ "args": [true], "msg": "Null for booleans" });
-  suite.add({ "args": [function(){}], "msg": "Null for functions" });
-  suite.add({ "args": [new Date()], "msg": "Null for Dates/objects" });
-  suite.add({ "args": [{}], "msg": "Null for plain objects" });
-  suite.add({ "args": [[]], "msg": "Null for arrays" });
-  suite.add({ "args": [null], "msg": "Null for null" });
-  suite.add({ "args": ["inexistent-id"], "msg": "Null for inexistent elements using selector" });
-  suite.execute(assert.buildFor("notOk"),Monominoes.Render.getItemFrom);
 });

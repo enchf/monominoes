@@ -89,13 +89,12 @@ Monominoes.Render.prototype.buildParent = function() {
  * @return Returns the Render object itself.
  */
 Monominoes.Render.prototype.render = function(data,container) {
-  this.appendTo(container);
   this.updateData(data);
   this.clear();
-  this.buildItem();
   this.processLayout();
-  this.updateKeyMap();
   this.applyRules();
+  this.buildItem();
+  this.appendTo(container);
   return this;
 };
 
@@ -154,9 +153,18 @@ Monominoes.Render.prototype.processLayout = function() {
 };
 
 /**
- * Update the key map with the sub-renders identifiers (key attribute).
+ * Get a child (or child of child ...) by the render key.
+ * To get a sub render, use dot notation (i.e. "abc.def.ghi").
+ * If the key is inexistent returns null.
  */
-Monominoes.Render.prototype.updateKeyMap = function() {
+Monominoes.Render.prototype.childByKey = function(key) {
+  var render = this;
+  var i = new Komunalne.helper.Iterator(key.split("."));
+  while (i.hasNext()) {
+    render = render.childMap[i.next()];
+    if (!render) break;
+  }
+  return render;
 };
 
 /**
