@@ -1,7 +1,13 @@
-/**
- * Monominoes QUnit testing.
- */
+/** Monominoes QUnit testing. */
 
+/* Helpers */
+function createMock(tag) {
+  return Monominoes.Render.extend({
+    "buildItem": function() { return $(Monominoes.util.format("<{0}></{0}>",tag)); }
+  });
+};
+
+/* Test cases */
 QUnit.test("Monominoes definition", function(assert) {
   assert.ok(Monominoes,"Monominoes object defined");
   assert.ok(Monominoes.util,"Monominoes util container defined");
@@ -206,6 +212,20 @@ QUnit.test("Helper function getItemFrom", function(assert) {
   suite.add({ "args": [null], "msg": "Null for null" });
   suite.add({ "args": ["inexistent-id"], "msg": "Null for inexistent elements using selector" });
   suite.execute(assert.buildFor("notOk"),Monominoes.Render.getItemFrom);
+});
+
+QUnit.test("Render function: Test updateData", function(assert) {
+  var Div = createMock("div"), Span = createMock("span");
+  var data = { "a": 1, "b": 2 };
+  var a = Div({ "data": data });
+  assert.ok("data" in a,"Check data property is set on render instance");
+  assert.deepEqual(a.data,data,"Check property is correctly set");
+  a = a.render();
+  assert.ok("data" in a,"Check data property is set on render instance after render function call without arguments");
+  assert.deepEqual(a.data,data,"Check data remains the same after render function call without arguments");
+  a = a.render([1,2,3]);
+  assert.ok("data" in a,"Check data property is set on render instance after render call with data argument");
+  assert.deepEqual(a.data,[1,2,3],"Check property is correctly updated after render call with data argument");
 });
 
 QUnit.test("Tag renders default settings",function(assert) {

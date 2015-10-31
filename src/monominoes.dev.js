@@ -223,7 +223,7 @@ Monominoes.Render.prototype.render = function(data,container) {
   this.clear();
   this.processLayout();
   this.applyRules();
-  this.buildItem();
+  this.item = this.buildItem();
   this.appendTo(container);
   return this;
 };
@@ -318,6 +318,11 @@ Monominoes.Render.prototype.redraw = function(data,key) {
  */
 Monominoes.Render.prototype.append = function(render) {
 };
+
+/**
+ * Clears all the inner jQuery objects of this render and its children.
+ */
+Monominoes.Render.prototype.clear = function() {};
 
 /** Statics **/
 
