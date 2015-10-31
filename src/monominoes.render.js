@@ -57,7 +57,6 @@ Monominoes.Render.prototype.populateDefaults = function() {
  */
 Monominoes.Render.prototype.applyConfig = function(cfg) {
   cfg = (cfg || {});
-  this.children = (cfg.children) ? Komunalne.util.clone(cfg.children) : [];
   Komunalne.util.clone(cfg,{ "into": this, "deep": true, "skip": "children" });
   this.config = cfg;
 };
@@ -90,7 +89,6 @@ Monominoes.Render.prototype.buildParent = function() {
  */
 Monominoes.Render.prototype.render = function(data,container) {
   this.updateData(data);
-  this.clear();
   this.processLayout();
   this.applyRules();
   this.item = this.buildItem();
@@ -137,8 +135,8 @@ Monominoes.Render.prototype.buildItem = function(config) {
  */
 Monominoes.Render.prototype.processLayout = function() {
   var i,r;
-  var config = this.children;
-  this.children = [];
+  var config = this.config.children;
+  this.clear();
   if (Komunalne.util.isArray(config)) {
     i = new Komunalne.helper.Iterator(config);
     while (i.hasNext()) {
@@ -192,7 +190,11 @@ Monominoes.Render.prototype.append = function(render) {
 /**
  * Clears all the inner jQuery objects of this render and its children.
  */
-Monominoes.Render.prototype.clear = function() {};
+Monominoes.Render.prototype.clear = function() {
+  this.item = null;
+  if (Komunalne.util.isArray(this.children)) this.children.length = 0; else this.children = [];
+  this.childMap = {};
+};
 
 /** Statics **/
 

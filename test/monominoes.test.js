@@ -218,14 +218,43 @@ QUnit.test("Render function: Test updateData", function(assert) {
   var Div = createMock("div"), Span = createMock("span");
   var data = { "a": 1, "b": 2 };
   var a = Div({ "data": data });
-  assert.ok("data" in a,"Check data property is set on render instance");
-  assert.deepEqual(a.data,data,"Check property is correctly set");
+  var aux;
+  assert.ok("data" in a,"Data is set on render instance");
+  assert.deepEqual(a.data,data,"Data is correctly set");
+  aux = a;
   a = a.render();
-  assert.ok("data" in a,"Check data property is set on render instance after render function call without arguments");
-  assert.deepEqual(a.data,data,"Check data remains the same after render function call without arguments");
-  a = a.render([1,2,3]);
-  assert.ok("data" in a,"Check data property is set on render instance after render call with data argument");
-  assert.deepEqual(a.data,[1,2,3],"Check property is correctly updated after render call with data argument");
+  assert.ok(a === aux,"Render is returning the instance itself");
+  assert.ok("data" in a,"Data is set on render instance after render function call without arguments");
+  assert.deepEqual(a.data,data,"Data remains the same after render function call without arguments");
+  a.render([1,2,3]);
+  assert.ok("data" in a,"Data is set on render instance after render call with data argument");
+  assert.deepEqual(a.data,[1,2,3],"Data is correctly updated after render call with data argument");
+  a = new Div();
+  assert.ok(a.data == null,"Data is null if not set at instantiation");
+  a.render("data");
+  assert.equal(a.data,"data","Data is updated from null after call to render with arguments");
+});
+
+QUnit.test("Build item, children, childMap and clear methods", function(assert) {
+  var Div = createMock("div");
+  var child = new Div({ "key": "sub" });
+  var render = new Div({ "children": [child] }).render("data");
+  assert.ok("item" in render,"Item is built after call to render function");
+  assert.ok(Komunalne.util.isInstanceOf(render.item,jQuery),"Item is set as a jQuery object");
+  assert.equal(render.item.prop("tagName").toLowerCase(),"div","Tag is correctly built");
+  assert.ok(Komunalne.util.isArray(render.children),"The children array is created");
+  assert.equal(render.children.length,1,"Only one children is appended");
+  assert.ok(Monominoes.util.isRender(render.children[0]),"Child is a Render instance");
+  assert.ok(render.children[0] === child,"Child instance is not cloned or duplicated");
+  assert.deepEqual(Komunalne.util.keys(render.childMap),["sub"],"Child is present in children key map");
+  assert.ok(Monominoes.util.isRender(render.childMap.sub),"Child in child map is a Render");
+  assert.ok(render.childMap.sub === child,"Child instance is not cloned or duplicated in child map");
+  
+  render.clear();
+  assert.ok(render.item == null,"Item is removed after call to clear");
+  assert.ok(Komunalne.util.isArray(render.children),"Children property remains an array");
+  assert.equal(render.children.length,0,"Children array is empty after call to clear");
+  assert.deepEqual(Komunalne.util.keys(render.childMap),[],"Child map is empty after call to clear");
 });
 
 QUnit.test("Tag renders default settings",function(assert) {
