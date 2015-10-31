@@ -140,7 +140,9 @@ Monominoes.Render.prototype.iterable = false; /* True if the children elements a
 Monominoes.Render.prototype.item = null;      /* The underlying jQuery object produced by the render */
 Monominoes.Render.prototype.container = null; /* Render item container, if any formally defined */
 Monominoes.Render.prototype.children = null;  /* Underlying array of Renders of the children items */
-Monominoes.Render.prototype.childMap = null;  /* Map for the key mapped children */
+Monominoes.Render.prototype.childMap = null;  /* Map for the key mapped children Renders */
+Monominoes.Render.prototype.subitems = null;  /* Array of jQuery subitems, appended to the underlying item */
+Monominoes.Render.prototype.itemsMap = null;  /* Mapped subitems jQuery objects */
 Monominoes.Render.prototype.defaults = null;  /* Default configuration object */
 Monominoes.Render.prototype.config = null;    /* Config object used to build the render. */
 Monominoes.Render.prototype.layout = null;    /* Configuration of the sub-elements */
@@ -169,6 +171,8 @@ Monominoes.Render.prototype.init = function(cfg) {
   this.populateDefaults();
   this.applyConfig(cfg);
   this.buildParent();
+  this.buildLayout();
+  this.refactorRules();
   return this;
 };
 
@@ -204,6 +208,32 @@ Monominoes.Render.prototype.buildParent = function() {
     type = type.superclass;
     holder = holder.parent;
   }
+};
+
+/**
+ * Builds the inner render structure based on the layout definition.
+ * It does not create the inner jQuery objects: That is done at render execution.
+ */
+Monominoes.Render.prototype.buildLayout = function() {
+  var config = this.config.children;
+  var i,r;
+  this.children = [];
+  this.childMap = {};
+  if (Komunalne.util.isArray(config)) {
+    i = new Komunalne.helper.Iterator(config);
+    while (i.hasNext()) {
+      r = i.next();
+      r = (Monominoes.util.isRender(r)) ? Monominoes.util.concrete(r) :
+          (Komunalne.util.isInstanceOf(r,Object) && Monominoes.util.isRender(r.render)) ? 
+            (Komunalne.util.isFunction(r.render) ? r.render(r.config) : r.render) : null;
+      if (r) this.children.push(r);
+      if (r.key) this.childMap[r.key] = r;
+    }
+  }
+};
+
+Monominoes.Render.prototype.refactorRules = function() {
+  
 };
 
 /**
@@ -263,21 +293,10 @@ Monominoes.Render.prototype.buildItem = function(config) {
  * - Otherwise: Item is ignored.
  */
 Monominoes.Render.prototype.processLayout = function() {
-  var i,r;
-  var config = this.config.children;
+  var i = new Komunalne.helper.Iterator(this.children);
   this.clear();
   this.item = this.buildItem();
-  if (Komunalne.util.isArray(config)) {
-    i = new Komunalne.helper.Iterator(config);
-    while (i.hasNext()) {
-      r = i.next();
-      r = (Monominoes.util.isRender(r)) ? Monominoes.util.concrete(r) :
-          (Komunalne.util.isInstanceOf(r,Object) && Monominoes.util.isRender(r.render)) ? r.render(r.config) : null;
-      if (r) this.children.push(r);
-      if (r.key) this.childMap[r.key] = r;
-      this.append(r);
-    }
-  }
+  // TODO Create the sub items, taking in consideration if they are iterable.
 };
 
 /**
@@ -322,8 +341,9 @@ Monominoes.Render.prototype.append = function(render) {
  */
 Monominoes.Render.prototype.clear = function() {
   this.item = null;
-  if (Komunalne.util.isArray(this.children)) this.children.length = 0; else this.children = [];
-  this.childMap = {};
+  if (Komunalne.util.isArray(this.subitems)) this.subitems.length = 0; else this.subitems = [];
+  this.itemsMap = {};
+  for (var i in this.children) this.children[i].clear();
 };
 
 /** Statics **/

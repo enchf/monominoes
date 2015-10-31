@@ -187,7 +187,55 @@ QUnit.test("Extend function", function(assert) {
   }
 });
 
-QUnit.test("Is render function",function(assert) {
+QUnit.test("Render instantiation: Process layout and key-mapped items retrieval", function(assert) {
+  var Div = createMock("div");
+  var Span = createMock("span");
+  var P = createMock("p");
+  var subsub = Span({ "key": "subsub" });
+  var sub = new P({ "key": "sub", "children": [ subsub ] });
+  var render = new Div({ 
+    "children": [
+      { "render": Span, "config": {} },
+      sub
+    ]
+  });
+  
+  assert.ok(Komunalne.util.isArray(render.children),"The children array is created");
+  assert.equal(render.children.length,2,"Only one children is appended in subitems array");
+  assert.ok(Monominoes.util.isRender(render.children[0],Span),"First child is a render of type Span");
+  assert.ok(Monominoes.util.isRender(render.children[1],P),"Second child is a render of type P");
+  assert.notOk(Komunalne.util.isFunction(render.children[0]),"First child is a render instance not constructor");
+  assert.notOk(Komunalne.util.isFunction(render.children[1]),"Second child is a render instance not constructor");
+  assert.ok(Komunalne.util.isInstanceOf(render.childMap,Object),"Child map is an object");
+  assert.deepEqual(Komunalne.util.keys(render.childMap),["sub"],"Only key mapped renders present in child map");
+  assert.ok(Monominoes.util.isRender(render.childMap.sub,P),"Mapped child render is of type P");
+  assert.notOk(Komunalne.util.isFunction(render.childMap.sub),"Mapped child render is a render instance not constructor");
+  assert.ok(sub === render.childByKey("sub"),"Immediate child retrieval");
+  assert.ok(subsub === render.childByKey("sub.subsub"),"Child of child retrieval");
+  assert.ok(render.childByKey("inexistent") == null,"Inexisting key retrieval results in null");
+  assert.ok(render.childByKey("abc.def") == null,"Inexisting composite key retrieval results in null");
+  assert.ok(render.childByKey("sub.def") == null,"Inexisting sub key retrieval results in null");
+  assert.ok(render.childByKey("sub.sub.sub") == null,"Inexisting composite sub key retrieval results in null");
+  
+  assert.ok(Komunalne.util.isArray(render.childByKey("sub").children),"The children array is created in child render");
+  assert.equal(render.childByKey("sub").children.length,1,"Only one children is appended in child render children array");
+  assert.ok(Monominoes.util.isRender(render.childByKey("sub").children[0],Span),"Child child is a render of type Span");
+  assert.notOk(Komunalne.util.isFunction(render.childByKey("sub").children[0]),"Child child is a render instance");
+  assert.ok(Komunalne.util.isInstanceOf(render.childByKey("sub").childMap,Object),"Mapped child child map is an object");
+  assert.deepEqual(Komunalne.util.keys(render.childByKey("sub").childMap),["subsub"],"Mapped children key is set");
+  assert.ok(Monominoes.util.isRender(render.childByKey("sub").childMap.subsub,Span),
+            "Mapped child of mapped child render is of type SPAN");
+  assert.notOk(Komunalne.util.isFunction(render.childByKey("sub").childMap.sub),
+            "Mapped child of mapped child render is a render instance not constructor");
+  
+  assert.ok(Komunalne.util.isArray(render.children[0].children),"The children array is created in first child render");
+  assert.equal(render.children[0].children.length,0,"First child render has no children");
+  assert.ok(Komunalne.util.isInstanceOf(render.children[0].childMap,Object),"First child render child map is an object");
+  assert.deepEqual(Komunalne.util.keys(render.children[0].childMap),[],"First child render has no mapped renders");
+  assert.ok(render.children[1] === render.childMap.sub,"Second child render is the same as the mapped one");
+});
+
+QUnit.test("Is render function", function(assert) {
   var i = new Komunalne.helper.Iterator(Monominoes.renders);
   assert.ok(Monominoes.util.isRender(Monominoes.Render),"Monominoes.Render abstract class is a Render");
   while (i.hasNext()) assert.ok(Monominoes.util.isRender(i.next()),i.currentKey() + " render against isRender test");
@@ -235,26 +283,27 @@ QUnit.test("Render function: Test updateData", function(assert) {
   assert.equal(a.data,"data","Data is updated from null after call to render with arguments");
 });
 
-QUnit.test("Build item, children, childMap and clear methods", function(assert) {
+QUnit.test("Render function: Build items, subitems and clear", function(assert) {
   var Div = createMock("div");
-  var child = new Div({ "key": "sub" });
-  var render = new Div({ "children": [child] }).render("data");
+  var data = { "data": { "x": 1, "y": "foo" }, "title": "title" };
+  var child = new createMock("span")({ "key": "sub" });
+  var render = new Div({ "children": [child] }).render(data);
   assert.ok("item" in render,"Item is built after call to render function");
   assert.ok(Komunalne.util.isInstanceOf(render.item,jQuery),"Item is set as a jQuery object");
-  assert.equal(render.item.prop("tagName").toLowerCase(),"div","Tag is correctly built");
-  assert.ok(Komunalne.util.isArray(render.children),"The children array is created");
-  assert.equal(render.children.length,1,"Only one children is appended");
-  assert.ok(Monominoes.util.isRender(render.children[0]),"Child is a Render instance");
-  assert.ok(render.children[0] === child,"Child instance is not cloned or duplicated");
-  assert.deepEqual(Komunalne.util.keys(render.childMap),["sub"],"Child is present in children key map");
-  assert.ok(Monominoes.util.isRender(render.childMap.sub),"Child in child map is a Render");
-  assert.ok(render.childMap.sub === child,"Child instance is not cloned or duplicated in child map");
+  assert.equal(render.item.prop("tagName"),"DIV","Tag is correctly built on item");
+  assert.ok(Komunalne.util.isArray(render.subitems),"The subitems array is created");
+  assert.equal(render.subitems.length,1,"Only one children is appended in subitems array");
+  assert.ok(Komunalne.util.isInstanceOf(render.subitems[0],jQuery),"Subitem is a jQuery instance");
+  assert.equal(render.subitems[0].prop("tagName"),"SPAN","Tag is correctly built in subitem");
+  assert.deepEqual(Komunalne.util.keys(render.itemsMap),["sub"],"Subitem key is present on items map");
+  assert.ok(Komunalne.util.isInstanceOf(render.itemsMap.sub,jQuery),"Child in items map is a jQuery object");
+  assert.equal(render.itemsMap.sub.prop("tagName"),"SPAN","Object in items map refer to the correct tag");
   
   render.clear();
   assert.ok(render.item == null,"Item is removed after call to clear");
-  assert.ok(Komunalne.util.isArray(render.children),"Children property remains an array");
-  assert.equal(render.children.length,0,"Children array is empty after call to clear");
-  assert.deepEqual(Komunalne.util.keys(render.childMap),[],"Child map is empty after call to clear");
+  assert.ok(Komunalne.util.isArray(render.subitems),"Subitems property remains an array");
+  assert.equal(render.subitems.length,0,"Subitems array is empty after call to clear");
+  assert.deepEqual(Komunalne.util.keys(render.itemsMap),[],"Items map is empty after call to clear");
 });
 
 QUnit.test("Tag renders default settings",function(assert) {
