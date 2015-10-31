@@ -140,6 +140,7 @@ Monominoes.Render.prototype.iterable = false; /* True if the children elements a
 Monominoes.Render.prototype.item = null;      /* The underlying jQuery object produced by the render */
 Monominoes.Render.prototype.container = null; /* Render item container, if any formally defined */
 Monominoes.Render.prototype.children = null;  /* Underlying array of Renders of the children items */
+Monominoes.Render.prototype.childMap = null;  /* Map for the key mapped children */
 Monominoes.Render.prototype.defaults = null;  /* Default configuration object */
 Monominoes.Render.prototype.config = null;    /* Config object used to build the render. */
 Monominoes.Render.prototype.layout = null;    /* Configuration of the sub-elements */
@@ -276,6 +277,8 @@ Monominoes.Render.prototype.processLayout = function() {
       r = (Monominoes.util.isRender(r)) ? Monominoes.util.concrete(r) :
           (Komunalne.util.isInstanceOf(r,Object) && Monominoes.util.isRender(r.render)) ? r.render(r.config) : null;
       if (r) this.children.push(r);
+      if (r.key) this.childMap[r.key] = r;
+      this.append(r);
     }
   }
 };
