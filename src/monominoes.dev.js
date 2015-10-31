@@ -186,12 +186,8 @@ Monominoes.Render.prototype.populateDefaults = function() {
  */
 Monominoes.Render.prototype.applyConfig = function(cfg) {
   cfg = (cfg || {});
-  if (cfg.children) {
-	this.children = Komunalne.util.clone(cfg.children);
-	delete cfg.children;
-	// TODO Avoid deleting and instead of use clone with skip config property.
-  }
-  Komunalne.util.clone(cfg,{ "into": this, "deep": true });
+  this.children = (cfg.children) ? Komunalne.util.clone(cfg.children) : [];
+  Komunalne.util.clone(cfg,{ "into": this, "deep": true, "skip": "children" });
   this.config = cfg;
 };
 
