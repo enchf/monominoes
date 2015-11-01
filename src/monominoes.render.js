@@ -163,10 +163,21 @@ Monominoes.Render.prototype.buildItem = function(config) {
  * - Otherwise: Item is ignored.
  */
 Monominoes.Render.prototype.processLayout = function() {
+  var child;
   var i = new Komunalne.helper.Iterator(this.children);
   this.clear();
   this.item = this.buildItem();
-  // TODO Create the sub items, taking in consideration if they are iterable.
+  while (i.hasNext()) {
+    child = i.next();
+    if (child.iterable === true) this.buildIterable(child);
+    else this.buildChild(child);
+  }
+};
+
+Monominoes.Render.prototype.buildChild = function(child) {
+};
+
+Monominoes.Render.prototype.buildIterable = function(child) {
 };
 
 /**
