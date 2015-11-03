@@ -164,20 +164,22 @@ Monominoes.Render.prototype.buildItem = function(config) {
  */
 Monominoes.Render.prototype.processLayout = function() {
   var child;
-  var i = new Komunalne.helper.Iterator(this.children);
+  var data;
+  var i = new Komunalne.helper.Iterator(this.children), j;
   this.clear();
   this.item = this.buildItem();
   while (i.hasNext()) {
     child = i.next();
-    if (child.iterable === true) this.buildIterable(child);
-    else this.buildChild(child);
+    data = child.path ? Komunalne.util.path(this.data,child.path) : this.data;
+    if (child.iterable === true && Komunalne.util.isArray(data)) {
+      j = new Komunalne.helper.Iterator(data);
+      while (j.hasNext()) this.buildChild(child,j);
+    } else this.buildChild(child,data);
   }
 };
 
-Monominoes.Render.prototype.buildChild = function(child) {
-};
-
-Monominoes.Render.prototype.buildIterable = function(child) {
+Monominoes.Render.prototype.buildChild = function(child,data) {
+  
 };
 
 /**
