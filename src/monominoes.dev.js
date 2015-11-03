@@ -172,7 +172,6 @@ Monominoes.Render.prototype.init = function(cfg) {
   this.applyConfig(cfg);
   this.buildParent();
   this.buildLayout();
-  this.refactorRules();
   return this;
 };
 
@@ -232,10 +231,6 @@ Monominoes.Render.prototype.buildLayout = function() {
   }
 };
 
-Monominoes.Render.prototype.refactorRules = function() {
-  
-};
-
 /**
  * Renders the object. Takes care of the render children, and its attachment to the container object.
  * @param data Data to be used during the render. Can be any type of object.
@@ -250,7 +245,7 @@ Monominoes.Render.prototype.refactorRules = function() {
 Monominoes.Render.prototype.render = function(data,container) {
   this.updateData(data);
   this.processLayout();
-  this.applyRules();
+  this.customize();
   this.appendTo(container);
   return this;
 };
@@ -367,10 +362,10 @@ Monominoes.Render.prototype.itemByKey = function(key) {
 
 
 /**
- * Apply the Render rules to the underlying elements according to the rules array.
+ * Apply Render customization rules, defined by default or during instantiation.
+ * Method to be overriden from M.Render defaults.
  */
-Monominoes.Render.prototype.applyRules = function() {
-};
+Monominoes.Render.prototype.customize = function() {};
 
 /**
  * Redraws the inner produced objects using new data. 
