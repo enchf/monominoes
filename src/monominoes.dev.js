@@ -252,25 +252,6 @@ Monominoes.Render.prototype.render = function(data,container) {
 };
 
 /**
- * Appends the render to a specific container.
- */
-Monominoes.Render.prototype.appendTo = function(container) {
-  this.parent = Monominoes.util.isRender(container) ? container : this.parent;
-  this.container = (Monominoes.Render.getItemFrom(container) || this.container);
-  if (this.container) this.container.append(this.item);
-  return this;
-};
-
-/**
- * Appends a render to the children object.
- * Validates that the render argument is one of the accepted types defined in M.R.render function.
- */
-Monominoes.Render.prototype.append = function(render) {
-  if (Monominoes.util.isRender(render)) render.appendTo(this);
-  return this;
-};
-
-/**
  * Updates the data to be rendered.
  * Throws an exception if the data results into null/undefined.
  */
@@ -278,15 +259,6 @@ Monominoes.Render.prototype.updateData = function(data) {
   this.data = (data || this.data);
   this.data = this.path ? Komunalne.util.path(this.data,this.path) : this.data;
   if (this.data == null) throw "No data to render";
-};
-
-/**
- * Build item function. Mandatory to be overriden if not defined yet.
- * Takes the constructor configuration and builds the inner object, returning it.
- * It is limited to only create the underlying render object, not its children or the attachment to its container.
- */
-Monominoes.Render.prototype.buildItem = function(config) { 
-  throw "M.Render.buildItem should be overriden by subclass Render";
 };
 
 /**
@@ -315,6 +287,29 @@ Monominoes.Render.prototype.processLayout = function() {
   }
 };
 
+/**
+ * Clears all the inner jQuery objects of this render and its children.
+ */
+Monominoes.Render.prototype.clear = function() {
+  for (var i in this.children) this.children[i].clear();
+  if (this.item) this.item.remove();
+  this.item = null;
+  if (Komunalne.util.isArray(this.subitems)) this.subitems.length = 0; else this.subitems = [];
+  this.itemsMap = {};
+};
+
+/**
+ * Build item function. Mandatory to be overriden if not defined yet.
+ * Takes the constructor configuration and builds the inner object, returning it.
+ * It is limited to only create the underlying render object, not its children or the attachment to its container.
+ */
+Monominoes.Render.prototype.buildItem = function(config) { 
+  throw "M.Render.buildItem should be overriden by subclass Render";
+};
+
+/**
+ * Builds a child object for the recursive sub rendering.
+ */
 Monominoes.Render.prototype.buildChild = function(child,data) {
   child.render(data,this);
   this.subitems.push(child.item);
@@ -369,13 +364,13 @@ Monominoes.Render.prototype.itemByKey = function(key) {
 Monominoes.Render.prototype.customize = function() {};
 
 /**
- * Clears all the inner jQuery objects of this render and its children.
+ * Appends the render to a specific container.
  */
-Monominoes.Render.prototype.clear = function() {
-  this.item = null;
-  if (Komunalne.util.isArray(this.subitems)) this.subitems.length = 0; else this.subitems = [];
-  this.itemsMap = {};
-  for (var i in this.children) this.children[i].clear();
+Monominoes.Render.prototype.appendTo = function(container) {
+  this.parent = Monominoes.util.isRender(container) ? container : this.parent;
+  this.container = (Monominoes.Render.getItemFrom(container) || this.container);
+  if (this.container) this.container.append(this.item);
+  return this;
 };
 
 /** Statics **/
