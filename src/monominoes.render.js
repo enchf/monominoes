@@ -110,6 +110,7 @@ Monominoes.Render.prototype.buildLayout = function() {
  * - DOM Object: Transformed to a jQuery object to be used as the container.
  * - Render Object: If the function detects it is a Render, 
  * - Otherwise, render function ignores the parameter.
+ * To keep the existing data or container, pass null or no argument when invoking render function.
  * @return Returns the Render object itself.
  */
 Monominoes.Render.prototype.render = function(data,container) {
@@ -236,15 +237,6 @@ Monominoes.Render.prototype.itemByKey = function(key) {
  * Method to be overriden from M.Render defaults.
  */
 Monominoes.Render.prototype.customize = function() {};
-
-/**
- * Redraws the inner produced objects using new data. 
- * Takes care of removing from the DOM the existing objects and mantains the same parent object.
- * @param data Data to be used to redraw the object.
- * @param key (optional) The key of the children render to be updated, remaining the rest intact.
- */
-Monominoes.Render.prototype.redraw = function(data,key) {
-};
 
 /**
  * Clears all the inner jQuery objects of this render and its children.
