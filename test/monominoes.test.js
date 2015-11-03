@@ -143,10 +143,10 @@ QUnit.test("Extend function", function(assert) {
   assert.strictEqual(Sub.prototype.superclass.superclass,Monominoes.Render,
                      "Superclass superclass in prototype equal to Monominoes.Render");
   
-  assert.notOk(("a" in renders[0].parent),"Check for custom properties in Custom render not present in Custom parent");
-  assert.notOk(("a" in renders[1].parent),"Check for custom properties in Custom render not present in Custom parent");
-  assert.strictEqual(renders[2].parent.a,"test","Check for custom properties in Custom render present in Sub parent");
-  assert.strictEqual(renders[3].parent.a,"test","Check for custom properties in Custom render present in Sub parent");
+  assert.notOk(("a" in renders[0].super),"Check for custom properties in Custom render not present in Custom super");
+  assert.notOk(("a" in renders[1].super),"Check for custom properties in Custom render not present in Custom super");
+  assert.strictEqual(renders[2].super.a,"test","Check for custom properties in Custom render present in Sub super");
+  assert.strictEqual(renders[3].super.a,"test","Check for custom properties in Custom render present in Sub super");
   
   i = new Komunalne.helper.Iterator(renders);
   while (i.hasNext()) {
@@ -159,29 +159,29 @@ QUnit.test("Extend function", function(assert) {
       assert.deepEqual(r[m],properties[k][m],"Property " + m + " test in object " + k);
     }
     assert.ok(("defaults" in r),"Defaults object created for object " + k);
-    assert.ok(("parent" in r),"Parent object created for object " + k);
-    assert.ok(Komunalne.util.isInstanceOf(r.parent,Object),"Parent object in render is of type Object");
+    assert.ok(("super" in r),"Parent object created for object " + k);
+    assert.ok(Komunalne.util.isInstanceOf(r.super,Object),"Parent object in render is of type Object");
     for (var m in classes[k].prototype) {
       if (m == "defaults") continue;
       assert.deepEqual(r.defaults[m],classes[k].prototype[m],"Property " + m + " against prototype in object " + k);
     }
     
-    // Superclass defaults into parent object.
+    // Superclass defaults into super object.
     sc = superclasses[k];
-    rp = r.parent;
+    rp = r.super;
     l = 1;
     while (sc != null) {
       for (var m in sc.prototype) {
-        if (m === "parent") {
-          if (sc === Monominoes.Render) assert.ok(rp[m] === null,"Parent property in parent should be null");
+        if (m === "super") {
+          if (sc === Monominoes.Render) assert.ok(rp[m] === null,"Parent property in super should be null");
           else assert.ok(Komunalne.util.isInstanceOf(rp[m],Object),"Parent property for lower levels is an object");
         } else {
           assert.deepEqual(rp[m],sc.prototype[m],
-                           Monominoes.util.format("Superclass property {0} in parent object {1}, level {2}", m,k,l));
+                           Monominoes.util.format("Superclass property {0} in super object {1}, level {2}", m,k,l));
         }
       }
       l++;
-      rp = rp.parent;
+      rp = rp.super;
       sc = sc.superclass;
     } 
   }

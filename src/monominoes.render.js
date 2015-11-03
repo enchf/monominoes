@@ -23,15 +23,15 @@ Monominoes.Render.prototype.key = null;       /* Internal sub-render id */
  * Render Type hierarchy definition:
  * - class: The Render class. Present in all Render definitions after invoking .extend method.
  * - superclass: The Render class from which the Render extends.
- * - parent: Methods and attributes from the Parent class.
+ * - super: Methods and attributes from the Parent class.
  */
 Monominoes.Render.prototype.class = Monominoes.Render; 
 Monominoes.Render.prototype.superclass = null;
-Monominoes.Render.prototype.parent = null;
+Monominoes.Render.prototype.super = null;
 Monominoes.Render.class = Monominoes.Render;
 Monominoes.Render.superclass = null;
 
-/* Render Functions definition, overridable at extension point, and available in defaults and parent objects */
+/* Render Functions definition, overridable at extension point, and available in defaults and super objects */
 
 /**
  * Overridable initialization function, used in constructor.
@@ -65,17 +65,17 @@ Monominoes.Render.prototype.applyConfig = function(cfg) {
 };
 
 /**
- * Replicates superclass defaults recursively into constructor.parent object.
+ * Replicates superclass defaults recursively into constructor.super object.
  */
 Monominoes.Render.prototype.buildParent = function() {
   var type,holder;
   type = this.class;
   holder = this;
   while (type.superclass) {
-    holder.parent = {};
-    Komunalne.util.clone(type.superclass.prototype,{"deep": true,"into": holder.parent});
+    holder.super = {};
+    Komunalne.util.clone(type.superclass.prototype,{"deep": true,"into": holder.super});
     type = type.superclass;
-    holder = holder.parent;
+    holder = holder.super;
   }
 };
 
@@ -125,7 +125,7 @@ Monominoes.Render.prototype.render = function(data,container) {
  * Appends the render to a specific container.
  */
 Monominoes.Render.prototype.appendTo = function(container) {
-  // TODO Assign parent.
+  this.parent = Monominoes.util.isRender(container) ? container : this.parent;
   this.container = (Monominoes.Render.getItemFrom(container) || this.container);
   if (this.container) this.container.append(this.item);
   return this;
