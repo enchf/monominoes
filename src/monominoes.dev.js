@@ -170,7 +170,7 @@ Monominoes.Render.prototype.init = function(cfg) {
   cfg = (cfg || {});
   this.populateDefaults();
   this.applyConfig(cfg);
-  this.buildParent();
+  this.buildSuper();
   this.buildLayout();
   return this;
 };
@@ -197,7 +197,7 @@ Monominoes.Render.prototype.applyConfig = function(cfg) {
 /**
  * Replicates superclass defaults recursively into constructor.super object.
  */
-Monominoes.Render.prototype.buildParent = function() {
+Monominoes.Render.prototype.buildSuper = function() {
   var type,holder;
   type = this.class;
   holder = this;
