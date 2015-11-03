@@ -259,8 +259,19 @@ Monominoes.Render.prototype.render = function(data,container) {
  * Appends the render to a specific container.
  */
 Monominoes.Render.prototype.appendTo = function(container) {
+  // TODO Assign parent.
   this.container = (Monominoes.Render.getItemFrom(container) || this.container);
   if (this.container) this.container.append(this.item);
+  return this;
+};
+
+/**
+ * Appends a render to the children object.
+ * Validates that the render argument is one of the accepted types defined in M.R.render function.
+ */
+Monominoes.Render.prototype.append = function(render) {
+  if (Monominoes.util.isRender(render)) render.appendTo(this);
+  return this;
 };
 
 /**
@@ -303,13 +314,21 @@ Monominoes.Render.prototype.processLayout = function() {
     data = child.path ? Komunalne.util.path(this.data,child.path) : this.data;
     if (child.iterable === true && Komunalne.util.isArray(data)) {
       j = new Komunalne.helper.Iterator(data);
-      while (j.hasNext()) this.buildChild(child,j);
+      while (j.hasNext()) this.buildChild(child,j.next());
     } else this.buildChild(child,data);
   }
 };
 
 Monominoes.Render.prototype.buildChild = function(child,data) {
-  
+  child.render(data,this);
+  this.subitems.push(child.item);
+  if (child.key) {
+    if (child.iterable === true) {
+      this.itemsMap[child.key] = (child.key in this.itemsMap) ? this.itemsMap[child.key] : [];
+      this.itemsMap[child.key].push(child.item);
+    } else this.itemsMap[child.key] = child.item;
+  }
+  return this;
 };
 
 /**
@@ -328,6 +347,26 @@ Monominoes.Render.prototype.childByKey = function(key) {
 };
 
 /**
+ * Get a item child (or child of child ...) by the render key.
+ * To get a sub item, use dot notation (i.e. "abc.def.ghi").
+ * If the key is inexistent returns null. It can retrieve an array of items if the sub render is iterable.
+ */
+Monominoes.Render.prototype.itemByKey = function(key) {
+  var parent = null;
+  var render = this;
+  var lastKey = null;
+  var i = new Komunalne.helper.Iterator(key.split("."));
+  while (i.hasNext()) {
+    parent = render;
+    lastKey = i.next();
+    render = render.childMap[lastKey];
+    if (!render) lastKey = null;
+  }
+  return (lastKey != null) ? parent.itemsMap[lastKey] : null;
+};
+
+
+/**
  * Apply the Render rules to the underlying elements according to the rules array.
  */
 Monominoes.Render.prototype.applyRules = function() {
@@ -340,13 +379,6 @@ Monominoes.Render.prototype.applyRules = function() {
  * @param key (optional) The key of the children render to be updated, remaining the rest intact.
  */
 Monominoes.Render.prototype.redraw = function(data,key) {
-};
-
-/**
- * Appends a render to the children object.
- * Validates that the render argument is one of the accepted types defined in M.R.render function.
- */
-Monominoes.Render.prototype.append = function(render) {
 };
 
 /**

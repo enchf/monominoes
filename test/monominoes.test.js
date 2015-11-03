@@ -302,11 +302,17 @@ QUnit.test("Render function: Build items, subitems and clear", function(assert) 
   assert.equal(render.item.prop("tagName"),"DIV","Tag is correctly built on item");
   assert.ok(Komunalne.util.isArray(render.subitems),"The subitems array is created");
   assert.equal(render.subitems.length,2,"Two children are appended in subitems array");
-  assert.ok(Komunalne.util.isInstanceOf(render.subitems[0],jQuery),"Subitem is a jQuery instance");
-  assert.equal(render.subitems[0].prop("tagName"),"SPAN","Tag is correctly built in subitem");
+  assert.ok(Komunalne.util.isInstanceOf(render.subitems[0],jQuery),"First subitem is a jQuery instance");
+  assert.equal(render.subitems[0].prop("tagName"),"SPAN","Tag is correctly built in first subitem: SPAN");
+  assert.ok(Komunalne.util.isInstanceOf(render.subitems[1],jQuery),"Second subitem is a jQuery instance");
+  assert.equal(render.subitems[1].prop("tagName"),"P","Tag is correctly built in second subitem: P");
   assert.deepEqual(Komunalne.util.keys(render.itemsMap),["sub"],"Subitem key is present on items map");
   assert.ok(Komunalne.util.isInstanceOf(render.itemsMap.sub,jQuery),"Child in items map is a jQuery object");
-  assert.equal(render.itemsMap.sub.prop("tagName"),"SPAN","Object in items map refer to the correct tag");
+  assert.equal(render.itemsMap.sub.prop("tagName"),"P","Object in items map refer to the correct tag");
+  
+  aux = render.itemByKey("sub.subsub");
+  assert.ok(Komunalne.util.isInstanceOf(aux,jQuery),"Mapped item is a jQuery object");
+  assert.equal(aux.prop("tagName"),"SPAN","Mapped item refer to the correct tag: SPAN");
   
   render.clear();
   assert.ok(render.item == null,"Item is removed after call to clear");
