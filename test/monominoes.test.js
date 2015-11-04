@@ -351,6 +351,7 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
 QUnit.test("Path and itemData assignment", function(assert) {
   var Div = createMock("div");
   var P = createMock("p");
+  var Span = createMock("span");
   var render = new Div({
     "path": "data",
     "children": [{ "render": P, "config": { "key": "items", "iterable": true, "path": "data.items" } }],
@@ -360,6 +361,43 @@ QUnit.test("Path and itemData assignment", function(assert) {
   
   render.render(data);
   assert.equal(render.items.text(),"Title","Customized title is set from base render path config");
+  assert.deepEqual(render.itemData,data.data,"Base render item data correctly set");
+  assert.deepEqual(render.childByKey("items").itemData,data.data.items,"Iterable child render item data set");
+  
+  render = new Div({
+    "customize": function(item,itemdata) { item.text(itemdata.header); },
+    "children": [{
+      "render": P,
+      "config": { "key": "paragraph", "path": "text" }
+    },{
+      "render": P,
+      "config": {
+        "key": "multiparagraph",
+        "path": "options",
+        "customize": function() {},
+        "children": [{ "render": Span, "config": { "key": "options", "path": "options.items", "iterable": true } }]
+      }
+    }] 
+  });
+  data = { 
+    "header": "Header",
+    "text": "This is text",
+    "options": {
+      "items": [1,2,3,4,5]
+    }
+  };
+  
+  render.render(data);
+  assert.deepEqual(render.itemData,data,"Data set without path equals base data object");
+  assert.deepEqual(render.children[0].itemData,data.text,"First child with path item data");
+  assert.deepEqual(render.children[1].itemData,data.options,"Second child with path item data");
+  assert.deepEqual(render.childByKey("paragraph").itemData,data.text,"First mapped child with path item data");
+  assert.deepEqual(render.childByKey("multiparagraph").itemData,data.options,"Second mapped child with path item data");
+  assert.deepEqual(render.children[1].children[0].itemData,data.options.items,"Iterable child of child item data");
+  assert.deepEqual(render.childByKey("multiparagraph.options").itemData,data.options.items,
+                   "Iterable mapped child of child");
+  assert.deepEqual(render.children[1].childByKey("options").itemData,data.options.items,
+                   "Iterable mapped child of child item data");
 });
 
 QUnit.test("Iterable items", function(assert) {
