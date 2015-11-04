@@ -293,21 +293,32 @@ QUnit.test("Render function: Test updateData", function(assert) {
   assert.equal(a.data,"data","Data is updated from null after call to render with arguments");
 });
 
-QUnit.test("Render function: Build items, subitems and clear", function(assert) {
+QUnit.test("Render function: Build items, customization and clear", function(assert) {
   var data = { "data": { "x": 1, "y": "foo" }, "title": "title" };
   var aux;
   var Div = createMock("div");
   var Span = createMock("span");
   var P = createMock("p");
   var subsub,sub;
+  var container = $("#test-div");
   var render = new Div({
     "id": "div-id",
     "children": [
       { "render": Span, "config": { "id": "first-span" } },
       (sub = new P({ "key": "sub", "children": [ (subsub = Span({ "key": "subsub" })) ] }))
     ]
-  }).render(data);
-    
+  }).render(data,container);
+  
+  // Customization and DOM test.
+  assert.ok("id" in render,"Render id custom property is set");
+  assert.equal(render.id,"div-id","Render id custom property value is correct");
+  assert.ok("id" in render.children[0],"Render id custom property is set on child");
+  assert.equal(render.children[0].id,"first-span","Render id custom property value is correct on child");
+  assert.ok("id" in render.children[1],"Render id custom property is set on second child");
+  assert.ok("id" in render.children[1].children[0],"Render id custom property is set on child of child");
+  assert.equal($("#div-id").length,1,"Render item exists in DOM");
+  
+  // Items creation.
   assert.ok("items" in render,"Item is built after call to render function");
   assert.ok(Komunalne.util.isInstanceOf(render.items,jQuery),"Item is set as a jQuery object");
   assert.equal(render.items.prop("tagName"),"DIV","Tag is correctly built on item");
@@ -322,16 +333,33 @@ QUnit.test("Render function: Build items, subitems and clear", function(assert) 
   assert.ok(Komunalne.util.isInstanceOf(render.childMap.sub.items,jQuery),"Items in mapped child is set as jQuery ");
   assert.equal(render.childMap.sub.items.prop("tagName"),"P","Mapped child has the correct tag: P");
   
+  // Item retrieval by key.
   aux = render.childByKey("sub.subsub");
   assert.ok(Monominoes.util.isRender(aux,Span),"Mapped child of child render is of type Span");
   assert.ok(Komunalne.util.isInstanceOf(aux.items,jQuery),"Mapped child of child items is set as jQuery object");
   assert.equal(aux.items.prop("tagName"),"SPAN","Mapped child of child items refer to the correct tag: SPAN");
   
+  // Result of clear function.
   render.clear();
   assert.ok(render.item == null,"Item is removed after call to clear");
   assert.ok(Komunalne.util.isArray(render.children),"Children property remains an array");
   assert.equal(render.children.length,2,"Children array is not empty after call to clear");
   assert.deepEqual(Komunalne.util.keys(render.childMap),["sub"],"Child map is not empty after call to clear");
+  assert.equal($("#div-id").length,0,"Render item doesn't exist in DOM after calling clear method");
+});
+
+QUnit.test("Path and itemData assignment", function(assert) {
+  var Div = createMock("div");
+  var P = createMock("p");
+  var render = new Div({
+    "path": "data",
+    "children": [{ "render": P, "config": { "key": "items", "iterable": true, "path": "data.items" } }],
+    "customize": function(item,itemdata) { item.text(itemdata.title); }
+  });
+  var data = { "data": { "title": "Title", "items": ["one","two","three"] } };
+  
+  render.render(data);
+  assert.equal(render.items.text(),"Title","Customized title is set from base render path config");
 });
 
 QUnit.test("Iterable items", function(assert) {
@@ -340,15 +368,27 @@ QUnit.test("Iterable items", function(assert) {
   var LI = createMock("li");
   var render = new UL({
     "children": [
-      { "render": H1, "key": "header", "config": { "path": "header" } },
-      { "render": LI, "key": "items", "config": { "path": "data.items", "iterable": true } }
+      { "render": H1, "config": { "key": "header", "path": "header" } },
+      { "render": LI, "config": { "key": "items", "path": "items", "iterable": true } }
     ]
   });
   var data1 = { "title": "ignored", "header": "Title", "items": [1,2,3,4,5] };
   var data2 = { "header": "Updated", "items": ["a","b","c"] };
+  var header,items;
   
   render.render(data1);
+  header = render.childByKey("header");
+  items = render.childByKey("items");
+  
   assert.equal(render.children.length,2,"Two child renders appended to base render");
+  assert.ok(Komunalne.util.isInstanceOf(header.items,jQuery),"Header child render has a single item");
+  assert.ok(Komunalne.util.isArray(items.items),"Items child render has items property as an array");
+  assert.deepEqual(render.itemData,data1,"Item data is correctly set if no path specified");
+  assert.equal(header.itemData,"Title","Header item data is correctly set according to path");
+  assert.deepEqual(items.itemData,[1,2,3,4,5],"Iterable item data is correctly set according to path");
+  
+  // Iterability test.
+  assert.equal(items.items.length,5,"Items child render has 5 items from the data received");
 });
 
 QUnit.test("Tag renders default settings",function(assert) {
