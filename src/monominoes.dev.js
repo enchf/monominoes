@@ -134,19 +134,17 @@ Monominoes.Tag.full = Monominoes.Tag.open + "</{0}>";
  * iterative definition of sub-elements.
  */
 Monominoes.Render = function(){};
-Monominoes.Render.prototype.data = null;      /* The data used to produce the render object */
+Monominoes.Render.prototype.data = null;      /* The global data used to produce the render object */
+Monominoes.Render.prototype.itemData = null;  /* Data specific to the item being rendered */
 Monominoes.Render.prototype.path = null;      /* The path to be used to get the rendered data */
 Monominoes.Render.prototype.iterable = false; /* True if the children elements are produced from iterable data */
-Monominoes.Render.prototype.item = null;      /* The underlying jQuery object produced by the render */
+Monominoes.Render.prototype.items = null;     /* The underlying objects produced by the render. If iterable is an array */
 Monominoes.Render.prototype.container = null; /* Render item container, if any formally defined */
 Monominoes.Render.prototype.children = null;  /* Underlying array of Renders of the children items */
 Monominoes.Render.prototype.childMap = null;  /* Map for the key mapped children Renders */
-Monominoes.Render.prototype.subitems = null;  /* Array of jQuery subitems, appended to the underlying item */
-Monominoes.Render.prototype.itemsMap = null;  /* Mapped subitems jQuery objects */
 Monominoes.Render.prototype.defaults = null;  /* Default configuration object */
 Monominoes.Render.prototype.config = null;    /* Config object used to build the render. */
 Monominoes.Render.prototype.layout = null;    /* Configuration of the sub-elements */
-Monominoes.Render.prototype.rules = null;     /* Rules to assign to key-mapped elements */
 Monominoes.Render.prototype.key = null;       /* Internal sub-render id */
 
 /**
@@ -172,6 +170,7 @@ Monominoes.Render.prototype.init = function(cfg) {
   this.applyConfig(cfg);
   this.buildSuper();
   this.buildLayout();
+  this.customInit();
   return this;
 };
 
@@ -232,6 +231,11 @@ Monominoes.Render.prototype.buildLayout = function() {
 };
 
 /**
+ * Any element customization at the render instantiation.
+ */
+Monominoes.Render.prototype.customInit = function() {};
+
+/**
  * Renders the object. Takes care of the render children, and its attachment to the container object.
  * @param data Data to be used during the render. Can be any type of object.
  * @param container Container object. Can be any of the following types:
@@ -246,7 +250,6 @@ Monominoes.Render.prototype.buildLayout = function() {
 Monominoes.Render.prototype.render = function(data,container) {
   this.updateData(data);
   this.processLayout();
-  this.customize();
   this.appendTo(container);
   return this;
 };
@@ -257,8 +260,8 @@ Monominoes.Render.prototype.render = function(data,container) {
  */
 Monominoes.Render.prototype.updateData = function(data) {
   this.data = (data || this.data);
-  this.data = this.path ? Komunalne.util.path(this.data,this.path) : this.data;
-  if (this.data == null) throw "No data to render";
+  if (this.data == null) throw "No global data specified";
+  this.itemData = this.path ? Komunalne.util.path(this.data,this.path) : this.data;
 };
 
 /**
@@ -272,19 +275,25 @@ Monominoes.Render.prototype.updateData = function(data) {
  * - Otherwise: Item is ignored.
  */
 Monominoes.Render.prototype.processLayout = function() {
+  var item;
   var child;
-  var data;
-  var i = new Komunalne.helper.Iterator(this.children), j;
+  var i,j;
   this.clear();
-  this.item = this.buildItem();
-  while (i.hasNext()) {
-    child = i.next();
-    data = child.path ? Komunalne.util.path(this.data,child.path) : this.data;
-    if (child.iterable === true && Komunalne.util.isArray(data)) {
-      j = new Komunalne.helper.Iterator(data);
-      while (j.hasNext()) this.buildChild(child,j.next());
-    } else this.buildChild(child,data);
+  if (this.iterable === true) {
+    this.items = [];
+    j = new Komunalne.helper.Iterator(this.itemData);
+    while (j.hasNext()) {
+      item = this.buildItem();
+      this.customize(item,j.next());
+      this.items.push(item);
+    }
+  } else {
+    this.items = this.buildItem();
+    this.customize(this.items,this.itemData);
   }
+  
+  i = new Komunalne.helper.Iterator(this.children);
+  while (i.hasNext()) i.next().render(this.data,this);
 };
 
 /**
@@ -292,10 +301,11 @@ Monominoes.Render.prototype.processLayout = function() {
  */
 Monominoes.Render.prototype.clear = function() {
   for (var i in this.children) this.children[i].clear();
-  if (this.item) this.item.remove();
-  this.item = null;
-  if (Komunalne.util.isArray(this.subitems)) this.subitems.length = 0; else this.subitems = [];
-  this.itemsMap = {};
+  if (this.items != null) {
+    if (this.iterable === true) Komunalne.util.forEach(this.items,function(val) { val.remove(); });
+    else this.items.remove();
+  }
+  this.items = null;
 };
 
 /**
@@ -303,23 +313,8 @@ Monominoes.Render.prototype.clear = function() {
  * Takes the constructor configuration and builds the inner object, returning it.
  * It is limited to only create the underlying render object, not its children or the attachment to its container.
  */
-Monominoes.Render.prototype.buildItem = function(config) { 
+Monominoes.Render.prototype.buildItem = function() { 
   throw "M.Render.buildItem should be overriden by subclass Render";
-};
-
-/**
- * Builds a child object for the recursive sub rendering.
- */
-Monominoes.Render.prototype.buildChild = function(child,data) {
-  child.render(data,this);
-  this.subitems.push(child.item);
-  if (child.key) {
-    if (child.iterable === true) {
-      this.itemsMap[child.key] = (child.key in this.itemsMap) ? this.itemsMap[child.key] : [];
-      this.itemsMap[child.key].push(child.item);
-    } else this.itemsMap[child.key] = child.item;
-  }
-  return this;
 };
 
 /**
@@ -338,30 +333,12 @@ Monominoes.Render.prototype.childByKey = function(key) {
 };
 
 /**
- * Get a item child (or child of child ...) by the render key.
- * To get a sub item, use dot notation (i.e. "abc.def.ghi").
- * If the key is inexistent returns null. It can retrieve an array of items if the sub render is iterable.
- */
-Monominoes.Render.prototype.itemByKey = function(key) {
-  var parent = null;
-  var render = this;
-  var lastKey = null;
-  var i = new Komunalne.helper.Iterator(key.split("."));
-  while (i.hasNext()) {
-    parent = render;
-    lastKey = i.next();
-    render = render.childMap[lastKey];
-    if (!render) lastKey = null;
-  }
-  return (lastKey != null) ? parent.itemsMap[lastKey] : null;
-};
-
-
-/**
  * Apply Render customization rules, defined by default or during instantiation.
- * Method to be overriden from M.Render defaults.
+ * Method to be overriden from M.Render defaults. The scope of the function is the Render object.
+ * @param item Individual item to be customized.
+ * @param itemdata Individual item data of the individual object.
  */
-Monominoes.Render.prototype.customize = function() {};
+Monominoes.Render.prototype.customize = function(item,itemdata) {};
 
 /**
  * Appends the render to a specific container.
@@ -369,7 +346,10 @@ Monominoes.Render.prototype.customize = function() {};
 Monominoes.Render.prototype.appendTo = function(container) {
   this.parent = Monominoes.util.isRender(container) ? container : this.parent;
   this.container = (Monominoes.Render.getItemFrom(container) || this.container);
-  if (this.container) this.container.append(this.item);
+  if (this.container) {
+    if (this.iterable === true) for (var i in this.items) this.container.append(this.items[i]);
+    else this.container.append(this.items);
+  }
   return this;
 };
 
@@ -418,12 +398,10 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
   "def": null, // Object containing Tag configuration as per defined in Monominoes.Tag.
   "defaultcss": null, // Default class. Used if no class is specified in config.def.class.
   "extracss": null, // Extra class. Used to append a class without removing the default one.
-  "buildItem": function(config) {
-    config = config || {};
-    config.def = config.def || {};
-    var tagcfg = Komunalne.util.clone(config.def);
-    tagcfg.class = Komunalne.util.append((config.def.class || this.defaultcss),config.extracss);
-    return this.tag.build(tagcfg);
+  "buildItem": function() {
+    var config = Komunalne.util.clone(this.config.def || {});
+    config.class = Komunalne.util.append((config.class || this.defaultcss),this.extracss);
+    return this.tag.build(config);
   }
 });
 

@@ -3,9 +3,12 @@
 /* Helpers */
 function createMock(tag) {
   return Monominoes.Render.extend({
-    "buildItem": function() { return $(Monominoes.util.format("<{0}></{0}>",tag)); }
+    "customInit": function() { this.id = (this.id || "mock-" + (createMock.count++)); },
+    "buildItem": function() { return $(Monominoes.util.format("<{0}></{0}>",tag)).attr("id",this.id); },
+    "customize": function(item,itemdata) { item.text(itemdata); }
   });
 };
+createMock.count = 0;
 
 /* Test cases */
 QUnit.test("Monominoes definition", function(assert) {
@@ -187,21 +190,26 @@ QUnit.test("Extend function", function(assert) {
   }
 });
 
-QUnit.test("Render instantiation: Process layout and key-mapped items retrieval", function(assert) {
+QUnit.test("Render instantiation: Process layout, key-mapped items retrieval and custom init", function(assert) {
+  var count = createMock.count;
   var Div = createMock("div");
   var Span = createMock("span");
   var P = createMock("p");
   var subsub = Span({ "key": "subsub" });
-  var sub = new P({ "key": "sub", "children": [ subsub ] });
-  var render = new Div({ 
+  var sub = new P({ "key": "sub", "children": [ subsub ], "id": "sub" });
+  var render = new Div({
+    "id": "master",
     "children": [
       { "render": Span, "config": {} },
       sub
     ]
   });
   
+  assert.equal(render.id,"master","Custom property is set, verified in customInit function");
   assert.ok(Komunalne.util.isArray(render.children),"The children array is created");
-  assert.equal(render.children.length,2,"Only one children is appended in subitems array");
+  assert.equal(render.children.length,2,"Two children are appended in subitems array");
+  assert.equal(render.children[0].id,"mock-" + (count+1),"First child custom property is set in customInit function");
+  assert.equal(render.children[1].id,"sub","Second child custom property is set, verified in customInit function");
   assert.ok(Monominoes.util.isRender(render.children[0],Span),"First child is a render of type Span");
   assert.ok(Monominoes.util.isRender(render.children[1],P),"Second child is a render of type P");
   assert.notOk(Komunalne.util.isFunction(render.children[0]),"First child is a render instance not constructor");
@@ -216,6 +224,8 @@ QUnit.test("Render instantiation: Process layout and key-mapped items retrieval"
   assert.ok(render.childByKey("abc.def") == null,"Inexisting composite key retrieval results in null");
   assert.ok(render.childByKey("sub.def") == null,"Inexisting sub key retrieval results in null");
   assert.ok(render.childByKey("sub.sub.sub") == null,"Inexisting composite sub key retrieval results in null");
+  assert.equal(render.childByKey("sub.subsub").id,"mock-" + (count),
+               "Child of child custom property is set in customInit function");
   
   assert.ok(Komunalne.util.isArray(render.childByKey("sub").children),"The children array is created in child render");
   assert.equal(render.childByKey("sub").children.length,1,"Only one children is appended in child render children array");
@@ -290,35 +300,55 @@ QUnit.test("Render function: Build items, subitems and clear", function(assert) 
   var Span = createMock("span");
   var P = createMock("p");
   var subsub,sub;
-  var render = new Div({ 
+  var render = new Div({
+    "id": "div-id",
     "children": [
-      { "render": Span, "config": {} },
+      { "render": Span, "config": { "id": "first-span" } },
       (sub = new P({ "key": "sub", "children": [ (subsub = Span({ "key": "subsub" })) ] }))
     ]
   }).render(data);
     
-  assert.ok("item" in render,"Item is built after call to render function");
-  assert.ok(Komunalne.util.isInstanceOf(render.item,jQuery),"Item is set as a jQuery object");
-  assert.equal(render.item.prop("tagName"),"DIV","Tag is correctly built on item");
-  assert.ok(Komunalne.util.isArray(render.subitems),"The subitems array is created");
-  assert.equal(render.subitems.length,2,"Two children are appended in subitems array");
-  assert.ok(Komunalne.util.isInstanceOf(render.subitems[0],jQuery),"First subitem is a jQuery instance");
-  assert.equal(render.subitems[0].prop("tagName"),"SPAN","Tag is correctly built in first subitem: SPAN");
-  assert.ok(Komunalne.util.isInstanceOf(render.subitems[1],jQuery),"Second subitem is a jQuery instance");
-  assert.equal(render.subitems[1].prop("tagName"),"P","Tag is correctly built in second subitem: P");
-  assert.deepEqual(Komunalne.util.keys(render.itemsMap),["sub"],"Subitem key is present on items map");
-  assert.ok(Komunalne.util.isInstanceOf(render.itemsMap.sub,jQuery),"Child in items map is a jQuery object");
-  assert.equal(render.itemsMap.sub.prop("tagName"),"P","Object in items map refer to the correct tag");
+  assert.ok("items" in render,"Item is built after call to render function");
+  assert.ok(Komunalne.util.isInstanceOf(render.items,jQuery),"Item is set as a jQuery object");
+  assert.equal(render.items.prop("tagName"),"DIV","Tag is correctly built on item");
+  assert.ok(Komunalne.util.isArray(render.children),"Children property is set as an array");
+  assert.equal(render.children.length,2,"Two children are appended as child renders");
+  assert.ok(Komunalne.util.isInstanceOf(render.children[0].items,jQuery),"First child items property is a jQuery object");
+  assert.equal(render.children[0].items.prop("tagName"),"SPAN","Tag is built in first child items property: SPAN");
+  assert.ok(Komunalne.util.isInstanceOf(render.children[1].items,jQuery),"Second child items property is set as jQuery");
+  assert.equal(render.children[1].items.prop("tagName"),"P","Tag is correctly built in second child: P");
+  assert.deepEqual(Komunalne.util.keys(render.childMap),["sub"],"Child map has one key set");
+  assert.ok(Monominoes.util.isRender(render.childMap.sub,P),"Mapped child render is of type P");
+  assert.ok(Komunalne.util.isInstanceOf(render.childMap.sub.items,jQuery),"Items in mapped child is set as jQuery ");
+  assert.equal(render.childMap.sub.items.prop("tagName"),"P","Mapped child has the correct tag: P");
   
-  aux = render.itemByKey("sub.subsub");
-  assert.ok(Komunalne.util.isInstanceOf(aux,jQuery),"Mapped item is a jQuery object");
-  assert.equal(aux.prop("tagName"),"SPAN","Mapped item refer to the correct tag: SPAN");
+  aux = render.childByKey("sub.subsub");
+  assert.ok(Monominoes.util.isRender(aux,Span),"Mapped child of child render is of type Span");
+  assert.ok(Komunalne.util.isInstanceOf(aux.items,jQuery),"Mapped child of child items is set as jQuery object");
+  assert.equal(aux.items.prop("tagName"),"SPAN","Mapped child of child items refer to the correct tag: SPAN");
   
   render.clear();
   assert.ok(render.item == null,"Item is removed after call to clear");
-  assert.ok(Komunalne.util.isArray(render.subitems),"Subitems property remains an array");
-  assert.equal(render.subitems.length,0,"Subitems array is empty after call to clear");
-  assert.deepEqual(Komunalne.util.keys(render.itemsMap),[],"Items map is empty after call to clear");
+  assert.ok(Komunalne.util.isArray(render.children),"Children property remains an array");
+  assert.equal(render.children.length,2,"Children array is not empty after call to clear");
+  assert.deepEqual(Komunalne.util.keys(render.childMap),["sub"],"Child map is not empty after call to clear");
+});
+
+QUnit.test("Iterable items", function(assert) {
+  var H1 = createMock("h1");
+  var UL = createMock("ul");
+  var LI = createMock("li");
+  var render = new UL({
+    "children": [
+      { "render": H1, "key": "header", "config": { "path": "header" } },
+      { "render": LI, "key": "items", "config": { "path": "data.items", "iterable": true } }
+    ]
+  });
+  var data1 = { "title": "ignored", "header": "Title", "items": [1,2,3,4,5] };
+  var data2 = { "header": "Updated", "items": ["a","b","c"] };
+  
+  render.render(data1);
+  assert.equal(render.children.length,2,"Two child renders appended to base render");
 });
 
 QUnit.test("Tag renders default settings",function(assert) {
