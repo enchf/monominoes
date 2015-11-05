@@ -133,8 +133,9 @@ Monominoes.Render.prototype.postInit = function() {};
  */
 Monominoes.Render.prototype.render = function(data,container) {
   this.updateData(data);
-  this.processLayout();
+  this.createItems();
   this.appendTo(container);
+  this.buildChildren();
   return this;
 };
 
@@ -158,7 +159,7 @@ Monominoes.Render.prototype.updateData = function(data) {
  * - A render instance. It will be taken itself.
  * - Otherwise: Item is ignored.
  */
-Monominoes.Render.prototype.processLayout = function() {
+Monominoes.Render.prototype.createItems = function() {
   var item;
   var child;
   var j;
@@ -170,20 +171,23 @@ Monominoes.Render.prototype.processLayout = function() {
       item = this.buildItem();
       this.customize(item,j.next());
       this.items.push(item);
-      this.buildChild(this,item);
     }
   } else {
     this.items = this.buildItem();
     this.customize(this.items,this.itemData);
-    this.buildChild(this,this.items);
   }
 };
 
-Monominoes.Render.prototype.buildChild = function(render,item) {
-  var i = new Komunalne.helper.Iterator(render.children);
+Monominoes.Render.prototype.buildChildren = function() {
+  var i = new Komunalne.helper.Iterator(this.children);
+  var child;
   while (i.hasNext()) {
-    i.next().render(this.data,item,render);
-  }             
+    child = i.next();
+    if (this.iterable === true) {
+    } else {
+      child.render(this.data,this.items);
+    }
+  }
 };
 
 /**
