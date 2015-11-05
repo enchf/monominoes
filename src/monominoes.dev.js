@@ -194,22 +194,39 @@ Monominoes.Render.prototype.postInit = function() {};
  * @return Returns the Render object itself.
  */
 Monominoes.Render.prototype.render = function(data,container) {
-  this.data = (data || this.data);
-  if (this.data == null) throw "No global data specified";
-  if (container != null) {
-    container = Monominoes.Render.getItemFrom(container);
-    if (container == null) throw "Invalid container passed to render";
-  }
-  this.container = (container || this.container);
+  this.updateGlobalData(data);
+  this.updateContainer(container);
   this.draw();
   return this;
 };
 
+/**
+ * Method which draws the underlying item at rendering.
+ */
 Monominoes.Render.prototype.draw = function() {
   this.updateData();
   this.createItems();
   this.appendItems();
   this.buildChildren();
+};
+
+/**
+ * Updates the base global data of the render.
+ */
+Monominoes.Render.prototype.updateGlobalData = function(data) {
+  this.data = (data || this.data);
+  if (this.data == null) throw "No global data specified";
+};
+
+/**
+ * Updates the render instance container.
+ */
+Monominoes.Render.prototype.updateContainer = function(container) {
+  if (container != null) {
+    container = Monominoes.Render.getItemFrom(container);
+    if (container == null) throw "Invalid container passed to render";
+  }
+  this.container = (container || this.container);
 };
 
 /**
@@ -249,6 +266,9 @@ Monominoes.Render.prototype.createItems = function() {
   }
 };
 
+/**
+ * Dispatch the children rendering.
+ */
 Monominoes.Render.prototype.buildChildren = function() {
   var i = new Komunalne.helper.Iterator(this.children);
   var child;
