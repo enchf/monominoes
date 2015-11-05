@@ -170,8 +170,9 @@ Monominoes.Render.prototype.init = function(cfg) {
   this.populateDefaults();
   this.applyConfig(cfg);
   this.buildSuper();
+  this.preInit();
   this.buildLayout();
-  this.customInit();
+  this.postInit();
   return this;
 };
 
@@ -210,6 +211,11 @@ Monominoes.Render.prototype.buildSuper = function() {
 };
 
 /**
+ * Pre layout build custom execution.
+ */
+Monominoes.Render.prototype.preInit = function() {};
+
+/**
  * Builds the inner render structure based on the layout definition.
  * It does not create the inner jQuery objects: That is done at render execution.
  */
@@ -239,9 +245,9 @@ Monominoes.Render.prototype.buildLayout = function() {
 };
 
 /**
- * Any element customization at the render instantiation.
+ * Post layout build custom execution.
  */
-Monominoes.Render.prototype.customInit = function() {};
+Monominoes.Render.prototype.postInit = function() {};
 
 /**
  * Renders the object. Takes care of the render children, and its attachment to the container object.

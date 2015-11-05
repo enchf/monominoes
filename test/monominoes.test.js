@@ -3,7 +3,7 @@
 /* Helpers */
 function createMock(tag) {
   return Monominoes.Render.extend({
-    "customInit": function() { this.id = (this.id || "mock-" + (createMock.count++)); },
+    "postInit": function() { this.id = (this.id || "mock-" + (createMock.count++)); },
     "buildItem": function() { return $(Monominoes.util.format("<{0}></{0}>",tag)).attr("id",this.id); },
     "customize": function(item,itemdata) { item.text(itemdata); }
   });
@@ -205,11 +205,11 @@ QUnit.test("Render instantiation: Process layout, key-mapped items retrieval and
     ]
   });
   
-  assert.equal(render.id,"master","Custom property is set, verified in customInit function");
+  assert.equal(render.id,"master","Custom property is set, verified in postInit function");
   assert.ok(Komunalne.util.isArray(render.children),"The children array is created");
   assert.equal(render.children.length,2,"Two children are appended in subitems array");
-  assert.equal(render.children[0].id,"mock-" + (count+1),"First child custom property is set in customInit function");
-  assert.equal(render.children[1].id,"sub","Second child custom property is set, verified in customInit function");
+  assert.equal(render.children[0].id,"mock-" + (count+1),"First child custom property is set in postInit function");
+  assert.equal(render.children[1].id,"sub","Second child custom property is set, verified in postInit function");
   assert.ok(Monominoes.util.isRender(render.children[0],Span),"First child is a render of type Span");
   assert.ok(Monominoes.util.isRender(render.children[1],P),"Second child is a render of type P");
   assert.notOk(Komunalne.util.isFunction(render.children[0]),"First child is a render instance not constructor");
@@ -225,7 +225,7 @@ QUnit.test("Render instantiation: Process layout, key-mapped items retrieval and
   assert.ok(render.childByKey("sub.def") == null,"Inexisting sub key retrieval results in null");
   assert.ok(render.childByKey("sub.sub.sub") == null,"Inexisting composite sub key retrieval results in null");
   assert.equal(render.childByKey("sub.subsub").id,"mock-" + (count),
-               "Child of child custom property is set in customInit function");
+               "Child of child custom property is set in postInit function");
   
   assert.ok(Komunalne.util.isArray(render.childByKey("sub").children),"The children array is created in child render");
   assert.equal(render.childByKey("sub").children.length,1,"Only one children is appended in child render children array");
@@ -350,7 +350,7 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   assert.ok(render.container === container,"Container is kept after clear for sucessive redrawing");
 });
 
-QUnit.test("Path, parent and itemData assignment", function(assert) {
+QUnit.test("Path, container and itemData assignment", function(assert) {
   var Div = createMock("div");
   var P = createMock("p");
   var Span = createMock("span");
