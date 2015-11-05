@@ -212,6 +212,14 @@ Monominoes.Render.prototype.buildItem = function() {
 };
 
 /**
+ * Gets a child mapped render using simple key.
+ * This works only for the immediate children, not child of children.
+ */
+Monominoes.Render.prototype.getChild = function(key) {
+  return this.childMap[key];
+};
+
+/**
  * Get a child (or child of child ...) by the render key.
  * To get a sub render, use dot notation (i.e. "abc.def.ghi").
  * If the key is inexistent returns null.
@@ -220,7 +228,7 @@ Monominoes.Render.prototype.childByKey = function(key) {
   var render = this;
   var i = new Komunalne.helper.Iterator(key.split("."));
   while (i.hasNext()) {
-    render = render.childMap[i.next()];
+    render = render.getChild(i.next());
     if (!render) break;
   }
   return render;
