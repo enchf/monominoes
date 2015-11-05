@@ -4,7 +4,6 @@
  * iterative definition of sub-elements.
  */
 Monominoes.Render = function(){};
-Monominoes.Render.prototype.baseData = null;  /* The global data used to produce the render object */
 Monominoes.Render.prototype.data = null;      /* The global data used to produce the render object */
 Monominoes.Render.prototype.itemData = null;  /* Data specific to the item being rendered */
 Monominoes.Render.prototype.path = null;      /* The path to be used to get the rendered data */
@@ -133,11 +132,22 @@ Monominoes.Render.prototype.postInit = function() {};
  * @return Returns the Render object itself.
  */
 Monominoes.Render.prototype.render = function(data,container) {
-  this.updateData(data);
-  this.createItems();
-  this.appendTo(container);
-  this.buildChildren();
+  this.data = (data || this.data);
+  if (this.data == null) throw "No global data specified";
+  if (container != null) {
+    container = Monominoes.Render.getItemFrom(container);
+    if (container == null) throw "Invalid container passed to render";
+  }
+  this.container = (container || this.container);
+  this.draw();
   return this;
+};
+
+Monominoes.Render.prototype.draw = function() {
+  this.updateData();
+  this.createItems();
+  this.appendItems();
+  this.buildChildren();
 };
 
 /**
@@ -145,9 +155,6 @@ Monominoes.Render.prototype.render = function(data,container) {
  * Throws an exception if the data results into null/undefined.
  */
 Monominoes.Render.prototype.updateData = function(data) {
-  this.baseData = (this.parent == null) ? (data || this.baseData) : this.parent.baseData;
-  this.data = (data || this.data);
-  if (this.data == null) throw "No global data specified";
   this.itemData = this.path ? Komunalne.util.path(this.data,this.path) : this.data;
 };
 
@@ -247,8 +254,7 @@ Monominoes.Render.prototype.customize = function(item,itemdata) {};
 /**
  * Appends the render to a specific container.
  */
-Monominoes.Render.prototype.appendTo = function(container) {
-  this.container = (Monominoes.Render.getItemFrom(container) || this.container);
+Monominoes.Render.prototype.appendItems = function() {
   if (this.container) {
     if (this.iterable === true) for (var i in this.items) this.container.append(this.items[i]);
     else this.container.append(this.items);
