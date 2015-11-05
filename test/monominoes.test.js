@@ -279,18 +279,24 @@ QUnit.test("Render function: Test updateData", function(assert) {
   var aux;
   assert.ok("data" in a,"Data is set on render instance");
   assert.deepEqual(a.data,data,"Data is correctly set");
+  assert.ok("itemData" in a,"Item data is set on render instance");
+  assert.ok(a.itemData == null,"Item data is null before rendering");
   aux = a;
   a = a.render();
   assert.ok(a === aux,"Render is returning the instance itself");
   assert.ok("data" in a,"Data is set on render instance after render function call without arguments");
   assert.deepEqual(a.data,data,"Data remains the same after render function call without arguments");
+  assert.deepEqual(a.itemData,data,"Item data is set equal to data because there is no path specified");
   a.render([1,2,3]);
   assert.ok("data" in a,"Data is set on render instance after render call with data argument");
   assert.deepEqual(a.data,[1,2,3],"Data is correctly updated after render call with data argument");
+  assert.deepEqual(a.itemData,[1,2,3],"Item data is correctly updated after render call with data argument");
   a = new Div();
   assert.ok(a.data == null,"Data is null if not set at instantiation");
+  assert.ok(a.itemData == null,"Item data is null before rendering");
   a.render("data");
   assert.equal(a.data,"data","Data is updated from null after call to render with arguments");
+  assert.equal(a.itemData,"data","Item data is updated from null after call to render with arguments");
 });
 
 QUnit.test("Render function: Build items, customization and clear", function(assert) {
@@ -389,15 +395,13 @@ QUnit.test("Path, container and itemData assignment", function(assert) {
           "render": Span, 
           "config": { 
             "key": "id", 
-            "path": "id",
-            "relative": true
+            "path": "id" // Path will be relative to the iteration item.
           }
         },{ 
           "render": Span, 
           "config": { 
             "key": "value", 
-            "path": "value",
-            "relative": true
+            "path": "value" // Path will be relative to the iteration item.
           }
         }]
       }
