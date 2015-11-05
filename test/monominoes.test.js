@@ -390,7 +390,7 @@ QUnit.test("Path, container and itemData assignment", function(assert) {
         "iterable": true,
         "key": "options",
         "path": "options",
-        "customize": function() {},
+        "customize": function(item,itemdata) { item.text(itemdata.id); },
         "children": [{ 
           "render": Span, 
           "config": { 
@@ -411,9 +411,9 @@ QUnit.test("Path, container and itemData assignment", function(assert) {
     "header": "Header",
     "text": "This is text",
     "options": [
-      { "id": 1, "value": "one" },
-      { "id": 2, "value": "two" },
-      { "id": 3, "value": "three" }
+      { "id": 1, "value": "one", "key": "uno" },
+      { "id": 2, "value": "two", "key": "dos" },
+      { "id": 3, "value": "three", "key": "tres" }
     ]
   };
   
@@ -456,9 +456,9 @@ QUnit.test("Path, container and itemData assignment", function(assert) {
   assert.notOk(Komunalne.util.isInstanceOf(aux.items,jQuery),"Options render items is not a jQuery object");
   assert.equal(aux.items.length,3,"Options render length is 3");
   assert.equal(aux.container.children().length,4,"Paragraph plus 3 options items are appended to base render items");
-  assert.equal(Komunalne.$.elementText(aux.items[0]),"","Text for options render items is not set in first item");
-  assert.equal(Komunalne.$.elementText(aux.items[1]),"","Text for options render items is not set in second item");
-  assert.equal(Komunalne.$.elementText(aux.items[2]),"","Text for options render items is not set in third item");
+  assert.equal(Komunalne.$.elementText(aux.items[0]),"1","Text for options render items is 1 in first item");
+  assert.equal(Komunalne.$.elementText(aux.items[1]),"2","Text for options render items is 2 in second item");
+  assert.equal(Komunalne.$.elementText(aux.items[2]),"3","Text for options render items is 3 in third item");
   
 });
 
