@@ -8,6 +8,7 @@ Monominoes.Render.prototype.data = null;      /* The global data used to produce
 Monominoes.Render.prototype.itemData = null;  /* Data specific to the item being rendered */
 Monominoes.Render.prototype.path = null;      /* The path to be used to get the rendered data */
 Monominoes.Render.prototype.iterable = false; /* True if the children elements are produced from iterable data */
+Monominoes.Render.prototype.relative = false; /* True to lookup itemData in parent.itemData instead of base data object */
 Monominoes.Render.prototype.items = null;     /* The underlying objects produced by the render. If iterable is an array */
 Monominoes.Render.prototype.container = null; /* Render item container, if any formally defined */
 Monominoes.Render.prototype.children = null;  /* Underlying array of Renders of the children items */
@@ -115,12 +116,13 @@ Monominoes.Render.prototype.customInit = function() {};
  * - Render Object: If the function detects it is a Render, 
  * - Otherwise, render function ignores the parameter.
  * To keep the existing data or container, pass null or no argument when invoking render function.
+ * @param parent Helper parameter for iterable items. Explicitly specify parent render with this parameter.
  * @return Returns the Render object itself.
  */
-Monominoes.Render.prototype.render = function(data,container) {
+Monominoes.Render.prototype.render = function(data,container,parent) {
   this.updateData(data);
   this.processLayout();
-  this.appendTo(container);
+  this.appendTo(container,parent);
   return this;
 };
 
@@ -147,7 +149,7 @@ Monominoes.Render.prototype.updateData = function(data) {
 Monominoes.Render.prototype.processLayout = function() {
   var item;
   var child;
-  var i,j;
+  var j;
   this.clear();
   if (this.iterable === true) {
     this.items = [];
@@ -156,14 +158,20 @@ Monominoes.Render.prototype.processLayout = function() {
       item = this.buildItem();
       this.customize(item,j.next());
       this.items.push(item);
+      this.buildChild(this,item);
     }
   } else {
     this.items = this.buildItem();
     this.customize(this.items,this.itemData);
+    this.buildChild(this,this.items);
   }
-  
-  i = new Komunalne.helper.Iterator(this.children);
-  while (i.hasNext()) i.next().render(this.data,this);
+};
+
+Monominoes.Render.prototype.buildChild = function(render,item) {
+  var i = new Komunalne.helper.Iterator(render.children);
+  while (i.hasNext()) {
+    i.next().render(this.data,item,render);
+  }             
 };
 
 /**
@@ -213,8 +221,8 @@ Monominoes.Render.prototype.customize = function(item,itemdata) {};
 /**
  * Appends the render to a specific container.
  */
-Monominoes.Render.prototype.appendTo = function(container) {
-  this.parent = Monominoes.util.isRender(container) ? container : this.parent;
+Monominoes.Render.prototype.appendTo = function(container,parent) {
+  this.parent = Monominoes.util.isRender(container) ? container : (parent || this.parent);
   this.container = (Monominoes.Render.getItemFrom(container) || this.container);
   if (this.container) {
     if (this.iterable === true) for (var i in this.items) this.container.append(this.items[i]);
@@ -236,10 +244,10 @@ Monominoes.Render.prototype.appendTo = function(container) {
  */
 Monominoes.Render.getItemFrom = function(object) {
   var aux;
-  return (Komunalne.util.isInstanceOf(object,"string")) ? ((aux = $(object)).length > 0 ? $(aux).get(0) : null) :
+  return (Komunalne.util.isInstanceOf(object,"string")) ? ((aux = $(object)).length > 0 ? $($(aux).get(0)) : null) :
          (Komunalne.util.isInstanceOf(object,jQuery)) ? object :
          (object instanceof Element) ? $(object) :
-         (Monominoes.util.isRender(object)) ? object.item : null;
+         (Monominoes.util.isRender(object)) ? object.items : null;
 };
 
 /**

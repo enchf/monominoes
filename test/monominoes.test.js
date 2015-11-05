@@ -317,6 +317,7 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   assert.ok("id" in render.children[1],"Render id custom property is set on second child");
   assert.ok("id" in render.children[1].children[0],"Render id custom property is set on child of child");
   assert.equal($("#div-id").length,1,"Render item exists in DOM");
+  assert.ok(render.container === container,"Container assigned for base render");
   
   // Items creation.
   assert.ok("items" in render,"Item is built after call to render function");
@@ -346,9 +347,10 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   assert.equal(render.children.length,2,"Children array is not empty after call to clear");
   assert.deepEqual(Komunalne.util.keys(render.childMap),["sub"],"Child map is not empty after call to clear");
   assert.equal($("#div-id").length,0,"Render item doesn't exist in DOM after calling clear method");
+  assert.ok(render.container === container,"Container is kept after clear for sucessive redrawing");
 });
 
-QUnit.test("Path and itemData assignment", function(assert) {
+QUnit.test("Path, parent and itemData assignment", function(assert) {
   var Div = createMock("div");
   var P = createMock("p");
   var Span = createMock("span");
@@ -358,46 +360,100 @@ QUnit.test("Path and itemData assignment", function(assert) {
     "customize": function(item,itemdata) { item.text(itemdata.title); }
   });
   var data = { "data": { "title": "Title", "items": ["one","two","three"] } };
+  var itemsRender;
+  var aux;
   
   render.render(data);
-  assert.equal(render.items.text(),"Title","Customized title is set from base render path config");
+  itemsRender = render.childByKey("items");
+  assert.equal(Komunalne.$.elementText(render.items),"Title","Customized title is set from base render path config");
   assert.deepEqual(render.itemData,data.data,"Base render item data correctly set");
-  assert.deepEqual(render.childByKey("items").itemData,data.data.items,"Iterable child render item data set");
+  assert.deepEqual(itemsRender.itemData,data.data.items,"Iterable child render item data set");
+  assert.ok(render === itemsRender.parent,"Parent is correctly set for child render");
+  assert.ok(render.items === itemsRender.container,"Container is set for children during rendering");
+  assert.ok(render.container === null,"If container is not specified it remains null for base render");
   
   render = new Div({
+    "id": "base-div",
     "customize": function(item,itemdata) { item.text(itemdata.header); },
     "children": [{
       "render": P,
       "config": { "key": "paragraph", "path": "text" }
     },{
-      "render": P,
+      "render": Div,
       "config": {
-        "key": "multiparagraph",
+        "iterable": true,
+        "key": "options",
         "path": "options",
         "customize": function() {},
-        "children": [{ "render": Span, "config": { "key": "options", "path": "options.items", "iterable": true } }]
+        "children": [{ 
+          "render": Span, 
+          "config": { 
+            "key": "id", 
+            "path": "id"
+          }
+        },{ 
+          "render": Span, 
+          "config": { 
+            "key": "value", 
+            "path": "value"
+          }
+        }]
       }
     }] 
   });
   data = { 
     "header": "Header",
     "text": "This is text",
-    "options": {
-      "items": [1,2,3,4,5]
-    }
+    "options": [
+      { "id": 1, "value": "one" },
+      { "id": 2, "value": "two" },
+      { "id": 3, "value": "three" }
+    ]
   };
   
-  render.render(data);
-  assert.deepEqual(render.itemData,data,"Data set without path equals base data object");
-  assert.deepEqual(render.children[0].itemData,data.text,"First child with path item data");
-  assert.deepEqual(render.children[1].itemData,data.options,"Second child with path item data");
-  assert.deepEqual(render.childByKey("paragraph").itemData,data.text,"First mapped child with path item data");
-  assert.deepEqual(render.childByKey("multiparagraph").itemData,data.options,"Second mapped child with path item data");
-  assert.deepEqual(render.children[1].children[0].itemData,data.options.items,"Iterable child of child item data");
-  assert.deepEqual(render.childByKey("multiparagraph.options").itemData,data.options.items,
-                   "Iterable mapped child of child");
-  assert.deepEqual(render.children[1].childByKey("options").itemData,data.options.items,
-                   "Iterable mapped child of child item data");
+  render.render(data,"#test-div");
+  assert.ok(render.container != null,"Base render container is not null");
+  assert.equal(render.container.attr("id"),"test-div","Base render is placed on test-div DOM element");
+  assert.ok(render.path == null,"There is no path specified for base render");
+  assert.ok(render.parent == null,"There is no parent render for base render");
+  assert.deepEqual(render.data,data,"Data is assigned to base render");
+  assert.deepEqual(render.itemData,data,"No path specified in base render so item data is equal to data");
+  assert.notOk(Komunalne.util.isArray(render.items),"Base render items is not an array");
+  assert.ok(Komunalne.util.isInstanceOf(render.items,jQuery),"Base render items is a jQuery object");
+  assert.equal(render.items.attr("id"),"base-div","Id is correctly set on customize function");
+  assert.equal($("#base-div").length,1,"Base render items is present in DOM");
+  assert.equal(Komunalne.$.elementText(render.items),data.header,"Text for base render items is set");
+  
+  aux = render.childByKey("paragraph");
+  assert.ok(aux.container != null,"Paragraph render container is not null");
+  assert.ok(aux.container === render.items,"Paragraph container is base render items");
+  assert.equal(aux.container.attr("id"),"base-div","Paragraph container id is items id of base render");
+  assert.equal(aux.path,"text","Paragraph path set to text");
+  assert.ok(aux.parent === render,"Paragraph parent is base render");
+  assert.deepEqual(aux.data,data,"Data is always absolute and equal to data in paragraph render");
+  assert.deepEqual(aux.itemData,data.text,"Item data set according to path in paragraph render");
+  assert.notOk(Komunalne.util.isArray(aux.items),"Paragraph render items is not an array");
+  assert.ok(Komunalne.util.isInstanceOf(aux.items,jQuery),"Paragraph render items is a jQuery object");
+  assert.ok(aux.items.attr("id").indexOf("mock") >= 0,"Id is set on paragraph render items");
+  assert.equal($("#" + aux.items.attr("id")).length,1,"Paragraph render items is present in DOM");
+  assert.equal(Komunalne.$.elementText(aux.items),data.text,"Text for paragraph render items is set");
+  
+  aux = render.childByKey("options");
+  assert.ok(aux.container != null,"Options render container is not null");
+  assert.ok(aux.container === render.items,"Options container is base render items");
+  assert.equal(aux.container.attr("id"),"base-div","Options container id is items id of base render");
+  assert.equal(aux.path,"options","Options path set to options");
+  assert.ok(aux.parent === render,"Options parent is base render");
+  assert.deepEqual(aux.data,data,"Data is always absolute and equal to data in options render");
+  assert.deepEqual(aux.itemData,data.options,"Item data set according to path in options render");
+  assert.ok(Komunalne.util.isArray(aux.items),"Options render items is an array");
+  assert.notOk(Komunalne.util.isInstanceOf(aux.items,jQuery),"Options render items is not a jQuery object");
+  assert.equal(aux.items.length,3,"Options render length is 3");
+  assert.equal(aux.container.children().length,4,"Paragraph plus 3 options items are appended to base render items");
+  assert.equal(Komunalne.$.elementText(aux.items[0]),"","Text for options render items is not set in first item");
+  assert.equal(Komunalne.$.elementText(aux.items[1]),"","Text for options render items is not set in second item");
+  assert.equal(Komunalne.$.elementText(aux.items[2]),"","Text for options render items is not set in third item");
+  
 });
 
 QUnit.test("Iterable items", function(assert) {
@@ -413,6 +469,7 @@ QUnit.test("Iterable items", function(assert) {
   var data1 = { "title": "ignored", "header": "Title", "items": [1,2,3,4,5] };
   var data2 = { "header": "Updated", "items": ["a","b","c"] };
   var header,items;
+  var i;
   
   render.render(data1);
   header = render.childByKey("header");
@@ -426,7 +483,21 @@ QUnit.test("Iterable items", function(assert) {
   assert.deepEqual(items.itemData,[1,2,3,4,5],"Iterable item data is correctly set according to path");
   
   // Iterability test.
+  i = 1;
   assert.equal(items.items.length,5,"Items child render has 5 items from the data received");
+  while (i <= 5) assert.equal(items.items[i-1].text(),i,"Checking items for the first data assignment: " + (i++));
+  
+  i = 0;
+  render.render(data2);
+  assert.equal(render.children.length,2,"Two child renders appended to base render in the second rendering");
+  assert.ok(Komunalne.util.isInstanceOf(header.items,jQuery),"Header child render preserves a single item");
+  assert.ok(Komunalne.util.isArray(items.items),"Items child render preserves items property as an array");
+  assert.deepEqual(render.itemData,data2,"Item data is correctly updated for base render");
+  assert.equal(header.itemData,"Updated","Header item data is updated in second rendering");
+  assert.deepEqual(items.itemData,["a","b","c"],"Iterable item data is updated in second rendering");
+  assert.equal(items.items.length,3,"Items child render has 5 items from the data received");
+  while (i < 3) assert.equal(items.items[i].text(),data2.items[i],
+                             "Checking items for the updated data: " + data2.items[i++]);
 });
 
 QUnit.test("Tag renders default settings",function(assert) {
