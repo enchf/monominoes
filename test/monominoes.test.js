@@ -389,13 +389,15 @@ QUnit.test("Path, parent and itemData assignment", function(assert) {
           "render": Span, 
           "config": { 
             "key": "id", 
-            "path": "id"
+            "path": "id",
+            "relative": true
           }
         },{ 
           "render": Span, 
           "config": { 
             "key": "value", 
-            "path": "value"
+            "path": "value",
+            "relative": true
           }
         }]
       }

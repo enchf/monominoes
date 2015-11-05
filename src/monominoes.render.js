@@ -92,11 +92,18 @@ Monominoes.Render.prototype.buildLayout = function() {
     i = new Komunalne.helper.Iterator(config);
     while (i.hasNext()) {
       r = i.next();
-      r = (Monominoes.util.isRender(r)) ? Monominoes.util.concrete(r) :
-          (Komunalne.util.isInstanceOf(r,Object) && Monominoes.util.isRender(r.render)) ? 
-            (Komunalne.util.isFunction(r.render) ? r.render(r.config) : r.render) : null;
-      if (r) this.children.push(r);
-      if (r.key) this.childMap[r.key] = r;
+      r = (Monominoes.util.isRender(r)) ? 
+            Monominoes.util.concrete(r) :
+            (
+              (Komunalne.util.isInstanceOf(r,Object) && Monominoes.util.isRender(r.render)) ? 
+              (Komunalne.util.isFunction(r.render) ? r.render(r.config) : r.render) 
+              : null
+            );
+      if (r) {
+        this.children.push(r);
+        if (r.key) this.childMap[r.key] = r;
+        r.parent = this;
+      }
     }
   }
 };
@@ -116,13 +123,12 @@ Monominoes.Render.prototype.customInit = function() {};
  * - Render Object: If the function detects it is a Render, 
  * - Otherwise, render function ignores the parameter.
  * To keep the existing data or container, pass null or no argument when invoking render function.
- * @param parent Helper parameter for iterable items. Explicitly specify parent render with this parameter.
  * @return Returns the Render object itself.
  */
-Monominoes.Render.prototype.render = function(data,container,parent) {
+Monominoes.Render.prototype.render = function(data,container) {
   this.updateData(data);
   this.processLayout();
-  this.appendTo(container,parent);
+  this.appendTo(container);
   return this;
 };
 
@@ -221,8 +227,7 @@ Monominoes.Render.prototype.customize = function(item,itemdata) {};
 /**
  * Appends the render to a specific container.
  */
-Monominoes.Render.prototype.appendTo = function(container,parent) {
-  this.parent = Monominoes.util.isRender(container) ? container : (parent || this.parent);
+Monominoes.Render.prototype.appendTo = function(container) {
   this.container = (Monominoes.Render.getItemFrom(container) || this.container);
   if (this.container) {
     if (this.iterable === true) for (var i in this.items) this.container.append(this.items[i]);
