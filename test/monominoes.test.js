@@ -257,7 +257,7 @@ QUnit.test("Helper function getItemFrom", function(assert) {
   suite.add({ "args": ["<div></div>"], "msg": "Using HTML string" });
   suite.add({ "args": [$("#qunit")], "msg": "Using jQuery objects" });
   suite.add({ "args": [document.getElementsByTagName("script")[0]], "msg": "Using HTML DOM Element objects" });
-  //suite.add({ "args": [Monominoes.renders.DIV()], "msg": "Using Render itself" });
+  suite.add({ "args": [createMock("div")().render("text")], "msg": "Using Render itself" });
   suite.execute(assert.buildFor("ok"),Monominoes.Render.getItemFrom);
   
   suite.clear();

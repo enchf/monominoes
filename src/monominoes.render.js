@@ -272,7 +272,7 @@ Monominoes.Render.getItemFrom = function(object) {
   return (Komunalne.util.isInstanceOf(object,"string")) ? ((aux = $(object)).length > 0 ? $($(aux).get(0)) : null) :
          (Komunalne.util.isInstanceOf(object,jQuery)) ? object :
          (object instanceof Element) ? $(object) :
-         (Monominoes.util.isRender(object)) ? object.items : null;
+         (Monominoes.util.isRender(object)) ? (object.iterable === true ? object.items[0] : object.items) : null;
 };
 
 /**
