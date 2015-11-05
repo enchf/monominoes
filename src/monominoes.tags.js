@@ -65,3 +65,27 @@ Monominoes.Tag.full = Monominoes.Tag.open + "</{0}>";
     Monominoes.tags[tag.toUpperCase()] = new Monominoes.Tag(tag);
   }
 })();
+
+/* Tag renderers */
+Monominoes.renders.TAG = Monominoes.Render.extend({
+  "tag": null, // To be overriden by concrete Tag render definition.
+  "def": null, // Object containing Tag configuration as per defined in Monominoes.Tag.
+  "defaultcss": null, // Default class. Used if no class is specified in config.def.class.
+  "extracss": null, // Extra class. Used to append a class without removing the default one.
+  "buildItem": function() {
+    var config = Komunalne.util.clone(this.config.def || {});
+    config.class = Komunalne.util.append((config.class || this.defaultcss),this.extracss);
+    return this.tag.build(config);
+  }
+});
+
+(function() {
+  var tag;
+  for (var t in Monominoes.tags) {
+    tag = Monominoes.tags[t];
+    Monominoes.renders[t] = Monominoes.renders.TAG.extend({
+      "tag": tag,
+      "defaultcss": Monominoes.util.format("monominoes-{0}",tag.name)
+    });
+  }
+})();
