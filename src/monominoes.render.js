@@ -5,11 +5,9 @@
  */
 Monominoes.Render = function(){};
 Monominoes.Render.prototype.data = null;      /* The global data used to produce the render object */
-Monominoes.Render.prototype.itemData = null;  /* Data used to produce the underlying items */
 Monominoes.Render.prototype.path = null;      /* The path to be used to get the rendered data */
 Monominoes.Render.prototype.iterable = false; /* True if the children elements are produced from iterable data */
 Monominoes.Render.prototype.items = null;     /* The underlying objects produced by the render. If iterable is an array */
-Monominoes.Render.prototype.container = null; /* Render item container, if any formally defined */
 Monominoes.Render.prototype.defaults = null;  /* Default configuration object */
 Monominoes.Render.prototype.config = null;    /* Config object used to build the render. */
 Monominoes.Render.prototype.layout = null;    /* Configuration of the sub-elements */
