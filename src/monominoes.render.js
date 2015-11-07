@@ -79,7 +79,7 @@ Monominoes.Item.prototype.drawChildren = function() {
     render = i.next();
     data = render.extractData(this.data);
     index = i.currentKey();
-    if (render.iterable === true) {
+    if (render.isIterable()) {
       j = new Komunalne.helper.Iterator(data);
       baseIndex = index + ".";
       while (j.hasNext()) this.pushChildren(container,render,j.next(),baseIndex + j.currentKey());
@@ -116,7 +116,7 @@ Monominoes.Item.getContainerFrom = function(object) {
          (Komunalne.util.isInstanceOf(object,jQuery)) ? object :
          (object instanceof Element) ? $(object) :
          (Komunalne.util.isInstanceOf(object,Monominoes.Item)) ? object.item :
-         (Monominoes.util.isRender(object)) ? (object.iterable === true ? object.items[0] : object.items) : null;
+         (Monominoes.util.isRender(object)) ? (object.isIterable() ? object.items[0] : object.items) : null;
 };
 
 /* Render Functions definition, overridable at extension point, and available in defaults and super objects */
@@ -135,6 +135,11 @@ Monominoes.Render.prototype.init = function(cfg) {
   if (this.data != null) this.updateGlobalData();
   return this;
 };
+
+/**
+ * Render iterability flag test.
+ */
+Monominoes.Render.prototype.isIterable = function() { return this.iterable === true; };
 
 /**
  * Creates the defaults object, holding the original prototype defined for the Render.
@@ -270,7 +275,7 @@ Monominoes.Render.prototype.extractData = function(data) {
   var base,result;
   base = (this.absolute === true || data == null) ? this.data : data;
   result = this.path ? Komunalne.util.path(base,this.path) : base;
-  result = (this.iterable === true) ? result : [result];
+  result = (this.isIterable()) ? result : [result];
   return result;
 };
 
