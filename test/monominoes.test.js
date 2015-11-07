@@ -301,8 +301,9 @@ QUnit.test("Helper function getContainerFrom", function(assert) {
   suite.add({ "args": [[]], "msg": "Null from arrays" });
   suite.add({ "args": [null], "msg": "Null from null" });
   suite.add({ "args": ["inexistent-id"], "msg": "Null from inexistent elements using selector" });
-  suite.add({ "args": [createMock("div")()], "msg": "Null from non built Render" });
+  suite.add({ "args": [(render = createMock("div")())], "msg": "Null from non built Render" });
   suite.add({ "args": [createMock("span")], "msg": "Null from Render constructor" });
+  suite.add({ "args": [new Monominoes.Item($("#test-div"),render,"data",0)], "msg": "Null from non built Item" });
   suite.execute(assert.buildFor("notOk"),Monominoes.Item.getContainerFrom);
 });
 
