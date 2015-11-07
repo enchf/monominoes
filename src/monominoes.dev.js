@@ -178,7 +178,7 @@ Monominoes.Item.getContainerFrom = function(object) {
          (Komunalne.util.isInstanceOf(object,jQuery)) ? object :
          (object instanceof Element) ? $(object) :
          (Komunalne.util.isInstanceOf(object,Monominoes.Item)) ? object.item :
-         (Monominoes.util.isRender(object)) ? (object.isIterable() ? object.items[0] : object.items) : null;
+         (Monominoes.util.isRender(object) ? object.items[0].item : null);
 };
 
 /* Render Functions definition, overridable at extension point, and available in defaults and super objects */

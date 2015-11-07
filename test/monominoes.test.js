@@ -341,11 +341,14 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   // Customization and DOM test.
   assert.ok("id" in render,"Render id custom property is set");
   assert.equal(render.id,"div-id","Render id custom property value is correct");
-  assert.ok("id" in render.children[0],"Render id custom property is set on child");
-  assert.equal(render.children[0].id,"first-span","Render id custom property value is correct on child");
-  assert.ok("id" in render.children[1],"Render id custom property is set on second child");
-  assert.ok("id" in render.children[1].children[0],"Render id custom property is set on child of child");
+  assert.ok("id" in render.layout.children[0],"Render id custom property is set on child");
+  assert.equal(render.layout.children[0].id,"first-span","Render id custom property value is correct on child");
+  assert.ok("id" in render.layout.children[1],"Render id custom property is set on second child");
+  assert.ok("id" in render.layout.children[1].layout.children[0],"Render id custom property is set on child of child");
   assert.equal($("#div-id").length,1,"Render item exists in DOM");
+  
+  
+  
   assert.ok(render.container === container,"Container assigned for base render");
   
   // Items creation.
