@@ -16,6 +16,9 @@ QUnit.test("Monominoes definition", function(assert) {
   assert.ok(Monominoes.util,"Monominoes util container defined");
   assert.ok(Monominoes.tags,"Monominoes tags container defined");
   assert.ok(Monominoes.renders,"Monominoes renders container defined");
+  assert.ok(Komunalne.util.isFunction(Monominoes.Render),"Render class created");
+  assert.ok(Komunalne.util.isFunction(Monominoes.Item),"Item class created");
+  assert.ok(Komunalne.util.isFunction(Monominoes.Tag),"Tag class created");
 });
 
 QUnit.test("Concrete method from util", function(assert) {
