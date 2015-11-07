@@ -116,6 +116,9 @@ Monominoes.Item.prototype.destroy = function() {
   this.item = null;
 };
 
+/**
+ * Draw the item.
+ */
 Monominoes.Item.prototype.draw = function() {
   this.item = this.render.buildItem();
   this.render.customize(this.item,this.data);
@@ -123,6 +126,9 @@ Monominoes.Item.prototype.draw = function() {
   this.drawChildren();
 };
 
+/**
+ * Draw the underlying children using master render layout.
+ */
 Monominoes.Item.prototype.drawChildren = function() {
   var container,render,data,index;
   var i,j,baseIndex;
@@ -140,6 +146,9 @@ Monominoes.Item.prototype.drawChildren = function() {
   }
 };
 
+/**
+ * Recursive assignment and drawing of children items.
+ */
 Monominoes.Item.prototype.pushChildren = function(container,render,data,index) {
   var item;
   item = new Monominoes.Item(container,render,data,index);
@@ -311,6 +320,10 @@ Monominoes.Render.prototype.createItems = function(container) {
   }
 };
 
+/**
+ * Extract data from the absolute base path or the specified data object.
+ * Data object is free to allow iterability assignment and separate the layout and the items.
+ */
 Monominoes.Render.prototype.extractData = function(data) {
   var base,result;
   base = (this.absolute === true || data == null) ? this.data : data;
