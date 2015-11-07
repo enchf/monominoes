@@ -67,14 +67,11 @@ Monominoes.util.isRender = function(obj,type) {
  */
 Monominoes.Render = function(){};
 Monominoes.Render.prototype.data = null;      /* The global data used to produce the render object */
-Monominoes.Render.prototype.itemData = null;  /* Data specific to the item being rendered */
+Monominoes.Render.prototype.itemData = null;  /* Data used to produce the underlying items */
 Monominoes.Render.prototype.path = null;      /* The path to be used to get the rendered data */
 Monominoes.Render.prototype.iterable = false; /* True if the children elements are produced from iterable data */
-Monominoes.Render.prototype.relative = false; /* True to lookup itemData in parent.itemData instead of base data object */
 Monominoes.Render.prototype.items = null;     /* The underlying objects produced by the render. If iterable is an array */
 Monominoes.Render.prototype.container = null; /* Render item container, if any formally defined */
-Monominoes.Render.prototype.children = null;  /* Underlying array of Renders of the children items */
-Monominoes.Render.prototype.childMap = null;  /* Map for the key mapped children Renders */
 Monominoes.Render.prototype.defaults = null;  /* Default configuration object */
 Monominoes.Render.prototype.config = null;    /* Config object used to build the render. */
 Monominoes.Render.prototype.layout = null;    /* Configuration of the sub-elements */
@@ -91,6 +88,88 @@ Monominoes.Render.prototype.superclass = null;
 Monominoes.Render.prototype.super = null;
 Monominoes.Render.class = Monominoes.Render;
 Monominoes.Render.superclass = null;
+
+/**
+ * Item class. Wrapper of item creation during rendering.
+ */
+Monominoes.Item = function(container,render,data,index){ 
+  this.container = Monominoes.Item.getContainerFrom(container);
+  this.render = render;
+  this.data = data;
+  this.index = index;
+  this.layout  = render.layout.children;
+  this.children = [];
+  this.childMap = {};
+};
+Monominoes.Item.prototype.container = null; /* Item container */
+Monominoes.Item.prototype.render = null;    /* Render builder which produced this item */
+Monominoes.Item.prototype.data = null;      /* Data which produced the item */
+Monominoes.Item.prototype.index = null;     /* Item index or key. Identifier on render holder */
+Monominoes.Item.prototype.layout = null;    /* Children renders definition */
+Monominoes.Item.prototype.children = null;  /* Children items. */
+Monominoes.Item.prototype.childMap = null;  /* Children map for key mapped items */
+Monominoes.Item.prototype.item = null;      /* Underlying item produced by the rendering process. */
+Monominoes.Item.prototype.parent = null;    /* Parent item of this entry, if any. */
+
+Monominoes.Item.prototype.destroy = function() { 
+  this.children.forEach(function(child) { child.destroy(); });
+  this.children = [];
+  if (this.item) this.item.remove();
+  this.item = null;
+};
+
+Monominoes.Item.prototype.draw = function() {
+  this.item = this.render.buildItem();
+  this.render.customize(this.item,this.data);
+  if (this.container) this.container.append(this.item);
+  this.drawChildren();
+};
+
+Monominoes.Item.prototype.drawChildren = function() {
+  var container,render,data,index;
+  var i,j,baseIndex;
+  container = this;
+  i = new Komunalne.helper.Iterator(this.layout);
+  while (i.hasNext()) {
+    render = i.next();
+    data = render.extractData(this.data);
+    index = i.currentKey();
+    if (render.iterable === true) {
+      j = new Komunalne.helper.Iterator(data);
+      baseIndex = index + ".";
+      while (j.hasNext()) this.pushChildren(container,render,j.next(),baseIndex + j.currentKey());
+    } else this.pushChildren(container,render,data,index);
+  }
+};
+
+Monominoes.Item.prototype.pushChildren = function(container,render,data,index) {
+  var item;
+  item = new Monominoes.Item(container,render,data,index);
+  this.children.push(item);
+  if (render.key) {
+    if (!(render.key in this.childMap)) this.childMap[render.key] = [];
+    this.childMap[render.key].push(item);
+  }
+  item.draw();
+};
+
+/**
+ * Gets a jQuery object using the following rules, regarding the type of 'object' argument:
+ * - String: Used as a selector, retrieving the first object selected, using jQuery $ function.
+ * - HTML String: Used to build a newly HTML jQuery object, using jQuery $ function.
+ * - jQuery Object: Returned itself.
+ * - DOM Element: Creates a jQuery object from it.
+ * - Render: Returns the inner Render jQuery item.
+ * - Otherwise: Returns null.
+ */
+Monominoes.Item.getContainerFrom = function(object) {
+  var aux;
+  return (Komunalne.util.isInstanceOf(object,"string")) ? ((aux = $(object)).length > 0 ? $($(aux).get(0)) : null) :
+         (Komunalne.util.isInstanceOf(object,jQuery)) ? object :
+         (object instanceof Element) ? $(object) :
+         (Komunalne.util.isInstanceOf(object,Monominoes.Item)) ? object.item :
+         (Monominoes.util.isRender(object)) ? (object.iterable === true ? object.items[0] : object.items) : null;
+};
 
 /* Render Functions definition, overridable at extension point, and available in defaults and super objects */
 
@@ -154,8 +233,9 @@ Monominoes.Render.prototype.preInit = function() {};
 Monominoes.Render.prototype.buildLayout = function() {
   var config = this.config.children;
   var i,r;
-  this.children = [];
-  this.childMap = {};
+  this.layout = {};
+  this.layout.children = [];
+  this.layout.childMap = {};
   if (Komunalne.util.isArray(config)) {
     i = new Komunalne.helper.Iterator(config);
     while (i.hasNext()) {
@@ -168,8 +248,8 @@ Monominoes.Render.prototype.buildLayout = function() {
               : null
             );
       if (r) {
-        this.children.push(r);
-        if (r.key) this.childMap[r.key] = r;
+        this.layout.children.push(r);
+        if (r.key) this.layout.childMap[r.key] = r;
         r.parent = this;
       }
     }
@@ -195,19 +275,8 @@ Monominoes.Render.prototype.postInit = function() {};
  */
 Monominoes.Render.prototype.render = function(data,container) {
   this.updateGlobalData(data);
-  this.updateContainer(container);
-  this.draw();
+  this.createItems(container);
   return this;
-};
-
-/**
- * Method which draws the underlying item at rendering.
- */
-Monominoes.Render.prototype.draw = function() {
-  this.updateData();
-  this.createItems();
-  this.appendItems();
-  this.buildChildren();
 };
 
 /**
@@ -216,25 +285,7 @@ Monominoes.Render.prototype.draw = function() {
 Monominoes.Render.prototype.updateGlobalData = function(data) {
   this.data = (data || this.data);
   if (this.data == null) throw "No global data specified";
-};
-
-/**
- * Updates the render instance container.
- */
-Monominoes.Render.prototype.updateContainer = function(container) {
-  if (container != null) {
-    container = Monominoes.Render.getItemFrom(container);
-    if (container == null) throw "Invalid container passed to render";
-  }
-  this.container = (container || this.container);
-};
-
-/**
- * Updates the data to be rendered.
- * Throws an exception if the data results into null/undefined.
- */
-Monominoes.Render.prototype.updateData = function(data) {
-  this.itemData = this.path ? Komunalne.util.path(this.data,this.path) : this.data;
+  this.layout.children.forEach(function(child) { child.updateGlobalData(data); });
 };
 
 /**
@@ -247,49 +298,34 @@ Monominoes.Render.prototype.updateData = function(data) {
  * - A render instance. It will be taken itself.
  * - Otherwise: Item is ignored.
  */
-Monominoes.Render.prototype.createItems = function() {
+Monominoes.Render.prototype.createItems = function(container) {
+  var data;
+  var i;
   var item;
-  var child;
-  var j;
   this.clear();
-  if (this.iterable === true) {
-    this.items = [];
-    j = new Komunalne.helper.Iterator(this.itemData);
-    while (j.hasNext()) {
-      item = this.buildItem();
-      this.customize(item,j.next());
-      this.items.push(item);
-    }
-  } else {
-    this.items = this.buildItem();
-    this.customize(this.items,this.itemData);
+  this.items = [];
+  data = this.extractData();
+  i = new Komunalne.helper.Iterator(data);
+  while (i.hasNext()) {
+    item = new Monominoes.Item(container,this,i.next(),i.currentKey());
+    this.items.push(item);
+    item.draw();
   }
 };
 
-/**
- * Dispatch the children rendering.
- */
-Monominoes.Render.prototype.buildChildren = function() {
-  var i = new Komunalne.helper.Iterator(this.children);
-  var child;
-  while (i.hasNext()) {
-    child = i.next();
-    if (this.iterable === true) {
-    } else {
-      child.render(this.data,this.items);
-    }
-  }
+Monominoes.Render.prototype.extractData = function(data) {
+  var base,result;
+  base = (this.absolute === true || data == null) ? this.data : data;
+  result = this.path ? Komunalne.util.path(base,this.path) : base;
+  result = (this.iterable === true) ? result : [result];
+  return result;
 };
 
 /**
  * Clears all the inner jQuery objects of this render and its children.
  */
 Monominoes.Render.prototype.clear = function() {
-  for (var i in this.children) this.children[i].clear();
-  if (this.items != null) {
-    if (this.iterable === true) Komunalne.util.forEach(this.items,function(val) { val.remove(); });
-    else this.items.remove();
-  }
+  if (this.items) this.items.forEach(function(item) { item.destroy(); });
   this.items = null;
 };
 
@@ -306,8 +342,8 @@ Monominoes.Render.prototype.buildItem = function() {
  * Gets a child mapped render using simple key.
  * This works only for the immediate children, not child of children.
  */
-Monominoes.Render.prototype.getChild = function(key) {
-  return this.childMap[key];
+Monominoes.Render.prototype.getMappedRender = function(key) {
+  return this.layout.childMap[key];
 };
 
 /**
@@ -315,11 +351,11 @@ Monominoes.Render.prototype.getChild = function(key) {
  * To get a sub render, use dot notation (i.e. "abc.def.ghi").
  * If the key is inexistent returns null.
  */
-Monominoes.Render.prototype.childByKey = function(key) {
+Monominoes.Render.prototype.renderByKey = function(key) {
   var render = this;
   var i = new Komunalne.helper.Iterator(key.split("."));
   while (i.hasNext()) {
-    render = render.getChild(i.next());
+    render = render.getMappedRender(i.next());
     if (!render) break;
   }
   return render;
@@ -332,36 +368,6 @@ Monominoes.Render.prototype.childByKey = function(key) {
  * @param itemdata Individual item data of the individual object.
  */
 Monominoes.Render.prototype.customize = function(item,itemdata) {};
-
-/**
- * Appends the render to a specific container.
- */
-Monominoes.Render.prototype.appendItems = function() {
-  if (this.container) {
-    if (this.iterable === true) for (var i in this.items) this.container.append(this.items[i]);
-    else this.container.append(this.items);
-  }
-  return this;
-};
-
-/** Statics **/
-
-/**
- * Gets a jQuery object using the following rules, regarding the type of 'object' argument:
- * - String: Used as a selector, retrieving the first object selected, using jQuery $ function.
- * - HTML String: Used to build a newly HTML jQuery object, using jQuery $ function.
- * - jQuery Object: Returned itself.
- * - DOM Element: Creates a jQuery object from it.
- * - Render: Returns the inner Render jQuery item.
- * - Otherwise: Returns null.
- */
-Monominoes.Render.getItemFrom = function(object) {
-  var aux;
-  return (Komunalne.util.isInstanceOf(object,"string")) ? ((aux = $(object)).length > 0 ? $($(aux).get(0)) : null) :
-         (Komunalne.util.isInstanceOf(object,jQuery)) ? object :
-         (object instanceof Element) ? $(object) :
-         (Monominoes.util.isRender(object)) ? (object.iterable === true ? object.items[0] : object.items) : null;
-};
 
 /**
  * Render statics: Extend.

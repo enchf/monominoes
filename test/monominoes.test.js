@@ -206,43 +206,49 @@ QUnit.test("Render instantiation: Process layout, key-mapped items retrieval and
   });
   
   assert.equal(render.id,"master","Custom property is set, verified in postInit function");
-  assert.ok(Komunalne.util.isArray(render.children),"The children array is created");
-  assert.equal(render.children.length,2,"Two children are appended in subitems array");
-  assert.equal(render.children[0].id,"mock-" + (count+1),"First child custom property is set in postInit function");
-  assert.equal(render.children[1].id,"sub","Second child custom property is set, verified in postInit function");
-  assert.ok(Monominoes.util.isRender(render.children[0],Span),"First child is a render of type Span");
-  assert.ok(Monominoes.util.isRender(render.children[1],P),"Second child is a render of type P");
-  assert.notOk(Komunalne.util.isFunction(render.children[0]),"First child is a render instance not constructor");
-  assert.notOk(Komunalne.util.isFunction(render.children[1]),"Second child is a render instance not constructor");
-  assert.ok(Komunalne.util.isInstanceOf(render.childMap,Object),"Child map is an object");
-  assert.deepEqual(Komunalne.util.keys(render.childMap),["sub"],"Only key mapped renders present in child map");
-  assert.ok(Monominoes.util.isRender(render.childMap.sub,P),"Mapped child render is of type P");
-  assert.notOk(Komunalne.util.isFunction(render.childMap.sub),"Mapped child render is a render instance not constructor");
-  assert.ok(sub === render.childByKey("sub"),"Immediate child retrieval");
-  assert.ok(subsub === render.childByKey("sub.subsub"),"Child of child retrieval");
-  assert.ok(render.childByKey("inexistent") == null,"Inexisting key retrieval results in null");
-  assert.ok(render.childByKey("abc.def") == null,"Inexisting composite key retrieval results in null");
-  assert.ok(render.childByKey("sub.def") == null,"Inexisting sub key retrieval results in null");
-  assert.ok(render.childByKey("sub.sub.sub") == null,"Inexisting composite sub key retrieval results in null");
-  assert.equal(render.childByKey("sub.subsub").id,"mock-" + (count),
+  assert.ok(Komunalne.util.isArray(render.layout.children),"The children array is created");
+  assert.equal(render.layout.children.length,2,"Two children are appended in subitems array");
+  assert.equal(render.layout.children[0].id,"mock-" + (count+1),"First child custom property is set in postInit");
+  assert.equal(render.layout.children[1].id,"sub","Second child custom property is set, verified in postInit");
+  assert.ok(Monominoes.util.isRender(render.layout.children[0],Span),"First child is a render of type Span");
+  assert.ok(Monominoes.util.isRender(render.layout.children[1],P),"Second child is a render of type P");
+  assert.notOk(Komunalne.util.isFunction(render.layout.children[0]),"First child is a render instance not constructor");
+  assert.notOk(Komunalne.util.isFunction(render.layout.children[1]),"Second child is a render instance not constructor");
+  assert.ok(Komunalne.util.isInstanceOf(render.layout.childMap,Object),"Child map is an object");
+  assert.deepEqual(Komunalne.util.keys(render.layout.childMap),["sub"],"Only key mapped renders present in child map");
+  assert.ok(Monominoes.util.isRender(render.layout.childMap.sub,P),"Mapped child render is of type P");
+  assert.notOk(Komunalne.util.isFunction(render.layout.childMap.sub),"Mapped child render is an instance not function");
+  assert.ok(sub === render.renderByKey("sub"),"Immediate child retrieval");
+  assert.ok(subsub === render.renderByKey("sub.subsub"),"Child of child retrieval");
+  assert.ok(render.renderByKey("inexistent") == null,"Inexisting key retrieval results in null");
+  assert.ok(render.renderByKey("abc.def") == null,"Inexisting composite key retrieval results in null");
+  assert.ok(render.renderByKey("sub.def") == null,"Inexisting sub key retrieval results in null");
+  assert.ok(render.renderByKey("sub.sub.sub") == null,"Inexisting composite sub key retrieval results in null");
+  assert.equal(render.renderByKey("sub.subsub").id,"mock-" + (count),
                "Child of child custom property is set in postInit function");
   
-  assert.ok(Komunalne.util.isArray(render.childByKey("sub").children),"The children array is created in child render");
-  assert.equal(render.childByKey("sub").children.length,1,"Only one children is appended in child render children array");
-  assert.ok(Monominoes.util.isRender(render.childByKey("sub").children[0],Span),"Child child is a render of type Span");
-  assert.notOk(Komunalne.util.isFunction(render.childByKey("sub").children[0]),"Child child is a render instance");
-  assert.ok(Komunalne.util.isInstanceOf(render.childByKey("sub").childMap,Object),"Mapped child child map is an object");
-  assert.deepEqual(Komunalne.util.keys(render.childByKey("sub").childMap),["subsub"],"Mapped children key is set");
-  assert.ok(Monominoes.util.isRender(render.childByKey("sub").childMap.subsub,Span),
+  assert.ok(Komunalne.util.isArray(render.renderByKey("sub").layout.children),"Children array is created in child");
+  assert.equal(render.renderByKey("sub").layout.children.length,1,"Only one child is appended in child children array");
+  assert.ok(Monominoes.util.isRender(render.renderByKey("sub").layout.children[0],Span),
+            "Child of child is a render of type Span");
+  assert.notOk(Komunalne.util.isFunction(render.renderByKey("sub").layout.children[0]),
+            "Child of child is a render instance");
+  assert.ok(Komunalne.util.isInstanceOf(render.renderByKey("sub").layout.childMap,Object),
+            "Mapped child child map is an object");
+  assert.deepEqual(Komunalne.util.keys(render.renderByKey("sub").layout.childMap),["subsub"],
+            "Mapped children key is set");
+  assert.ok(Monominoes.util.isRender(render.renderByKey("sub").layout.childMap.subsub,Span),
             "Mapped child of mapped child render is of type SPAN");
-  assert.notOk(Komunalne.util.isFunction(render.childByKey("sub").childMap.sub),
+  assert.notOk(Komunalne.util.isFunction(render.renderByKey("sub").layout.childMap.sub),
             "Mapped child of mapped child render is a render instance not constructor");
   
-  assert.ok(Komunalne.util.isArray(render.children[0].children),"The children array is created in first child render");
-  assert.equal(render.children[0].children.length,0,"First child render has no children");
-  assert.ok(Komunalne.util.isInstanceOf(render.children[0].childMap,Object),"First child render child map is an object");
-  assert.deepEqual(Komunalne.util.keys(render.children[0].childMap),[],"First child render has no mapped renders");
-  assert.ok(render.children[1] === render.childMap.sub,"Second child render is the same as the mapped one");
+  assert.ok(Komunalne.util.isArray(render.layout.children[0].layout.children),"Children array is created in first child");
+  assert.equal(render.layout.children[0].layout.children.length,0,"First child render has no children");
+  assert.ok(Komunalne.util.isInstanceOf(render.layout.children[0].layout.childMap,Object),
+            "First child render child map is an object");
+  assert.deepEqual(Komunalne.util.keys(render.layout.children[0].layout.childMap),[],
+            "First child render has no mapped renders");
+  assert.ok(render.layout.children[1] === render.layout.childMap.sub,"Second child render is the same as the mapped one");
 });
 
 QUnit.test("Is render function", function(assert) {
@@ -251,14 +257,14 @@ QUnit.test("Is render function", function(assert) {
   while (i.hasNext()) assert.ok(Monominoes.util.isRender(i.next()),i.currentKey() + " render against isRender test");
 });
 
-QUnit.test("Helper function getItemFrom", function(assert) {
+QUnit.test("Helper function getContainerFrom", function(assert) {
   var suite = new Komunalne.test.Suite();
   suite.add({ "args": ["div"], "msg": "Using jQuery selectors" });
   suite.add({ "args": ["<div></div>"], "msg": "Using HTML string" });
   suite.add({ "args": [$("#qunit")], "msg": "Using jQuery objects" });
   suite.add({ "args": [document.getElementsByTagName("script")[0]], "msg": "Using HTML DOM Element objects" });
   suite.add({ "args": [createMock("div")().render("text")], "msg": "Using Render itself" });
-  suite.execute(assert.buildFor("ok"),Monominoes.Render.getItemFrom);
+  suite.execute(assert.buildFor("ok"),Monominoes.Item.getContainerFrom);
   
   suite.clear();
   suite.add({ "args": [1], "msg": "Null for numbers" });
@@ -269,7 +275,7 @@ QUnit.test("Helper function getItemFrom", function(assert) {
   suite.add({ "args": [[]], "msg": "Null for arrays" });
   suite.add({ "args": [null], "msg": "Null for null" });
   suite.add({ "args": ["inexistent-id"], "msg": "Null for inexistent elements using selector" });
-  suite.execute(assert.buildFor("notOk"),Monominoes.Render.getItemFrom);
+  suite.execute(assert.buildFor("notOk"),Monominoes.Item.getContainerFrom);
 });
 
 QUnit.test("Render function: Test updateData", function(assert) {
