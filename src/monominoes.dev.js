@@ -199,9 +199,14 @@ Monominoes.Render.prototype.init = function(cfg) {
 };
 
 /**
- * Render iterability flag test.
+ * Returns true if the render is marked as iterable.
  */
 Monominoes.Render.prototype.isIterable = function() { return this.iterable === true; };
+
+/**
+ * Returns true if the render path is absolute.
+ */
+Monominoes.Render.prototype.isAbsolute = function() { return this.absolute === true; };
 
 /**
  * Creates the defaults object, holding the original prototype defined for the Render.
@@ -335,7 +340,7 @@ Monominoes.Render.prototype.createItems = function(container) {
  */
 Monominoes.Render.prototype.extractData = function(data) {
   var base,result;
-  base = (this.absolute === true || data == null) ? this.data : data;
+  base = (this.isAbsolute() || data == null) ? this.data : data;
   result = this.path ? Komunalne.util.path(base,this.path) : base;
   result = (this.isIterable()) ? result : [result];
   return result;
