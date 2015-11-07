@@ -129,6 +129,7 @@ Monominoes.Render.prototype.init = function(cfg) {
   this.preInit();
   this.buildLayout();
   this.postInit();
+  if (this.data != null) this.updateGlobalData();
   return this;
 };
 
@@ -228,7 +229,7 @@ Monominoes.Render.prototype.render = function(data,container) {
  * Updates the base global data of the render.
  */
 Monominoes.Render.prototype.updateGlobalData = function(data) {
-  this.data = (data || this.data);
+  this.data = data = (data || this.data);
   if (this.data == null) throw "No global data specified";
   this.layout.children.forEach(function(child) { child.updateGlobalData(data); });
 };

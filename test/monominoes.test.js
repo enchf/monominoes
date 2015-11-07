@@ -281,28 +281,42 @@ QUnit.test("Helper function getContainerFrom", function(assert) {
 QUnit.test("Render function: Test updateData", function(assert) {
   var Div = createMock("div"), Span = createMock("span");
   var data = { "a": 1, "b": 2 };
-  var a = Div({ "data": data });
+  var a = Div({ "data": data, "children": [ Span(),Span() ] });
   var aux;
-  assert.ok("data" in a,"Data is set on render instance");
+  assert.ok("data" in a,"Data attribute is on render instance");
   assert.deepEqual(a.data,data,"Data is correctly set");
-  assert.ok("itemData" in a,"Item data is set on render instance");
-  assert.ok(a.itemData == null,"Item data is null before rendering");
+  assert.ok("data" in a.layout.children[0],"Data attribute is on first child");
+  assert.deepEqual(a.layout.children[0].data,data,"Data is correctly set on first child");
+  assert.ok("data" in a.layout.children[1],"Data attribute is on second child");
+  assert.deepEqual(a.layout.children[1].data,data,"Data is correctly set on second child");  
   aux = a;
   a = a.render();
   assert.ok(a === aux,"Render is returning the instance itself");
-  assert.ok("data" in a,"Data is set on render instance after render function call without arguments");
-  assert.deepEqual(a.data,data,"Data remains the same after render function call without arguments");
-  assert.deepEqual(a.itemData,data,"Item data is set equal to data because there is no path specified");
+  assert.ok("data" in a,"Data attribute exists after call to render without arguments");
+  assert.deepEqual(a.data,data,"Data remains the same after call to render without arguments");
+  assert.ok("data" in a.layout.children[0],"Data attribute on first child exists after render without arguments");
+  assert.deepEqual(a.layout.children[0].data,data,
+                   "Data on first child remains the same after call to render without arguments");
+  assert.ok("data" in a.layout.children[1],"Data attribute on second child exists after render without arguments");
+  assert.deepEqual(a.layout.children[1].data,data,
+                   "Data on first child remains the same after call to render without arguments");
   a.render([1,2,3]);
-  assert.ok("data" in a,"Data is set on render instance after render call with data argument");
-  assert.deepEqual(a.data,[1,2,3],"Data is correctly updated after render call with data argument");
-  assert.deepEqual(a.itemData,[1,2,3],"Item data is correctly updated after render call with data argument");
-  a = new Div();
+  assert.ok("data" in a,"Data attribute exists after call to render with new data");
+  assert.deepEqual(a.data,[1,2,3],"Data is updated after call to render with new data");
+  assert.ok("data" in a.layout.children[0],"Data attribute on first child exists after render with new data");
+  assert.deepEqual(a.layout.children[0].data,[1,2,3],
+                   "Data on first child is updated after render with new data");
+  assert.ok("data" in a.layout.children[1],"Data attribute on second child exists after render with new data");
+  assert.deepEqual(a.layout.children[1].data,[1,2,3],
+                   "Data on second child is updated after render with new data");
+  a = new Div({ "children": [ Span(),Span() ] });
   assert.ok(a.data == null,"Data is null if not set at instantiation");
-  assert.ok(a.itemData == null,"Item data is null before rendering");
+  assert.ok(a.layout.children[0].data == null,"Data is null if not set at instantiation in first child");
+  assert.ok(a.layout.children[1].data == null,"Data is null if not set at instantiation in second child");
   a.render("data");
   assert.equal(a.data,"data","Data is updated from null after call to render with arguments");
-  assert.equal(a.itemData,"data","Item data is updated from null after call to render with arguments");
+  assert.equal(a.layout.children[0].data,"data","First child data is updated from null after render with arguments");
+  assert.equal(a.layout.children[1].data,"data","Second child data is updated from null after render with arguments");
 });
 
 QUnit.test("Render function: Build items, customization and clear", function(assert) {
