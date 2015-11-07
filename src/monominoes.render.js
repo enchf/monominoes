@@ -34,8 +34,7 @@ Monominoes.Item = function(container,render,data,index){
   this.data = data;
   this.index = index;
   this.layout  = render.layout.children;
-  this.children = [];
-  this.childMap = {};
+  this.reset();
 };
 Monominoes.Item.prototype.container = null; /* Item container */
 Monominoes.Item.prototype.render = null;    /* Render builder which produced this item */
@@ -47,11 +46,15 @@ Monominoes.Item.prototype.childMap = null;  /* Children map for key mapped items
 Monominoes.Item.prototype.item = null;      /* Underlying item produced by the rendering process. */
 Monominoes.Item.prototype.parent = null;    /* Parent item of this entry, if any. */
 
-Monominoes.Item.prototype.destroy = function() { 
-  this.children.forEach(function(child) { child.destroy(); });
+/**
+ * Destroy the underlying rendered item and its children.
+ */
+Monominoes.Item.prototype.reset = function() { 
+  if (this.children) this.children.forEach(function(child) { child.reset(); });
   this.children = [];
   if (this.item) this.item.remove();
   this.item = null;
+  this.childMap = {};
 };
 
 /**
@@ -275,7 +278,7 @@ Monominoes.Render.prototype.extractData = function(data) {
  * Clears all the inner jQuery objects of this render and its children.
  */
 Monominoes.Render.prototype.clear = function() {
-  if (this.items) this.items.forEach(function(item) { item.destroy(); });
+  if (this.items) this.items.forEach(function(item) { item.reset(); });
   this.items = null;
 };
 
