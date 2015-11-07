@@ -255,9 +255,18 @@ QUnit.test("Render instantiation: Process layout, key-mapped items retrieval and
 });
 
 QUnit.test("Is render function", function(assert) {
+  var aux,key,instance;
   var i = new Komunalne.helper.Iterator(Monominoes.renders);
   assert.ok(Monominoes.util.isRender(Monominoes.Render),"Monominoes.Render abstract class is a Render");
-  while (i.hasNext()) assert.ok(Monominoes.util.isRender(i.next()),i.currentKey() + " render against isRender test");
+  while (i.hasNext()) {
+    aux = i.next();
+    key = i.currentKey();
+    instance = aux();
+    assert.ok(Monominoes.util.isRender(aux),key + " render constructor against isRender test");
+    assert.ok(Monominoes.util.isRender(instance),key + " render instance against isRender test");
+    assert.notOk(Monominoes.util.isRenderInstance(aux),key + " render constructor against isRenderInstance test");
+    assert.ok(Monominoes.util.isRenderInstance(instance),key + " render instance against isRenderInstance test");
+  }
 });
 
 QUnit.test("Helper function getContainerFrom", function(assert) {
