@@ -261,23 +261,39 @@ QUnit.test("Is render function", function(assert) {
 });
 
 QUnit.test("Helper function getContainerFrom", function(assert) {
-  var suite = new Komunalne.test.Suite();
-  suite.add({ "args": ["div"], "msg": "Using jQuery selectors" });
-  suite.add({ "args": ["<div></div>"], "msg": "Using HTML string" });
-  suite.add({ "args": [$("#qunit")], "msg": "Using jQuery objects" });
-  suite.add({ "args": [document.getElementsByTagName("script")[0]], "msg": "Using HTML DOM Element objects" });
-  suite.add({ "args": [createMock("div")().render("text")], "msg": "Using Render itself" });
-  suite.execute(assert.buildFor("ok"),Monominoes.Item.getContainerFrom);
+  var suite,aux,render;
   
-  suite.clear();
-  suite.add({ "args": [1], "msg": "Null for numbers" });
-  suite.add({ "args": [true], "msg": "Null for booleans" });
-  suite.add({ "args": [function(){}], "msg": "Null for functions" });
-  suite.add({ "args": [new Date()], "msg": "Null for Dates/objects" });
-  suite.add({ "args": [{}], "msg": "Null for plain objects" });
-  suite.add({ "args": [[]], "msg": "Null for arrays" });
-  suite.add({ "args": [null], "msg": "Null for null" });
-  suite.add({ "args": ["inexistent-id"], "msg": "Null for inexistent elements using selector" });
+  aux = Monominoes.Item.getContainerFrom("div");
+  assert.ok(aux,"Returns not null from jQuery selector");
+  assert.ok(Komunalne.util.isInstanceOf(aux,jQuery),"Returns a jQuery object from jQuery selector");
+  aux = Monominoes.Item.getContainerFrom("<div></div>");
+  assert.ok(aux,"Returns not null from HTML string");
+  assert.ok(Komunalne.util.isInstanceOf(aux,jQuery),"Returns a jQuery object from HTML string");
+  aux = Monominoes.Item.getContainerFrom($("#qunit"));
+  assert.ok(aux,"Returns not null from jQuery objects");
+  assert.ok(Komunalne.util.isInstanceOf(aux,jQuery),"Returns a jQuery object from jQuery objects");
+  aux = Monominoes.Item.getContainerFrom(document.getElementsByTagName("script")[0]);
+  assert.ok(aux,"Returns not null from HTML DOM Element objects");
+  assert.ok(Komunalne.util.isInstanceOf(aux,jQuery),"Returns a jQuery object from HTML DOM Element objects");
+  render = createMock("div")().render("text");
+  aux = Monominoes.Item.getContainerFrom(render);
+  assert.ok(aux,"Returns not null from built Render");
+  assert.ok(Komunalne.util.isInstanceOf(aux,jQuery),"Returns a jQuery object from built Render");
+  aux = Monominoes.Item.getContainerFrom(render.items[0]);
+  assert.ok(aux,"Returns not null from Item");
+  assert.ok(Komunalne.util.isInstanceOf(aux,jQuery),"Returns a jQuery object from Item");
+  
+  suite = new Komunalne.test.Suite();
+  suite.add({ "args": [1], "msg": "Null from numbers" });
+  suite.add({ "args": [true], "msg": "Null from booleans" });
+  suite.add({ "args": [function(){}], "msg": "Null from functions" });
+  suite.add({ "args": [new Date()], "msg": "Null from Dates/objects" });
+  suite.add({ "args": [{}], "msg": "Null from plain objects" });
+  suite.add({ "args": [[]], "msg": "Null from arrays" });
+  suite.add({ "args": [null], "msg": "Null from null" });
+  suite.add({ "args": ["inexistent-id"], "msg": "Null from inexistent elements using selector" });
+  suite.add({ "args": [createMock("div")()], "msg": "Null from non built Render" });
+  suite.add({ "args": [createMock("span")], "msg": "Null from Render constructor" });
   suite.execute(assert.buildFor("notOk"),Monominoes.Item.getContainerFrom);
 });
 

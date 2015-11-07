@@ -47,3 +47,10 @@ Monominoes.util.isRender = function(obj,type) {
   }
   return is;
 };
+
+/**
+ * Returns true if the object is a Render instance, not constructor only.
+ */
+Monominoes.util.isRenderInstance = function(obj,type) {
+  return Monominoes.util.isRender(obj,type) && !Komunalne.util.isFunction(obj);
+};

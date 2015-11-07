@@ -58,6 +58,13 @@ Monominoes.Item.prototype.reset = function() {
 };
 
 /**
+ * Returns true if the underlying item has been drawn.
+ */
+Monominoes.Item.prototype.isDrawn = function() {
+  return Komunalne.util.isInstanceOf(this.item,jQuery);
+};
+
+/**
  * Draw the item.
  */
 Monominoes.Item.prototype.draw = function() {
@@ -115,8 +122,8 @@ Monominoes.Item.getContainerFrom = function(object) {
   return (Komunalne.util.isInstanceOf(object,"string")) ? ((aux = $(object)).length > 0 ? $($(aux).get(0)) : null) :
          (Komunalne.util.isInstanceOf(object,jQuery)) ? object :
          (object instanceof Element) ? $(object) :
-         (Komunalne.util.isInstanceOf(object,Monominoes.Item)) ? object.item :
-         (Monominoes.util.isRender(object) ? object.items[0].item : null);
+         (Komunalne.util.isInstanceOf(object,Monominoes.Item)) ? (object.isDrawn() ? object.item : null) :
+         (Monominoes.util.isRenderInstance(object) ? (object.isBuilt() ? object.items[0].item : null) : null);
 };
 
 /* Render Functions definition, overridable at extension point, and available in defaults and super objects */
@@ -145,6 +152,13 @@ Monominoes.Render.prototype.isIterable = function() { return this.iterable === t
  * Returns true if the render path is absolute.
  */
 Monominoes.Render.prototype.isAbsolute = function() { return this.absolute === true; };
+
+/**
+ * Returs true if render items have been built.
+ */
+Monominoes.Render.prototype.isBuilt = function() { 
+  return Komunalne.util.isArray(this.items) && Komunalne.util.isInstanceOf(this.items[0],Monominoes.Item); 
+};
 
 /**
  * Creates the defaults object, holding the original prototype defined for the Render.
