@@ -410,9 +410,35 @@ Monominoes.Render.prototype.renderByKey = function(key) {
 };
 
 /**
- * Gets a child item by its key or its index.
+ * Gets a child item by its index.
  */
-Monominoes.Render.prototype.getItem = function(index) {};
+Monominoes.Render.prototype.getItemByIndex = function(index) {};
+
+/**
+ * Gets a child item by its key, getting sub-items using dot-notation.
+ * In case of iterable renders, can return the array of all mapped items or an specific one with the child index.
+ * In unexisting keys or out of bounds indexes, returns null.
+ */
+Monominoes.Render.prototype.getItemByKey = function(key) {
+  var i = new Komunalne.helper.Iterator(key.split("."));
+  var render = this;
+  var item = this;
+  var token = null;
+  var index;
+  
+  while (i.hasNext()) {
+    item = (item.childMap) ? item.childMap[(token = i.next())] : item.items;
+    if (item == null) break;
+    if (token != null) render = render.getMappedRender(token);
+    if (render.isIterable()) {
+      if (!i.hasNext()) break;
+      index = i.next();
+    } else index = 0;
+    item = item[index];
+  }
+  
+  return (item === undefined) ? null : item;
+};
 
 /**
  * Apply Render customization rules, defined by default or during instantiation.

@@ -580,7 +580,74 @@ QUnit.test("Items rendering, content, structure, customization and clear for ite
 });
 
 QUnit.test("Item retrieval by index or key", function(assert) {
-  assert.ok(Monominoes.Render.prototype.getItem);
+  var aux;
+  var Div = createMock("div");
+  var P = createMock("p");
+  var Span = createMock("span");
+  var data = {
+    "result": "ok",
+    "data": {
+      "header": "Header",
+      "text": "This is text",
+      "options": [
+        { "id": 1, "value": "one", "key": "uno" },
+        { "id": 2, "value": "two", "key": "dos" },
+        { "id": 3, "value": "three", "key": "tres" }
+      ]
+    }
+  };
+  var render = new Div({
+    "id": "base-div",
+    "path": "data",
+    "customize": function(item,itemdata) { item.text(itemdata.header); },
+    "children": [{
+      "render": P,
+      "config": { "key": "headtext", "path": "text" }
+    },{
+      "render": Div,
+      "config": {
+        "iterable": true,
+        "key": "options",
+        "path": "options",
+        "customize": function(item,itemdata) { item.text(itemdata.id); },
+        "children": [{ 
+          "render": Span, 
+          "config": { 
+            "key": "key", 
+            "path": "key" // Path will be relative to the iteration item.
+          }
+        },{ 
+          "render": Span, 
+          "config": { 
+            "key": "value", 
+            "path": "value" // Path will be relative to the iteration item.
+          }
+        }]
+      }
+    }] 
+  }).render(data);
+  
+  assert.ok(Monominoes.Render.prototype.getItemByIndex,"Function getItemByIndex exists in Render prototype");
+  assert.ok(Monominoes.Render.prototype.getItemByKey,"Function getItemByKey exists in Render prototype");
+  assert.ok(render.getItemByKey("fakekey") === null,"Retrieving non existing key returns null");
+  assert.ok(render.getItemByKey("0") === null,"Retrieving index on non iterable parent render returns null");
+  assert.ok(render.getItemByKey("options.1.key.2") === null,"Retrieving index on non iterable child render returns null");
+  assert.ok(render.getItemByKey("options.1.0") === null,"Existing index should be returned only on iterable children");
+  assert.ok((aux = render.getItemByKey("headtext")),"Retrieved headtext child item");
+  assert.ok(aux === render.items[0].children[0],"Ensure the returned headtext child is the correct element");
+  assert.ok(Komunalne.util.isArray((aux = render.getItemByKey("options"))),"Iterable key returns an array of items");
+  assert.equal(aux.length,3,"Iterable key options returns 3 items");
+  assert.ok(render.getItemByKey("options.4") === null,"Iterable key with out of bounds index returns null");
+  assert.ok((aux = render.getItemByKey("options.2")),"Iterable key with index returns item");
+  assert.ok(aux === render.items[0].children[3],"Ensure the returned indexed options child is correct");
+  assert.ok((aux = render.getItemByKey("options.0.value")),"Child of iterable key with index returns item");
+  assert.ok(aux === render.items[0].children[1].children[1],"Ensure the returned indexed options child is correct");
+  
+  render = new P({ "iterable": true, "children": [ Span(),Span() ] }).render([1,2,3]);
+  assert.ok(render.getItemByKey("headtext") === null,"Unexisting key on parent iterable render returns null");
+  assert.ok((aux = render.getItemByKey("1")),"Indexed iterable item in parent iterable returns an item");
+  assert.equal(aux,render.items[1],"Ensure the indexed iterable parent returned is correct");
+  assert.ok(render.getItemByKey("1.0") === null,"Indexed elements are not returned when using keys");
 });
 
 QUnit.test("Tag renders default settings",function(assert) {
