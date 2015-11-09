@@ -29,19 +29,17 @@ Monominoes.Render.superclass = null;
 /**
  * Item class. Wrapper of item creation during rendering.
  */
-Monominoes.Item = function(parent,render,data,index){
+Monominoes.Item = function(parent,render,data){
   this.reset();
   this.container = Monominoes.Item.getContainerFrom(parent);
   this.render = render;
   this.data = data;
-  this.index = index;
   this.layout  = render.layout.children;
   this.parent = (Komunalne.util.isInstanceOf(parent,Monominoes.Item)) ? parent : null;
 };
 Monominoes.Item.prototype.container = null; /* Item container */
 Monominoes.Item.prototype.render = null;    /* Render builder which produced this item */
 Monominoes.Item.prototype.data = null;      /* Data which produced the item */
-Monominoes.Item.prototype.index = null;     /* Item index or key. Identifier on render holder */
 Monominoes.Item.prototype.layout = null;    /* Children renders definition */
 Monominoes.Item.prototype.children = null;  /* Children items. */
 Monominoes.Item.prototype.childMap = null;  /* Children map for key mapped items */
@@ -52,7 +50,11 @@ Monominoes.Item.prototype.parent = null;    /* Parent item of this entry, if any
  * Destroy the underlying rendered item and its children.
  */
 Monominoes.Item.prototype.reset = function() { 
-  if (this.children) this.children.forEach(function(child) { child.reset(); });
+  var fe;
+  if (this.children) {
+    fe = function(array) { array.forEach(function(child) { child.reset(); }); };
+    this.children.forEach(fe);
+  }
   this.children = [];
   if (this.item) this.item.remove();
   this.item = null;
@@ -82,33 +84,25 @@ Monominoes.Item.prototype.draw = function() {
  * Draw the underlying children using master render layout.
  */
 Monominoes.Item.prototype.drawChildren = function() {
-  var render,data,index;
-  var i,j,baseIndex;
+  var render,data;
+  var index,item;
+  var i,j;
   i = new Komunalne.helper.Iterator(this.layout);
   while (i.hasNext()) {
     render = i.next();
     data = render.extractData(this.data);
-    index = i.currentKey();
-    if (render.isIterable()) {
-      j = new Komunalne.helper.Iterator(data);
-      baseIndex = index + ".";
-      while (j.hasNext()) this.pushChildren(render,j.next(),baseIndex + j.currentKey());
-    } else this.pushChildren(render,data,index);
+    data = render.isIterable() ? data : [data];
+    j = new Komunalne.helper.Iterator(data);
+    this.children.push([]);
+    if (render.key) this.childMap[render.key] = [];
+    index = this.children.length - 1;
+    while (j.hasNext()) {
+      item = new Monominoes.Item(this,render,j.next());
+      this.children[index].push(item);
+      if (render.key) this.childMap[render.key].push(item);
+      item.draw();
+    }
   }
-};
-
-/**
- * Recursive assignment and drawing of children items.
- */
-Monominoes.Item.prototype.pushChildren = function(render,data,index) {
-  var item;
-  item = new Monominoes.Item(this,render,data,index);
-  this.children.push(item);
-  if (render.key) {
-    if (!(render.key in this.childMap)) this.childMap[render.key] = [];
-    this.childMap[render.key].push(item);
-  }
-  item.draw();
 };
 
 /**
@@ -341,9 +335,20 @@ Monominoes.Render.prototype.renderByKey = function(key) {
 };
 
 /**
- * Gets a child item by its index.
+ * Gets a child item by its index, getting sub-items using dot-notation.
+ * Iterates over the render layout, meaning that items of an iterable child 
  */
-Monominoes.Render.prototype.getItemByIndex = function(index) {};
+Monominoes.Render.prototype.getItemByIndex = function(index) {
+  var i = new Komunalne.helper.Iterator(Komunalne.util.isInstanceOf(index,"number") ? [index] : index.split("."));
+  var item = this.items;
+  var render = this;
+  
+  while (i.hasNext()) {
+    
+  };
+  
+  return item;
+};
 
 /**
  * Gets a child item by its key, getting sub-items using dot-notation.
