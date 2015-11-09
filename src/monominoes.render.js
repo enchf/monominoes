@@ -278,6 +278,7 @@ Monominoes.Render.prototype.createItems = function(container) {
   this.clear();
   this.items = [];
   data = this.extractData();
+  data = this.isIterable() ? data : [data];
   i = new Komunalne.helper.Iterator(data);
   while (i.hasNext()) {
     item = new Monominoes.Item(container,this,i.next(),i.currentKey());
@@ -293,9 +294,7 @@ Monominoes.Render.prototype.createItems = function(container) {
 Monominoes.Render.prototype.extractData = function(data) {
   var base,result;
   base = (this.isAbsolute() || data == null) ? this.data : data;
-  result = this.path ? Komunalne.util.path(base,this.path) : base;
-  result = (this.isIterable()) ? result : [result];
-  return result;
+  return this.path ? Komunalne.util.path(base,this.path) : base;
 };
 
 /**

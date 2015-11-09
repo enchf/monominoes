@@ -350,7 +350,7 @@ QUnit.test("Render function: Test updateData", function(assert) {
 
 QUnit.test("Render function: Build items, customization and clear", function(assert) {
   var data = { "data": { "x": 1, "y": "foo" }, "title": "title" };
-  var aux;
+  var aux,child,subrender;
   var Div = createMock("div");
   var Span = createMock("span");
   var P = createMock("p");
@@ -373,42 +373,55 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   assert.ok("id" in render.layout.children[1].layout.children[0],"Render id custom property is set on child of child");
   assert.equal($("#div-id").length,1,"Render item exists in DOM");
   
-  
-  
-  assert.ok(render.container === container,"Container assigned for base render");
-  
   // Items creation.
   assert.ok("items" in render,"Item is built after call to render function");
-  assert.ok(Komunalne.util.isInstanceOf(render.items,jQuery),"Item is set as a jQuery object");
-  assert.equal(render.items.prop("tagName"),"DIV","Tag is correctly built on item");
-  assert.ok(Komunalne.util.isArray(render.children),"Children property is set as an array");
-  assert.equal(render.children.length,2,"Two children are appended as child renders");
-  assert.ok(Komunalne.util.isInstanceOf(render.children[0].items,jQuery),"First child items property is a jQuery object");
-  assert.equal(render.children[0].items.prop("tagName"),"SPAN","Tag is built in first child items property: SPAN");
-  assert.ok(Komunalne.util.isInstanceOf(render.children[1].items,jQuery),"Second child items property is set as jQuery");
-  assert.equal(render.children[1].items.prop("tagName"),"P","Tag is correctly built in second child: P");
-  assert.deepEqual(Komunalne.util.keys(render.childMap),["sub"],"Child map has one key set");
-  assert.ok(Monominoes.util.isRender(render.childMap.sub,P),"Mapped child render is of type P");
-  assert.ok(Komunalne.util.isInstanceOf(render.childMap.sub.items,jQuery),"Items in mapped child is set as jQuery ");
-  assert.equal(render.childMap.sub.items.prop("tagName"),"P","Mapped child has the correct tag: P");
+  assert.ok(Komunalne.util.isArrayOf(render.items,Monominoes.Item),"Render.items is an array of M.Item");
+  assert.equal(render.items.length,1,"Parent item is created");
+  assert.ok(container === (aux = render.items[0]).container,"Container from render is assigned to parent item");
+  assert.ok(aux.render === render,"Render is correctly assigned into parent item");
+  assert.ok(aux.data === data,"Data is assigned into parent item");
+  assert.equal(aux.index,0,"Parent item has index = 0");
+  assert.ok(aux.layout === render.layout.children,"Layout is assigned as parent render children");
+  assert.ok(Komunalne.util.isInstanceOf(aux.item,jQuery),"Underlying parent item is a jQuery object");
+  assert.equal(aux.item.prop("tagName"),"DIV","Tag of parent item item is DIV");
+  assert.ok(Komunalne.util.isArrayOf(aux.children,Monominoes.Item),"Children is an array of M.Item");
+  assert.equal(aux.children.length,2,"Parent item has two children");
+  assert.ok(Komunalne.util.isInstanceOf(aux.childMap,"object"),"Parent item children map is an object");
+  assert.deepEqual(Komunalne.util.keys(aux.childMap),["sub"],"Only one child is mapped into parent item");
+  assert.ok(aux.isDrawn(),"Parent item is marked as drawn");
   
+  child = aux.children[0];
+  subrender = render.layout.children[0];
+  assert.ok(child.container === aux.item,"First child container is parent item inner item");
+  assert.ok(child.render === subrender,"Render in first child is first layout children");
+  assert.ok(child.data === data,"Data is assigned into first child item");
+  assert.equal(child.index,0,"First child has index = 0");
+  assert.deepEqual(child.layout,subrender.layout.children,"First child layout is assigned as first sub render");
+  assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Underlying first child item is a jQuery object");
+  assert.equal(child.item.prop("tagName"),"SPAN","Tag of parent item item is SPAN");
+  assert.ok(Komunalne.util.isArrayOf(child.children,Monominoes.Item),"First item children is an array of M.Item");
+  assert.equal(child.children.length,0,"Parent item has two children");
+  assert.ok(Komunalne.util.isInstanceOf(child.childMap,"object"),"First child children map is an object");
+  assert.deepEqual(Komunalne.util.keys(child.childMap),[],"No children are mapped into first child item");
+  assert.ok(child.isDrawn(),"Parent item is marked as drawn");
+  
+  /*  
   // Item retrieval by key.
   aux = render.childByKey("sub.subsub");
   assert.ok(Monominoes.util.isRender(aux,Span),"Mapped child of child render is of type Span");
   assert.ok(Komunalne.util.isInstanceOf(aux.items,jQuery),"Mapped child of child items is set as jQuery object");
-  assert.equal(aux.items.prop("tagName"),"SPAN","Mapped child of child items refer to the correct tag: SPAN");
+  assert.equal(aux.items.prop("tagName"),"SPAN","Mapped child of child items refer to the correct tag: SPAN");*/
   
   // Result of clear function.
   render.clear();
-  assert.ok(render.item == null,"Item is removed after call to clear");
-  assert.ok(Komunalne.util.isArray(render.children),"Children property remains an array");
-  assert.equal(render.children.length,2,"Children array is not empty after call to clear");
-  assert.deepEqual(Komunalne.util.keys(render.childMap),["sub"],"Child map is not empty after call to clear");
+  assert.ok(render.items == null,"Item is removed after call to clear");
+  assert.ok(Komunalne.util.isArray(render.layout.children),"Render layout remains set");
+  assert.equal(render.layout.children.length,2,"Render layout remains the same");
+  assert.deepEqual(Komunalne.util.keys(render.layout.childMap),["sub"],"Child map remains the same in render");
   assert.equal($("#div-id").length,0,"Render item doesn't exist in DOM after calling clear method");
-  assert.ok(render.container === container,"Container is kept after clear for sucessive redrawing");
 });
 
-QUnit.test("Path, container and itemData assignment", function(assert) {
+QUnit.test("Item and iterable children items content and structure", function(assert) {
   var Div = createMock("div");
   var P = createMock("p");
   var Span = createMock("span");
