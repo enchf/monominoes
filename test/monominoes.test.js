@@ -381,9 +381,9 @@ QUnit.test("Items rendering, content, structure, customization and clear for non
   assert.equal($("#div-id").length,1,"Render item exists in DOM");
   
   // Items creation.
-  assert.ok("items" in render,"Item is built after call to render function");
+  assert.ok("items" in render,"Items is built after call to render function");
   assert.ok(Komunalne.util.isArrayOf(render.items,Monominoes.Item),"Render.items is an array of M.Item");
-  assert.equal(render.items.length,1,"Parent item is created");
+  assert.equal(render.items.length,1,"Parent items length is 1");
   assert.ok(container === (aux = render.items[0]).container,"Container from render is assigned to parent item");
   assert.ok(aux.parent === null,"Base render has no M.Item parent");
   assert.ok(aux.render === render,"Render is correctly assigned into parent item");
@@ -477,18 +477,19 @@ QUnit.test("Items rendering, content, structure, customization and clear for non
   assert.equal($("#div-id").length,0,"Render item doesn't exist in DOM after calling clear method");
 });
 
-QUnit.test("Item and iterable children items content and structure", function(assert) {
+QUnit.test("Items rendering, content, structure, customization and clear for iterable renders", function(assert) {
   var Div = createMock("div");
   var P = createMock("p");
   var Span = createMock("span");
-  var render,data;
+  var render,data,aux,child;
   
   render = new Div({
     "id": "base-div",
+    "path": "data",
     "customize": function(item,itemdata) { item.text(itemdata.header); },
     "children": [{
       "render": P,
-      "config": { "key": "paragraph", "path": "text" }
+      "config": { "key": "headtext", "path": "text" }
     },{
       "render": Div,
       "config": {
@@ -499,8 +500,8 @@ QUnit.test("Item and iterable children items content and structure", function(as
         "children": [{ 
           "render": Span, 
           "config": { 
-            "key": "id", 
-            "path": "id" // Path will be relative to the iteration item.
+            "key": "key", 
+            "path": "key" // Path will be relative to the iteration item.
           }
         },{ 
           "render": Span, 
@@ -512,30 +513,42 @@ QUnit.test("Item and iterable children items content and structure", function(as
       }
     }] 
   });
-  data = { 
-    "header": "Header",
-    "text": "This is text",
-    "options": [
-      { "id": 1, "value": "one", "key": "uno" },
-      { "id": 2, "value": "two", "key": "dos" },
-      { "id": 3, "value": "three", "key": "tres" }
-    ]
-  };
-  
+  data = {
+    "result": "ok",
+    "data": {
+      "header": "Header",
+      "text": "This is text",
+      "options": [
+        { "id": 1, "value": "one", "key": "uno" },
+        { "id": 2, "value": "two", "key": "dos" },
+        { "id": 3, "value": "three", "key": "tres" }
+      ]
+    }
+  };  
   render.render(data,"#test-div");
-  assert.ok(render.container != null,"Base render container is not null");
-  assert.equal(render.container.attr("id"),"test-div","Base render is placed on test-div DOM element");
-  assert.ok(render.path == null,"There is no path specified for base render");
-  assert.ok(render.parent == null,"There is no parent render for base render");
-  assert.deepEqual(render.data,data,"Data is assigned to base render");
-  assert.deepEqual(render.itemData,data,"No path specified in base render so item data is equal to data");
-  assert.notOk(Komunalne.util.isArray(render.items),"Base render items is not an array");
-  assert.ok(Komunalne.util.isInstanceOf(render.items,jQuery),"Base render items is a jQuery object");
-  assert.equal(render.items.attr("id"),"base-div","Id is correctly set on customize function");
-  assert.equal($("#base-div").length,1,"Base render items is present in DOM");
-  assert.equal(Komunalne.$.elementText(render.items),data.header,"Text for base render items is set");
   
-  aux = render.childByKey("paragraph");
+  // Items creation.
+  aux = render.items[0];
+  assert.ok("items" in render,"Items is built after call to render function");
+  assert.ok(Komunalne.util.isArrayOf(render.items,Monominoes.Item),"Render.items is an array of M.Item");
+  assert.equal(render.items.length,1,"Base item is a single item");
+  assert.equal(aux.container.attr("id"),"test-div","Container from render is assigned to base item");
+  assert.ok(aux.parent === null,"Base item has no M.Item parent");
+  assert.ok(aux.render === render,"Render is correctly assigned into base item");
+  assert.ok(aux.data === data.data,"Data is assigned into base item according to path");
+  assert.equal(aux.index,0,"Base item has index = 0");
+  assert.ok(aux.layout === render.layout.children,"Layout of base item is base render layout.children");
+  assert.ok(Komunalne.util.isInstanceOf(aux.item,jQuery),"Underlying base item item is a jQuery object");
+  assert.equal(aux.item.prop("tagName"),"DIV","Tag of base item item is DIV");
+  assert.equal(Komunalne.$.elementText(aux.item),"Header","Text content of base item");
+  assert.ok(Komunalne.util.isArrayOf(aux.children,Monominoes.Item),"Children is an array of M.Item in base item");
+  assert.equal(aux.children.length,4,"Base item has one four children (3 from iterable render)");
+  assert.ok(Komunalne.util.isInstanceOf(aux.childMap,"object"),"Base item children map is an object");
+  assert.deepEqual(Komunalne.util.keys(aux.childMap),["headtext","options"],"Only one child is mapped into base item");
+  assert.ok(aux.isDrawn(),"Base item is marked as drawn");
+  assert.equal($("#base-div").length,1,"Base item item is present in DOM");
+  
+  /*aux = render.childByKey("paragraph");
   assert.ok(aux.container != null,"Paragraph render container is not null");
   assert.ok(aux.container === render.items,"Paragraph container is base render items");
   assert.equal(aux.container.attr("id"),"base-div","Paragraph container id is items id of base render");
@@ -563,7 +576,7 @@ QUnit.test("Item and iterable children items content and structure", function(as
   assert.equal(aux.container.children().length,4,"Paragraph plus 3 options items are appended to base render items");
   assert.equal(Komunalne.$.elementText(aux.items[0]),"1","Text for options render items is 1 in first item");
   assert.equal(Komunalne.$.elementText(aux.items[1]),"2","Text for options render items is 2 in second item");
-  assert.equal(Komunalne.$.elementText(aux.items[2]),"3","Text for options render items is 3 in third item");
+  assert.equal(Komunalne.$.elementText(aux.items[2]),"3","Text for options render items is 3 in third item");*/
 });
 
 QUnit.test("Item retrieval by index or key", function(assert) {
