@@ -348,13 +348,14 @@ QUnit.test("Render function: Test updateData", function(assert) {
   assert.equal(a.layout.children[1].data,"data","Second child data is updated from null after render with arguments");
 });
 
-QUnit.test("Render function: Build items, customization and clear", function(assert) {
+QUnit.test("Items rendering, content, structure, customization and clear for non-iterable renders", function(assert) {
   var data = { "data": { "x": 1, "y": "foo" }, "title": "title" };
   var aux,child,subrender;
   var Div = createMock("div");
   var Span = createMock("span");
   var P = createMock("p");
   var subsub,sub;
+  var objectToStr = "[object Object]";
   var container = $("#test-div");
   var render = new Div({
     "id": "div-id",
@@ -391,6 +392,7 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   assert.ok(aux.layout === render.layout.children,"Layout is assigned as parent render children");
   assert.ok(Komunalne.util.isInstanceOf(aux.item,jQuery),"Underlying parent item is a jQuery object");
   assert.equal(aux.item.prop("tagName"),"DIV","Tag of parent item item is DIV");
+  assert.equal(Komunalne.$.elementText(aux.item),objectToStr,"Text content of parent item");
   assert.ok(Komunalne.util.isArrayOf(aux.children,Monominoes.Item),"Children is an array of M.Item");
   assert.equal(aux.children.length,2,"Parent item has two children");
   assert.ok(Komunalne.util.isInstanceOf(aux.childMap,"object"),"Parent item children map is an object");
@@ -407,6 +409,7 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   assert.deepEqual(child.layout,subrender.layout.children,"First child layout is assigned as first sub render");
   assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Underlying first child item is a jQuery object");
   assert.equal(child.item.prop("tagName"),"SPAN","Tag of first child item item is SPAN");
+  assert.equal(Komunalne.$.elementText(child.item),objectToStr,"Text content of first child item");
   assert.ok(Komunalne.util.isArrayOf(child.children,Monominoes.Item),"First item children is an array of M.Item");
   assert.equal(child.children.length,0,"First child item has no children");
   assert.ok(Komunalne.util.isInstanceOf(child.childMap,"object"),"First child children map is an object");
@@ -423,6 +426,7 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   assert.deepEqual(child.layout,subrender.layout.children,"Second child layout is assigned as first sub render");
   assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Underlying second child item is a jQuery object");
   assert.equal(child.item.prop("tagName"),"P","Tag of second child item item is SPAN");
+  assert.equal(Komunalne.$.elementText(child.item),objectToStr,"Text content of second child item");
   assert.ok(Komunalne.util.isArrayOf(child.children,Monominoes.Item),"Second item children is an array of M.Item");
   assert.equal(child.children.length,2,"Second child item has two children");
   assert.ok(Komunalne.util.isInstanceOf(child.childMap,"object"),"Second child children map is an object");
@@ -440,6 +444,7 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   assert.deepEqual(child.layout,subrender.layout.children,"First grandson layout is assigned as first sub render");
   assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Underlying first grandson item is a jQuery object");
   assert.equal(child.item.prop("tagName"),"SPAN","Tag of first grandson item item is SPAN");
+  assert.equal(Komunalne.$.elementText(child.item),"title","Text content of first grandson item");
   assert.ok(Komunalne.util.isArrayOf(child.children,Monominoes.Item),"First grandson children is an array of M.Item");
   assert.equal(child.children.length,0,"First grandson has no children");
   assert.ok(Komunalne.util.isInstanceOf(child.childMap,"object"),"First grandson children map is an object");
@@ -456,6 +461,7 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   assert.deepEqual(child.layout,subrender.layout.children,"second grandson layout is assigned as first sub render");
   assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Underlying second grandson item is a jQuery object");
   assert.equal(child.item.prop("tagName"),"SPAN","Tag of second grandson item item is SPAN");
+  assert.equal(Komunalne.$.elementText(child.item),"foo","Text content of second grandson item");
   assert.ok(Komunalne.util.isArrayOf(child.children,Monominoes.Item),"Second grandson children is an array of M.Item");
   assert.equal(child.children.length,0,"Second grandson has no children");
   assert.ok(Komunalne.util.isInstanceOf(child.childMap,"object"),"Second grandson children map is an object");
@@ -475,23 +481,7 @@ QUnit.test("Item and iterable children items content and structure", function(as
   var Div = createMock("div");
   var P = createMock("p");
   var Span = createMock("span");
-  var render = new Div({
-    "path": "data",
-    "children": [{ "render": P, "config": { "key": "items", "iterable": true, "path": "data.items" } }],
-    "customize": function(item,itemdata) { item.text(itemdata.title); }
-  });
-  var data = { "data": { "title": "Title", "items": ["one","two","three"] } };
-  var itemsRender;
-  var aux;
-  
-  render.render(data);
-  itemsRender = render.childByKey("items");
-  assert.equal(Komunalne.$.elementText(render.items),"Title","Customized title is set from base render path config");
-  assert.deepEqual(render.itemData,data.data,"Base render item data correctly set");
-  assert.deepEqual(itemsRender.itemData,data.data.items,"Iterable child render item data set");
-  assert.ok(render === itemsRender.parent,"Parent is correctly set for child render");
-  assert.ok(render.items === itemsRender.container,"Container is set for children during rendering");
-  assert.ok(render.container === null,"If container is not specified it remains null for base render");
+  var render,data;
   
   render = new Div({
     "id": "base-div",
@@ -574,51 +564,6 @@ QUnit.test("Item and iterable children items content and structure", function(as
   assert.equal(Komunalne.$.elementText(aux.items[0]),"1","Text for options render items is 1 in first item");
   assert.equal(Komunalne.$.elementText(aux.items[1]),"2","Text for options render items is 2 in second item");
   assert.equal(Komunalne.$.elementText(aux.items[2]),"3","Text for options render items is 3 in third item");
-  
-});
-
-QUnit.test("Iterable items", function(assert) {
-  var H1 = createMock("h1");
-  var UL = createMock("ul");
-  var LI = createMock("li");
-  var render = new UL({
-    "children": [
-      { "render": H1, "config": { "key": "header", "path": "header" } },
-      { "render": LI, "config": { "key": "items", "path": "items", "iterable": true } }
-    ]
-  });
-  var data1 = { "title": "ignored", "header": "Title", "items": [1,2,3,4,5] };
-  var data2 = { "header": "Updated", "items": ["a","b","c"] };
-  var header,items;
-  var i;
-  
-  render.render(data1);
-  header = render.childByKey("header");
-  items = render.childByKey("items");
-  
-  assert.equal(render.children.length,2,"Two child renders appended to base render");
-  assert.ok(Komunalne.util.isInstanceOf(header.items,jQuery),"Header child render has a single item");
-  assert.ok(Komunalne.util.isArray(items.items),"Items child render has items property as an array");
-  assert.deepEqual(render.itemData,data1,"Item data is correctly set if no path specified");
-  assert.equal(header.itemData,"Title","Header item data is correctly set according to path");
-  assert.deepEqual(items.itemData,[1,2,3,4,5],"Iterable item data is correctly set according to path");
-  
-  // Iterability test.
-  i = 1;
-  assert.equal(items.items.length,5,"Items child render has 5 items from the data received");
-  while (i <= 5) assert.equal(items.items[i-1].text(),i,"Checking items for the first data assignment: " + (i++));
-  
-  i = 0;
-  render.render(data2);
-  assert.equal(render.children.length,2,"Two child renders appended to base render in the second rendering");
-  assert.ok(Komunalne.util.isInstanceOf(header.items,jQuery),"Header child render preserves a single item");
-  assert.ok(Komunalne.util.isArray(items.items),"Items child render preserves items property as an array");
-  assert.deepEqual(render.itemData,data2,"Item data is correctly updated for base render");
-  assert.equal(header.itemData,"Updated","Header item data is updated in second rendering");
-  assert.deepEqual(items.itemData,["a","b","c"],"Iterable item data is updated in second rendering");
-  assert.equal(items.items.length,3,"Items child render has 5 items from the data received");
-  while (i < 3) assert.equal(items.items[i].text(),data2.items[i],
-                             "Checking items for the updated data: " + data2.items[i++]);
 });
 
 QUnit.test("Item retrieval by index or key", function(assert) {
