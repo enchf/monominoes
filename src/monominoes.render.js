@@ -338,6 +338,11 @@ Monominoes.Render.prototype.renderByKey = function(key) {
 };
 
 /**
+ * Gets a child item by its key or its index.
+ */
+Monominoes.Render.prototype.getItem = function(index) {};
+
+/**
  * Apply Render customization rules, defined by default or during instantiation.
  * Method to be overriden from M.Render defaults. The scope of the function is the Render object.
  * @param item Individual item to be customized.

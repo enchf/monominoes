@@ -360,7 +360,13 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
     "id": "div-id",
     "children": [
       { "render": Span, "config": { "id": "first-span" } },
-      (sub = new P({ "key": "sub", "children": [ (subsub = Span({ "key": "subsub" })) ] }))
+      (sub = new P({ 
+        "key": "sub", 
+        "children": [ 
+          (subsub = Span({ "key": "subsub", "path": "title" })),
+          { "render": Span, "config": { "absolute": true, "path": "data.y" } }
+        ] 
+      }))
     ]
   }).render(data,container);
   
@@ -398,19 +404,58 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   assert.equal(child.index,0,"First child has index = 0");
   assert.deepEqual(child.layout,subrender.layout.children,"First child layout is assigned as first sub render");
   assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Underlying first child item is a jQuery object");
-  assert.equal(child.item.prop("tagName"),"SPAN","Tag of parent item item is SPAN");
+  assert.equal(child.item.prop("tagName"),"SPAN","Tag of first child item item is SPAN");
   assert.ok(Komunalne.util.isArrayOf(child.children,Monominoes.Item),"First item children is an array of M.Item");
-  assert.equal(child.children.length,0,"Parent item has two children");
+  assert.equal(child.children.length,0,"First child item has no children");
   assert.ok(Komunalne.util.isInstanceOf(child.childMap,"object"),"First child children map is an object");
   assert.deepEqual(Komunalne.util.keys(child.childMap),[],"No children are mapped into first child item");
-  assert.ok(child.isDrawn(),"Parent item is marked as drawn");
+  assert.ok(child.isDrawn(),"First child item is marked as drawn");
   
-  /*  
-  // Item retrieval by key.
-  aux = render.childByKey("sub.subsub");
-  assert.ok(Monominoes.util.isRender(aux,Span),"Mapped child of child render is of type Span");
-  assert.ok(Komunalne.util.isInstanceOf(aux.items,jQuery),"Mapped child of child items is set as jQuery object");
-  assert.equal(aux.items.prop("tagName"),"SPAN","Mapped child of child items refer to the correct tag: SPAN");*/
+  child = aux.children[1];
+  subrender = render.layout.children[1];
+  assert.ok(child.container === aux.item,"Second child container is parent item inner item");
+  assert.ok(child.render === subrender,"Render in second child is second layout children");
+  assert.ok(child.data === data,"Data is assigned into second child item");
+  assert.equal(child.index,1,"Second child has index = 1");
+  assert.deepEqual(child.layout,subrender.layout.children,"Second child layout is assigned as first sub render");
+  assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Underlying second child item is a jQuery object");
+  assert.equal(child.item.prop("tagName"),"P","Tag of second child item item is SPAN");
+  assert.ok(Komunalne.util.isArrayOf(child.children,Monominoes.Item),"Second item children is an array of M.Item");
+  assert.equal(child.children.length,2,"Second child item has two children");
+  assert.ok(Komunalne.util.isInstanceOf(child.childMap,"object"),"Second child children map is an object");
+  assert.deepEqual(Komunalne.util.keys(child.childMap),["subsub"],"One child is mapped into second child item");
+  assert.ok(child.isDrawn(),"Second child item is marked as drawn");
+  
+  aux = child;
+  child = aux.children[0];
+  subrender = aux.render.layout.children[0];
+  assert.ok(child.container === aux.item,"First grandson container is parent item inner item");
+  assert.ok(child.render === subrender,"Render in first grandson is first layout children");
+  assert.equal(child.data,"title","Data is assigned into first grandson item");
+  assert.equal(child.index,0,"First grandson has index = 0");
+  assert.deepEqual(child.layout,subrender.layout.children,"First grandson layout is assigned as first sub render");
+  assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Underlying first grandson item is a jQuery object");
+  assert.equal(child.item.prop("tagName"),"SPAN","Tag of first grandson item item is SPAN");
+  assert.ok(Komunalne.util.isArrayOf(child.children,Monominoes.Item),"First grandson children is an array of M.Item");
+  assert.equal(child.children.length,0,"First grandson has no children");
+  assert.ok(Komunalne.util.isInstanceOf(child.childMap,"object"),"First grandson children map is an object");
+  assert.deepEqual(Komunalne.util.keys(child.childMap),[],"No children are mapped into first grandson item");
+  assert.ok(child.isDrawn(),"First grandson item is marked as drawn");
+  
+  child = aux.children[1];
+  subrender = aux.render.layout.children[1];
+  assert.ok(child.container === aux.item,"Second grandson container is parent item inner item");
+  assert.ok(child.render === subrender,"Render in second grandson is second layout children");
+  assert.equal(child.data,"foo","Data is assigned into second grandson item");
+  assert.equal(child.index,1,"Second grandson has index = 1");
+  assert.deepEqual(child.layout,subrender.layout.children,"second grandson layout is assigned as first sub render");
+  assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Underlying second grandson item is a jQuery object");
+  assert.equal(child.item.prop("tagName"),"SPAN","Tag of second grandson item item is SPAN");
+  assert.ok(Komunalne.util.isArrayOf(child.children,Monominoes.Item),"Second grandson children is an array of M.Item");
+  assert.equal(child.children.length,0,"Second grandson has no children");
+  assert.ok(Komunalne.util.isInstanceOf(child.childMap,"object"),"Second grandson children map is an object");
+  assert.deepEqual(Komunalne.util.keys(child.childMap),[],"No children are mapped into second grandson item");
+  assert.ok(child.isDrawn(),"Second grandson item is marked as drawn");
   
   // Result of clear function.
   render.clear();
@@ -569,6 +614,10 @@ QUnit.test("Iterable items", function(assert) {
   assert.equal(items.items.length,3,"Items child render has 5 items from the data received");
   while (i < 3) assert.equal(items.items[i].text(),data2.items[i],
                              "Checking items for the updated data: " + data2.items[i++]);
+});
+
+QUnit.test("Item retrieval by index or key", function(assert) {
+  assert.ok(Monominoes.Render.prototype.getItem);
 });
 
 QUnit.test("Tag renders default settings",function(assert) {
