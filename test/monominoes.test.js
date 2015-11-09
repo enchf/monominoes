@@ -384,6 +384,7 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   assert.ok(Komunalne.util.isArrayOf(render.items,Monominoes.Item),"Render.items is an array of M.Item");
   assert.equal(render.items.length,1,"Parent item is created");
   assert.ok(container === (aux = render.items[0]).container,"Container from render is assigned to parent item");
+  assert.ok(aux.parent === null,"Base render has no M.Item parent");
   assert.ok(aux.render === render,"Render is correctly assigned into parent item");
   assert.ok(aux.data === data,"Data is assigned into parent item");
   assert.equal(aux.index,0,"Parent item has index = 0");
@@ -399,6 +400,7 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   child = aux.children[0];
   subrender = render.layout.children[0];
   assert.ok(child.container === aux.item,"First child container is parent item inner item");
+  assert.ok(child.parent === aux,"First child parent is base parent item");
   assert.ok(child.render === subrender,"Render in first child is first layout children");
   assert.ok(child.data === data,"Data is assigned into first child item");
   assert.equal(child.index,0,"First child has index = 0");
@@ -414,6 +416,7 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   child = aux.children[1];
   subrender = render.layout.children[1];
   assert.ok(child.container === aux.item,"Second child container is parent item inner item");
+  assert.ok(child.parent === aux,"Second child parent is base parent item");
   assert.ok(child.render === subrender,"Render in second child is second layout children");
   assert.ok(child.data === data,"Data is assigned into second child item");
   assert.equal(child.index,1,"Second child has index = 1");
@@ -430,6 +433,7 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   child = aux.children[0];
   subrender = aux.render.layout.children[0];
   assert.ok(child.container === aux.item,"First grandson container is parent item inner item");
+  assert.ok(child.parent === aux,"First grandson parent is second child");
   assert.ok(child.render === subrender,"Render in first grandson is first layout children");
   assert.equal(child.data,"title","Data is assigned into first grandson item");
   assert.equal(child.index,0,"First grandson has index = 0");
@@ -445,6 +449,7 @@ QUnit.test("Render function: Build items, customization and clear", function(ass
   child = aux.children[1];
   subrender = aux.render.layout.children[1];
   assert.ok(child.container === aux.item,"Second grandson container is parent item inner item");
+  assert.ok(child.parent === aux,"Second grandson parent is second child");
   assert.ok(child.render === subrender,"Render in second grandson is second layout children");
   assert.equal(child.data,"foo","Data is assigned into second grandson item");
   assert.equal(child.index,1,"Second grandson has index = 1");
