@@ -98,7 +98,7 @@ Monominoes.Render.superclass = null;
 /**
  * Item class. Wrapper of item creation during rendering.
  */
-Monominoes.Item = function(parent,render,data){
+Monominoes.Item = function(parent,render,data) {
   this.reset();
   this.container = Monominoes.Item.getContainerFrom(parent);
   this.render = render;
@@ -132,6 +132,11 @@ Monominoes.Item.prototype.reset = function() {
   this.container = null;
   this.parent = null;
 };
+
+/**
+ * Sets the inner index of the item with respect to its container.
+ */
+Monominoes.Item.prototype.setIndex = function(index) { this.index = index; };
 
 /**
  * Returns true if the underlying item has been drawn.
@@ -169,6 +174,7 @@ Monominoes.Item.prototype.drawChildren = function() {
     while (j.hasNext()) {
       item = new Monominoes.Item(this,render,j.next());
       this.children[index].push(item);
+      item.setIndex(this.children[index].length - 1);
       if (render.key) this.childMap[render.key].push(item);
       item.draw();
     }
@@ -348,7 +354,8 @@ Monominoes.Render.prototype.createItems = function(container) {
   data = this.isIterable() ? data : [data];
   i = new Komunalne.helper.Iterator(data);
   while (i.hasNext()) {
-    item = new Monominoes.Item(container,this,i.next(),i.currentKey());
+    item = new Monominoes.Item(container,this,i.next());
+    item.setIndex(i.currentKey());
     this.items.push(item);
     item.draw();
   }

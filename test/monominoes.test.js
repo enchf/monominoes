@@ -388,6 +388,7 @@ QUnit.test("Items rendering, content, structure, customization and clear for non
   assert.ok(aux.parent === null,"Base render has no M.Item parent");
   assert.ok(aux.render === render,"Render is correctly assigned into parent item");
   assert.ok(aux.data === data,"Data is assigned into parent item");
+  assert.equal(aux.index,0,"Index of parent is 0");
   assert.equal(aux.layout,render.layout.children,"Layout is assigned as parent render children");
   assert.ok(Komunalne.util.isInstanceOf(aux.item,jQuery),"Underlying parent item is a jQuery object");
   assert.equal(aux.item.prop("tagName"),"DIV","Tag of parent item item is DIV");
@@ -413,6 +414,7 @@ QUnit.test("Items rendering, content, structure, customization and clear for non
   assert.ok(child.parent === aux,"First child parent is base parent item");
   assert.ok(child.render === subrender,"Render in first child is first layout children");
   assert.ok(child.data === data,"Data is assigned into first child item");
+  assert.equal(child.index,0,"Index of first child is 0");
   assert.equal(child.layout,subrender.layout.children,"First child layout is assigned as first sub render");
   assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Underlying first child item is a jQuery object");
   assert.equal(child.item.prop("tagName"),"SPAN","Tag of first child item item is SPAN");
@@ -430,6 +432,7 @@ QUnit.test("Items rendering, content, structure, customization and clear for non
   assert.ok(child.parent === aux,"Second child parent is base parent item");
   assert.ok(child.render === subrender,"Render in second child is second layout children");
   assert.ok(child.data === data,"Data is assigned into second child item");
+  assert.equal(child.index,0,"Index of second child is 0");
   assert.equal(child.layout,subrender.layout.children,"Second child layout is assigned as first sub render");
   assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Underlying second child item is a jQuery object");
   assert.equal(child.item.prop("tagName"),"P","Tag of second child item item is SPAN");
@@ -457,6 +460,7 @@ QUnit.test("Items rendering, content, structure, customization and clear for non
   assert.ok(child.parent === aux,"First grandson parent is second child");
   assert.ok(child.render === subrender,"Render in first grandson is first layout children");
   assert.equal(child.data,"title","Data is assigned into first grandson item");
+  assert.equal(child.index,0,"Index of first grandson is 0");
   assert.deepEqual(child.layout,subrender.layout.children,"First grandson layout is assigned as first sub render");
   assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Underlying first grandson item is a jQuery object");
   assert.equal(child.item.prop("tagName"),"SPAN","Tag of first grandson item item is SPAN");
@@ -474,6 +478,7 @@ QUnit.test("Items rendering, content, structure, customization and clear for non
   assert.ok(child.parent === aux,"Second grandson parent is second child");
   assert.ok(child.render === subrender,"Render in second grandson is second layout children");
   assert.equal(child.data,"foo","Data is assigned into second grandson item");
+  assert.equal(child.index,0,"Index of second grandson is 0");
   assert.deepEqual(child.layout,subrender.layout.children,"second grandson layout is assigned as first sub render");
   assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Underlying second grandson item is a jQuery object");
   assert.equal(child.item.prop("tagName"),"SPAN","Tag of second grandson item item is SPAN");
