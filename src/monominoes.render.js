@@ -45,6 +45,7 @@ Monominoes.Item.prototype.children = null;  /* Children items. */
 Monominoes.Item.prototype.childMap = null;  /* Children map for key mapped items */
 Monominoes.Item.prototype.item = null;      /* Underlying item produced by the rendering process. */
 Monominoes.Item.prototype.parent = null;    /* Parent item of this entry, if any. */
+Monominoes.Item.prototype.index = null;     /* Inner index from parent render */
 
 /**
  * Destroy the underlying rendered item and its children.
@@ -75,7 +76,7 @@ Monominoes.Item.prototype.isDrawn = function() {
  */
 Monominoes.Item.prototype.draw = function() {
   this.item = this.render.buildItem();
-  this.render.customize(this.item,this.data);
+  this.render.customize(this);
   if (this.container) this.container.append(this.item);
   this.drawChildren();
 };
@@ -399,7 +400,7 @@ Monominoes.Render.prototype.getItemByKey = function(key) {
  * @param item Individual item to be customized.
  * @param itemdata Individual item data of the individual object.
  */
-Monominoes.Render.prototype.customize = function(item,itemdata) {};
+Monominoes.Render.prototype.customize = function(item) {};
 
 /**
  * Render statics: Extend.

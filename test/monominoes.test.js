@@ -5,7 +5,7 @@ function createMock(tag) {
   return Monominoes.Render.extend({
     "postInit": function() { this.id = (this.id || "mock-" + (createMock.count++)); },
     "buildItem": function() { return $(Monominoes.util.format("<{0}></{0}>",tag)).attr("id",this.id); },
-    "customize": function(item,itemdata) { item.text(itemdata); }
+    "customize": function(item) { item.item.text(item.data); }
   });
 };
 createMock.count = 0;
@@ -503,7 +503,7 @@ QUnit.test("Items rendering, content, structure, customization and clear for ite
   render = new Div({
     "id": "base-div",
     "path": "data",
-    "customize": function(item,itemdata) { item.text(itemdata.header); },
+    "customize": function(item) { item.item.text(item.data.header); },
     "children": [{
       "render": P,
       "config": { "key": "headtext", "path": "text" }
@@ -513,7 +513,7 @@ QUnit.test("Items rendering, content, structure, customization and clear for ite
         "iterable": true,
         "key": "options",
         "path": "options",
-        "customize": function(item,itemdata) { item.text(itemdata.id); },
+        "customize": function(item) { item.item.text(item.data.id); },
         "children": [{ 
           "render": Span, 
           "config": { 
@@ -625,7 +625,7 @@ QUnit.test("Item retrieval by key", function(assert) {
   var render = new Div({
     "id": "base-div",
     "path": "data",
-    "customize": function(item,itemdata) { item.text(itemdata.header); },
+    "customize": function(item) { item.item.text(item.data.header); },
     "children": [{
       "render": P,
       "config": { "key": "headtext", "path": "text" }
@@ -635,7 +635,7 @@ QUnit.test("Item retrieval by key", function(assert) {
         "iterable": true,
         "key": "options",
         "path": "options",
-        "customize": function(item,itemdata) { item.text(itemdata.id); },
+        "customize": function(item) { item.item.text(item.data.id); },
         "children": [{ 
           "render": Span, 
           "config": { 
