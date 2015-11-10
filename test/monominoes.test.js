@@ -684,7 +684,46 @@ QUnit.test("Item retrieval by key", function(assert) {
 });
 
 QUnit.test("Item retrieval by index", function(assert) {
+  var aux,exp;
+  var Div = createMock("div");
+  var render = new Div({ "id": "parent", "children": [
+    { "render": Div, "config": { "id": "child", "path": "child", "children": [ new Div() ] } },
+    { "render": Div, "config": { "iterable": true, "id": "children", "path": "children" } }
+  ]});
+  var data = { "child": 1, "children": [1,2,3] };
+  render.render(data);
+  
   assert.ok(Monominoes.Render.prototype.getItemByIndex,"Function getItemByIndex exists in Render prototype");
+  aux = render.getItemByIndex("0");
+  exp = render.items[0].children[0][0];
+  assert.equal(aux,exp,"Retrieving first child of parent");
+  assert.equal(aux.item.attr("id"),exp.item.attr("id"),"First child inner item is the same as the indexed retrieved");
+  aux = render.getItemByIndex("1");
+  exp = render.items[0].children[1];
+  assert.ok(Komunalne.util.isArray(aux),"Second iterable child is an array");
+  assert.equal(aux,exp,"Retrieving second iterable child is the second child array");
+  assert.equal(aux.length,exp.length,"Both arrays are the same length");
+  aux = render.getItemByIndex("0.0");
+  exp = render.items[0].children[0][0].children[0][0];
+  assert.equal(aux,exp,"Retrieving first child of first child of parent");
+  assert.equal(aux.item.attr("id"),exp.item.attr("id"),"First child of first child item id is the expected one");
+  aux = render.getItemByIndex("1.0");
+  exp = render.items[0].children[1][0];
+  assert.equal(aux,exp,"Retrieving first iterable of second child of parent");
+  assert.equal(aux.item.attr("id"),exp.item.attr("id"),"First child of first child item id is the expected one");
+  aux = render.getItemByIndex("1.1");
+  exp = render.items[0].children[1][1];
+  assert.equal(aux,exp,"Retrieving second iterable of second child of parent");
+  assert.equal(aux.item.attr("id"),exp.item.attr("id"),"First child of first child item id is the expected one");
+  aux = render.getItemByIndex("1.2");
+  exp = render.items[0].children[1][2];
+  assert.equal(aux,exp,"Retrieving thirds iterable of first second of parent");
+  assert.equal(aux.item.attr("id"),exp.item.attr("id"),"First child of first child item id is the expected one");
+  
+  assert.strictEqual(render.getItemByIndex("2"),null,"Retrieving unexisting second child of parent results in null");
+  assert.strictEqual(render.getItemByIndex("0.1"),null,"Retrieving unexisting child of first child");
+  assert.strictEqual(render.getItemByIndex("1.3"),null,"Retrieving unexisting indexed child of iterable second child");
+  assert.strictEqual(render.getItemByIndex("1.0.0"),null,"Retrieving unexisting child of iterable second child");
 });
 
 QUnit.test("Tag renders default settings",function(assert) {

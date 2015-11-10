@@ -389,6 +389,13 @@ Monominoes.Render.prototype.getMappedRender = function(key) {
 };
 
 /**
+ * Gets a child render definition by its index.
+ */
+Monominoes.Render.prototype.getRenderByIndex = function(index) {
+  return this.layout.children[index];
+};
+
+/**
  * Get a child (or child of child ...) by the render key.
  * To get a sub render, use dot notation (i.e. "abc.def.ghi").
  * If the key is inexistent returns null.
@@ -411,12 +418,22 @@ Monominoes.Render.prototype.getItemByIndex = function(index) {
   var i = new Komunalne.helper.Iterator(Komunalne.util.isInstanceOf(index,"number") ? [index] : index.split("."));
   var item = this.items;
   var render = this;
+  var token = null;
   
   while (i.hasNext()) {
-    
-  };
+    if (Komunalne.util.isInstanceOf(item,Monominoes.Item)) {
+      token = i.next();
+      item = item.children[token];
+      render = render.getRenderByIndex(token);
+    }
+    if (item == null) break;
+    if (render.isIterable()) {
+      if (!i.hasNext()) break;
+      item = item[i.next()];
+    } else item = item[0];
+  }
   
-  return item;
+  return item == null ? null : item;
 };
 
 /**
