@@ -503,7 +503,8 @@ QUnit.test("Items rendering, content, structure, customization and clear for ite
   var Div = createMock("div");
   var P = createMock("p");
   var Span = createMock("span");
-  var render,data,aux,child;
+  var render,data,aux,child,subrender;
+  var id1,id2;
   
   render = new Div({
     "id": "base-div",
@@ -579,35 +580,48 @@ QUnit.test("Items rendering, content, structure, customization and clear for ite
   assert.ok(aux.isDrawn(),"Base item is marked as drawn");
   assert.equal($("#base-div").length,1,"Base item item is present in DOM");
   
-  /*aux = render.childByKey("paragraph");
-  assert.ok(aux.container != null,"Paragraph render container is not null");
-  assert.ok(aux.container === render.items,"Paragraph container is base render items");
-  assert.equal(aux.container.attr("id"),"base-div","Paragraph container id is items id of base render");
-  assert.equal(aux.path,"text","Paragraph path set to text");
-  assert.ok(aux.parent === render,"Paragraph parent is base render");
-  assert.deepEqual(aux.data,data,"Data is always absolute and equal to data in paragraph render");
-  assert.deepEqual(aux.itemData,data.text,"Item data set according to path in paragraph render");
-  assert.notOk(Komunalne.util.isArray(aux.items),"Paragraph render items is not an array");
-  assert.ok(Komunalne.util.isInstanceOf(aux.items,jQuery),"Paragraph render items is a jQuery object");
-  assert.ok(aux.items.attr("id").indexOf("mock") >= 0,"Id is set on paragraph render items");
-  assert.equal($("#" + aux.items.attr("id")).length,1,"Paragraph render items is present in DOM");
-  assert.equal(Komunalne.$.elementText(aux.items),data.text,"Text for paragraph render items is set");
+  child = render.getItemByKey("headtext");
+  subrender = aux.render.layout.children[0];
+  assert.equal(child.container,aux.item,"Headtext render container is base item");
+  assert.equal(child.parent,aux,"Headtext parent is base item");
+  assert.equal(child.render,subrender,"Headtext render is base item first child");
+  assert.equal(child.data,"This is text","Data is assigned in headtext");
+  assert.equal(child.layout,subrender.layout.children,"Layout of headtext is base item first child children array");
+  assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),"Headtext item is a jQuery object");
+  assert.equal(child.item.prop("tagName"),"P","Tag of headtext item is P");
+  assert.equal(Komunalne.$.elementText(child.item),"This is text","Text content of headtext");
+  assert.ok(Komunalne.util.isArrayOf(child.children,Array),"Children is an array of arrays of Items in headtext");
+  assert.equal(child.children.length,0,"Headtext has no children arrays");
+  assert.ok(Komunalne.util.isInstanceOf(child.childMap,"object"),"Headtext children map is an object");
+  assert.deepEqual(Komunalne.util.keys(child.childMap),[],"No children are mapped into headtext");
+  assert.ok(child.isDrawn(),"Headtext is marked as drawn");
+  assert.equal($("#"+child.item.attr("id")).length,1,"Headtext item is present in DOM");
+  id1 = "#"+child.item.attr("id");
   
-  aux = render.childByKey("options");
-  assert.ok(aux.container != null,"Options render container is not null");
-  assert.ok(aux.container === render.items,"Options container is base render items");
-  assert.equal(aux.container.attr("id"),"base-div","Options container id is items id of base render");
-  assert.equal(aux.path,"options","Options path set to options");
-  assert.ok(aux.parent === render,"Options parent is base render");
-  assert.deepEqual(aux.data,data,"Data is always absolute and equal to data in options render");
-  assert.deepEqual(aux.itemData,data.options,"Item data set according to path in options render");
-  assert.ok(Komunalne.util.isArray(aux.items),"Options render items is an array");
-  assert.notOk(Komunalne.util.isInstanceOf(aux.items,jQuery),"Options render items is not a jQuery object");
-  assert.equal(aux.items.length,3,"Options render length is 3");
-  assert.equal(aux.container.children().length,4,"Paragraph plus 3 options items are appended to base render items");
-  assert.equal(Komunalne.$.elementText(aux.items[0]),"1","Text for options render items is 1 in first item");
-  assert.equal(Komunalne.$.elementText(aux.items[1]),"2","Text for options render items is 2 in second item");
-  assert.equal(Komunalne.$.elementText(aux.items[2]),"3","Text for options render items is 3 in third item");*/
+  child = render.getItemByKey("options");
+  subrender = aux.render.layout.children[1];
+//  assert.ok(aux.container != null,"Options render container is not null");
+//  assert.ok(aux.container === render.items,"Options container is base render items");
+//  assert.equal(aux.container.attr("id"),"base-div","Options container id is items id of base render");
+//  assert.equal(aux.path,"options","Options path set to options");
+//  assert.ok(aux.parent === render,"Options parent is base render");
+//  assert.deepEqual(aux.data,data,"Data is always absolute and equal to data in options render");
+//  assert.deepEqual(aux.itemData,data.options,"Item data set according to path in options render");
+//  assert.ok(Komunalne.util.isArray(aux.items),"Options render items is an array");
+//  assert.notOk(Komunalne.util.isInstanceOf(aux.items,jQuery),"Options render items is not a jQuery object");
+//  assert.equal(aux.items.length,3,"Options render length is 3");
+//  assert.equal(aux.container.children().length,4,"Paragraph plus 3 options items are appended to base render items");
+//  assert.equal(Komunalne.$.elementText(aux.items[0]),"1","Text for options render items is 1 in first item");
+//  assert.equal(Komunalne.$.elementText(aux.items[1]),"2","Text for options render items is 2 in second item");
+//  assert.equal(Komunalne.$.elementText(aux.items[2]),"3","Text for options render items is 3 in third item");
+  
+  render.clear();
+  assert.ok(render.items == null,"Item is removed after call to clear");
+  assert.ok(Komunalne.util.isArray(render.layout.children),"Render layout remains set");
+  assert.equal(render.layout.children.length,2,"Render layout remains the same");
+  assert.deepEqual(Komunalne.util.keys(render.layout.childMap),["headtext","options"],"Child map remains the same in render");
+  assert.equal($("#base-div").length,0,"Render item doesn't exist in DOM after calling clear method");
+  assert.equal($(id1).length,0,"Random child item id does not exist in DOM after calling clear method");
 });
 
 QUnit.test("Item retrieval by key", function(assert) {
