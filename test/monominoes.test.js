@@ -678,6 +678,7 @@ QUnit.test("Items rendering, content, structure, customization and clear for ite
                    "Child map remains the same in render");
   assert.equal($("#base-div").length,0,"Render item doesn't exist in DOM after calling clear method");
   assert.equal($(id1).length,0,"Random child item id does not exist in DOM after calling clear method");
+  assert.equal($(id2).length,0,"Random options item id does not exist in DOM after calling clear method");
 });
 
 QUnit.test("Item retrieval by key", function(assert) {
