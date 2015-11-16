@@ -503,8 +503,9 @@ QUnit.test("Items rendering, content, structure, customization and clear for ite
   var Div = createMock("div");
   var P = createMock("p");
   var Span = createMock("span");
-  var render,data,aux,child,subrender;
+  var render,data,aux,child,subrender,options,grandson,gsrender;
   var id1,id2;
+  var F = Monominoes.util.format;
   
   render = new Div({
     "id": "base-div",
@@ -596,30 +597,85 @@ QUnit.test("Items rendering, content, structure, customization and clear for ite
   assert.deepEqual(Komunalne.util.keys(child.childMap),[],"No children are mapped into headtext");
   assert.ok(child.isDrawn(),"Headtext is marked as drawn");
   assert.equal($("#"+child.item.attr("id")).length,1,"Headtext item is present in DOM");
-  id1 = "#"+child.item.attr("id");
+  id1 = "#" + child.item.attr("id");
   
-  child = render.getItemByKey("options");
+  options = render.getItemByKey("options");
   subrender = aux.render.layout.children[1];
-//  assert.ok(aux.container != null,"Options render container is not null");
-//  assert.ok(aux.container === render.items,"Options container is base render items");
-//  assert.equal(aux.container.attr("id"),"base-div","Options container id is items id of base render");
-//  assert.equal(aux.path,"options","Options path set to options");
-//  assert.ok(aux.parent === render,"Options parent is base render");
-//  assert.deepEqual(aux.data,data,"Data is always absolute and equal to data in options render");
-//  assert.deepEqual(aux.itemData,data.options,"Item data set according to path in options render");
-//  assert.ok(Komunalne.util.isArray(aux.items),"Options render items is an array");
-//  assert.notOk(Komunalne.util.isInstanceOf(aux.items,jQuery),"Options render items is not a jQuery object");
-//  assert.equal(aux.items.length,3,"Options render length is 3");
-//  assert.equal(aux.container.children().length,4,"Paragraph plus 3 options items are appended to base render items");
-//  assert.equal(Komunalne.$.elementText(aux.items[0]),"1","Text for options render items is 1 in first item");
-//  assert.equal(Komunalne.$.elementText(aux.items[1]),"2","Text for options render items is 2 in second item");
-//  assert.equal(Komunalne.$.elementText(aux.items[2]),"3","Text for options render items is 3 in third item");
+  assert.ok(Komunalne.util.isArrayOf(options,Monominoes.Item),"Options item is an array of Items");
+  assert.equal(options.length,3,"Options item is of length 3");
+  id2 = "#" + options[0].item.attr("id");
+  
+  for (var i = 0; i < options.length; i++) {
+    child = options[i];
+    assert.equal(child.container,aux.item,F("Child #{0} is contained into base item",i));
+    assert.equal(child.container.attr("id"),"base-div",F("Child #{0} container is base item",i));
+    assert.equal(child.parent,aux,F("Child #{0} parent is base item",i));
+    assert.equal(child.render,subrender,F("Child #{0} render is correctly assigned from base item layout",i));
+    assert.equal(child.data,data.data.options[i],F("Data is assigned into child #{0} according to path",i));
+    assert.equal(child.layout,subrender.layout.children,F("Child #{0} layout is options render children",i));
+    assert.ok(Komunalne.util.isInstanceOf(child.item,jQuery),F("Underlying child #{0} item is a jQuery object",i));
+    assert.equal(child.item.prop("tagName"),"DIV",F("Tag of child #{0} item is DIV",i));
+    assert.equal(Komunalne.$.elementText(child.item),i + 1,F("Text content of child #{0}",i));
+    assert.ok(Komunalne.util.isArrayOf(child.children,Array),F("Children is an array of Items arrays in child #{0}",i));
+    assert.equal(child.children.length,2,F("Child #{0} has one two children arrays",i));
+    assert.ok(Komunalne.util.isArrayOf(child.children[0],Monominoes.Item),F("Items array in child #{0} first child",i));
+    assert.equal(child.children[0].length,1,F("Child #{0} first children array has one item",i));
+    assert.ok(Komunalne.util.isArrayOf(child.children[1],Monominoes.Item),F("Items array in child #{0} second child",i));
+    assert.equal(child.children[1].length,1,F("Child #{0} second children array has one item",i));
+    assert.ok(Komunalne.util.isInstanceOf(child.childMap,"object"),F("Child #{0} children map is an object",i));
+    assert.deepEqual(Komunalne.util.keys(child.childMap),["key","value"],F("Two children are mapped into child #{0}",i));
+    assert.ok(Komunalne.util.isArrayOf(child.childMap.key,Monominoes.Item),F("Child {0} 1st map is an Item array",i));
+    assert.ok(Komunalne.util.isArrayOf(child.childMap.value,Monominoes.Item),F("Child {0} 2nd map is an Item array",i));
+    assert.equal(child.childMap.key.length,1,F("Child {0} 1st map array has 1 item",i));
+    assert.equal(child.childMap.value.length,1,F("Child {0} 2nd map array has 1 item",i));
+    assert.equal(child.childMap.key[0],aux.children[1][i].children[0][0],F("Correct first mapping in child {0}",i));
+    assert.equal(child.childMap.value[0],aux.children[1][i].children[1][0],F("Correct second mapping in child {0}",i));
+    assert.ok(child.isDrawn(),F("Child #{0} is marked as drawn",i));
+    assert.equal($("#" + child.item.attr("id")).length,1,F("Child #{0} item is present in DOM",i));
+    
+    grandson = child.children[0][0];
+    gsrender = subrender.getMappedRender("key");
+    assert.equal(grandson.container,child.item,F("First grandson is contained into child #{0} item",i));
+    assert.equal(grandson.container.attr("id"),child.item.attr("id"),F("First grandson container is child #{0} item",i));
+    assert.equal(grandson.parent,child,F("First grandson parent is child #{0} item",i));
+    assert.equal(grandson.render,gsrender,F("Child #{0} first grandson render is correctly assigned",i));
+    assert.equal(grandson.data,data.data.options[i].key,F("Data is assigned into first grandson of child #{0}",i));
+    assert.equal(grandson.layout,gsrender.layout.children,F("Child #{0} 1st grandson layout is 1st options child",i));
+    assert.ok(Komunalne.util.isInstanceOf(grandson.item,jQuery),F("Child #{0} 1st grandson item is a jQuery object",i));
+    assert.equal(grandson.item.prop("tagName"),"SPAN",F("Tag of child #{0} first grandson is SPAN",i));
+    assert.equal(Komunalne.$.elementText(grandson.item),data.data.options[i].key,F("Child #{0} first grandson text",i));
+    assert.ok(Komunalne.util.isArrayOf(grandson.children,Array),F("Children is an array in first grandson child #{0}",i));
+    assert.equal(grandson.children.length,0,F("First grandson of child #{0} is an empty array",i));
+    assert.ok(Komunalne.util.isInstanceOf(grandson.childMap,"object"),F("Child #{0} 1st grandson map is an object",i));
+    assert.deepEqual(Komunalne.util.keys(grandson.childMap),[],F("No children are mapped in 1st grandson child #{0}",i));
+    assert.ok(grandson.isDrawn(),F("Child #{0} first grandson is marked as drawn",i));
+    assert.equal($("#" + grandson.item.attr("id")).length,1,F("Child #{0} first grandson item is present in DOM",i));
+    
+    grandson = child.children[1][0];
+    gsrender = subrender.getMappedRender("value");
+    assert.equal(grandson.container,child.item,F("Second grandson is contained into child #{0} item",i));
+    assert.equal(grandson.container.attr("id"),child.item.attr("id"),F("Second grandson container is child #{0} item",i));
+    assert.equal(grandson.parent,child,F("Second grandson parent is child #{0} item",i));
+    assert.equal(grandson.render,gsrender,F("Child #{0} second grandson render is correctly assigned",i));
+    assert.equal(grandson.data,data.data.options[i].value,F("Data is assigned into second grandson of child #{0}",i));
+    assert.equal(grandson.layout,gsrender.layout.children,F("Child #{0} 2st grandson layout is 2st options child",i));
+    assert.ok(Komunalne.util.isInstanceOf(grandson.item,jQuery),F("Child #{0} 2st grandson item is a jQuery object",i));
+    assert.equal(grandson.item.prop("tagName"),"SPAN",F("Tag of child #{0} second grandson is SPAN",i));
+    assert.equal(Komunalne.$.elementText(grandson.item),data.data.options[i].value,F("Child #{0} 2nd grandson text",i));
+    assert.ok(Komunalne.util.isArrayOf(grandson.children,Array),F("Children is an array in 2nd grandson child #{0}",i));
+    assert.equal(grandson.children.length,0,F("Second grandson of child #{0} is an empty array",i));
+    assert.ok(Komunalne.util.isInstanceOf(grandson.childMap,"object"),F("Child #{0} 2st grandson map is an object",i));
+    assert.deepEqual(Komunalne.util.keys(grandson.childMap),[],F("No children are mapped in 2st grandson child #{0}",i));
+    assert.ok(grandson.isDrawn(),F("Child #{0} second grandson is marked as drawn",i));
+    assert.equal($("#" + grandson.item.attr("id")).length,1,F("Child #{0} second grandson item is present in DOM",i));
+  }
   
   render.clear();
   assert.ok(render.items == null,"Item is removed after call to clear");
   assert.ok(Komunalne.util.isArray(render.layout.children),"Render layout remains set");
   assert.equal(render.layout.children.length,2,"Render layout remains the same");
-  assert.deepEqual(Komunalne.util.keys(render.layout.childMap),["headtext","options"],"Child map remains the same in render");
+  assert.deepEqual(Komunalne.util.keys(render.layout.childMap),["headtext","options"],
+                   "Child map remains the same in render");
   assert.equal($("#base-div").length,0,"Render item doesn't exist in DOM after calling clear method");
   assert.equal($(id1).length,0,"Random child item id does not exist in DOM after calling clear method");
 });
