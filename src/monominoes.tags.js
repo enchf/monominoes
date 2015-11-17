@@ -41,7 +41,7 @@ Monominoes.Tag.prototype.build = function(config) {
     .attr(config.attrs || {})
     .css(config.style || {});
   Komunalne.util.forEach((config.events || {}), function(val,key) { tag.on(key,val); });
-  //if (config.text != null) Komunalne.$.elementText(tag,config.text);
+  if (config.text != null) Komunalne.$.elementText(tag,config.text);
   return tag;
 };
 

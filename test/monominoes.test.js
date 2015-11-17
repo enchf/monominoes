@@ -873,7 +873,7 @@ QUnit.test("Tag render creation and property validation", function(assert) {
     item = instance.items[0];
     assert.ok(item.item.hasClass("fake-css"),"Custom class is assigned in instance of " + msg);
     assert.ok(item.item.hasClass(defaultcss),"Default class is assigned in instance of " + msg);
-    assert.equal(Komunalne.$.elementText(item.item),msg.toUpperCase(),"Text is set and formatted in " + msg);
+    assert.equal(Komunalne.$.elementText(item.item),msg,"Text is set and formatted in " + msg);
     assert.equal($("#"+data.id).length,1,msg + " exists in DOM");
     assert.equal(item.item.attr("id"),data.id,msg + " id is set correctly");
     assert.equal(item.item.css("display"),show === false ? "none" : "block",msg + " display is set according to rule");
