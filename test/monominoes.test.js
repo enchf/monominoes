@@ -824,36 +824,71 @@ QUnit.test("Tag renders default settings",function(assert) {
 });
 
 QUnit.test("Tag render creation and property validation", function(assert) {
-  var c,r,s;
+  var Render,instance,custom,item;
+  var msg,defaultcss,data,aux;
   var i = new Komunalne.helper.Iterator(Monominoes.renders);
-  var count = 0,msg;
+  var count = 0, show = 0;
   var fn = function() { count++; };
   while(i.hasNext()) {
-    c = i.next();
-    if (c === Monominoes.renders.TAG || !Monominoes.util.isRender(c,Monominoes.renders.TAG)) continue;
-    r = c({ 
-      "extracss": "fake-css", 
+    Render = i.next();
+    if (Render === Monominoes.renders.TAG || !Monominoes.util.isRender(Render,Monominoes.renders.TAG)) continue;
+    msg = "Render Tag " + i.currentKey();
+    defaultcss = "monominoes-" + i.currentKey().toLowerCase();
+    
+    custom = new Render({ "def": { "class": "custom-class" } }).render({});
+    assert.strictEqual(custom.class,Render,"Class correctly set on " + msg);
+    assert.strictEqual(custom.superclass,Monominoes.renders.TAG,msg + " superclass is TAG");
+    assert.strictEqual(custom.tag,Monominoes.tags[i.currentKey()],"Tag object is assigned into tag for " + msg);
+    assert.equal(custom.defaults.defaultcss,defaultcss,"Default class set in defaults for " + msg);
+    assert.equal("monominoes-" + custom.tag.name,defaultcss,"Name set in tag object");
+    assert.equal(custom.def.class,"custom-class","Custom class is assigned in " + msg);
+    assert.ok(Komunalne.util.isArrayOf(custom.items,Monominoes.Item),"Items array is created for " + msg);
+    item = custom.items[0];
+    assert.ok(item.item.hasClass("custom-class"),"Custom class is assigned in custom object of " + msg);
+    
+    instance = Render({
+      "extracss": "fake-css",
       "def": {
-        "attrs": { "id": "id-" + count },
+        "text": msg,
+        "attrs": { "id": { "path": "id" } },
+        "style": {
+          "display": { "path": "show", "handler": function(render,data) { return (data || "none"); } },
+          "color": function() { return "blue"; },
+          "text-transform": "uppercase"
+        },
         "events": { "click": fn }
       }
     });
-    s = c({
-      "def": {
-        "class": "custom-class",
-        "style": { "color": "black" }
-      }
-    });
-    msg = "Render Tag " + i.currentKey();
-    assert.strictEqual(r.class,c,"Class correctly set on " + msg);
-    assert.strictEqual(r.superclass,Monominoes.renders.TAG,"Superclass is TAG for " + msg);
-    assert.strictEqual(s.class,c,"Class correctly set on " + msg);
-    assert.strictEqual(s.superclass,Monominoes.renders.TAG,"Superclass is TAG for " + msg);
-    assert.strictEqual(r.tag,Monominoes.tags[i.currentKey()],"Tag builder object is assigned to instance for " + msg);
-    assert.strictEqual(s.tag,Monominoes.tags[i.currentKey()],"Tag builder object is assigned to instance for " + msg);
-    assert.strictEqual(r.defaults.defaultcss,"monominoes-" + r.tag.name,"Default class set in defaults for " + msg);
-    assert.strictEqual(s.defaults.defaultcss,"monominoes-" + s.tag.name,"Default class set in defaults for " + msg);
-    //assert.ok(r.item,"Validate inner item object creation for " + msg);
-    //assert.ok(s.item,"Validate inner item object creation for " + msg);
+    
+    show = ((++show) % 2) === 0;
+    show = show === false ? show : "block";
+    data = { "id": "mono-" + count, "show": show };
+    instance.render(data,"#test-div");
+    
+    assert.strictEqual(instance.class,Render,"Class correctly set on " + msg);
+    assert.strictEqual(instance.superclass,Monominoes.renders.TAG,msg + " superclass is TAG");
+    assert.strictEqual(instance.tag,Monominoes.tags[i.currentKey()],"Tag object is assigned into tag for " + msg);
+    assert.equal(instance.defaults.defaultcss,defaultcss,"Default class is in defaults on " + msg);
+    assert.ok(Komunalne.util.isArrayOf(instance.items,Monominoes.Item),"Items array is created for " + msg);
+    item = instance.items[0];
+    assert.ok(item.item.hasClass("fake-css"),"Custom class is assigned in instance of " + msg);
+    assert.ok(item.item.hasClass(defaultcss),"Default class is assigned in instance of " + msg);
+    assert.equal(Komunalne.$.elementText(item.item),msg.toUpperCase(),"Text is set and formatted in " + msg);
+    assert.equal($("#"+data.id).length,1,msg + " exists in DOM");
+    assert.equal(item.item.attr("id"),data.id,msg + " id is set correctly");
+    assert.equal(item.item.css("display"),show === false ? "none" : "block",msg + " display is set according to rule");
+    assert.equal(item.item.css("color"),"rgb(0, 0, 255)",msg + " color is set according to rule");
+    assert.equal(item.item.css("text-transform"),"uppercase",msg + " text transform is set according to rule");
+    
+    if (i.currentKey().toUpperCase() != "OBJECT" && i.currentKey().toUpperCase() != "EMBED") { 
+      aux = count;
+      $("#"+data.id).click();
+      assert.equal(count,aux+1,msg + " click event is dispatched correctly");
+    }
+    
+    instance.clear();
+    assert.ok(instance.items == null,"Item is removed after call to clear for " + msg);
+    assert.ok(Komunalne.util.isArray(instance.layout.children),"Render layout remains set after clear for " + msg);
+    assert.equal($("#" + data.id).length,0,"Rendered item doesn't exist in DOM after calling clear method for " + msg);
   }
 });
