@@ -893,9 +893,9 @@ QUnit.test("Tag render creation and property validation", function(assert) {
 });
 
 QUnit.test("List render instantiation and customization", function(assert) {
-  var list,item,li;
+  var list,item,li,child;
   var data = [1,2,3,4,5],config;
-  var i;
+  var i,j;
   
   list = new Monominoes.renders.LIST().render(data);
   assert.ok(list,"List render is created");
@@ -913,11 +913,12 @@ QUnit.test("List render instantiation and customization", function(assert) {
   assert.equal(i.length(),5,"Five LI items are set as per data");
   while (i.hasNext()) {
     li = i.next();
-    assert.ok(Monominoes.util.isRender(li.render,Monominoes.renders.LI),"LI render is set for item " + i.currentKey());
-    assert.equal(li.data,parseInt(i.currentKey()) + 1,"LI data is set for item " + i.currentKey());
-    assert.equal(li.container,item.item,"LI #" + i.currentKey() + " item is attached to List parent item");
-    assert.equal(li.parent,item,"LI parent is set for item " + i.currentKey());
-    assert.equal(li.children.length,0,"No children are set for item " + i.currentKey());
+    j = i.currentKey();
+    assert.ok(Monominoes.util.isRender(li.render,Monominoes.renders.LI),"LI render is set for item " + j);
+    assert.equal(li.data,parseInt(j) + 1,"LI data is set for item " + j);
+    assert.equal(li.container,item.item,"LI #" + j + " item is attached to List parent item");
+    assert.equal(li.parent,item,"LI parent is set for item " + j);
+    assert.equal(li.children.length,0,"No children are set for item " + j);
   }
   
   config = {
@@ -954,10 +955,30 @@ QUnit.test("List render instantiation and customization", function(assert) {
   assert.equal(i.length(),3,"Three LI items are set as per data in custom list");
   while (i.hasNext()) {
     li = i.next();
-    assert.ok(Monominoes.util.isRender(li.render,Monominoes.renders.LI),"LI render is set for item " + i.currentKey());
-    assert.equal(li.data,data[i.currentKey()],"LI data is set for item " + i.currentKey());
-    assert.equal(li.container,item.item,"LI #" + i.currentKey() + " item is attached to List parent item");
-    assert.equal(li.parent,item,"LI parent is set for item " + i.currentKey());
-    assert.equal(li.children.length,2,"Two children are set for item " + i.currentKey());
+    j = i.currentKey();
+    assert.ok(Monominoes.util.isRender(li.render,Monominoes.renders.LI),"LI render is set for item " + j);
+    assert.equal(li.data,data[j],"LI data is set for item " + j);
+    assert.equal(li.container,item.item,"LI #" + j + " item is attached to List parent item");
+    assert.equal(li.parent,item,"LI parent is set for item " + j);
+    assert.equal(li.children.length,2,"Two children are set for item " + j);
+    assert.ok(li.item.hasClass("fake-css"),"Custom class is assigned for item " + j);
+    assert.equal(li.item.css("list-style-type"),"armenian","Armenian list style is set for item " + j);
+    assert.equal(Komunalne.$.elementText(li.item),"","No text in LI item #" + j);
+    child = li.children[0][0];
+    assert.ok(Monominoes.util.isRender(child.render,Monominoes.renders.H1),"H1 first item render for item " + j);
+    assert.equal(child.data,data[j].header,"Data is set for first item in LI #" + j);
+    assert.equal(child.container,li.item,"First item is contained in LI item #" + j);
+    assert.equal(child.parent,li,"First item parent is LI #" + j);
+    assert.equal(child.children.length,0,"No children are set for first child in LI #" + j);
+    assert.ok(child.item.hasClass("monominoes-h1"),"Default class is assigned for first child in LI #" + j);
+    assert.equal(Komunalne.$.elementText(child.item),data[j].header,"Text is set on first item in LI #" + j);
+    child = li.children[1][0];
+    assert.ok(Monominoes.util.isRender(child.render,Monominoes.renders.P),"P second item render for item " + j);
+    assert.equal(child.data,data[j].text,"Data is set for second item in LI #" + j);
+    assert.equal(child.container,li.item,"Second item is contained in LI item #" + j);
+    assert.equal(child.parent,li,"Second item parent is LI #" + j);
+    assert.equal(child.children.length,0,"No children are set for second child in LI #" + j);
+    assert.ok(child.item.hasClass("monominoes-p"),"Default class is assigned for first child in LI #" + j);
+    assert.equal(Komunalne.$.elementText(child.item),data[j].text,"Text is set on first item in LI #" + j);
   }
 });
