@@ -54,3 +54,8 @@ Monominoes.util.isRender = function(obj,type) {
 Monominoes.util.isRenderInstance = function(obj,type) {
   return Monominoes.util.isRender(obj,type) && !Komunalne.util.isFunction(obj);
 };
+
+/**
+ * Helper function to return data itself for Tag render customization.
+ */
+Monominoes.util.data = function(render,data) { return data; };

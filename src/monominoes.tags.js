@@ -148,7 +148,7 @@ Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
 	  "path": null,
 	  "def": null
   },
-  "marker": undefined,
+  "marker": null,
   "buildLayout": function() {
 	var marker;
     this.tag = (this.ordered === true) ? Monominoes.tags.OL : Monominoes.tags.UL;
@@ -160,10 +160,12 @@ Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
 	this.config.children = [
       { 
     	"render": Monominoes.renders.LI,
-    	"iterable": true, 
-    	"path": this.itemsLayout.path,
-    	"children": this.itemsLayout.children,
-    	"def": this.itemsLayout.def
+        "config": {
+          "iterable": true, 
+          "path": this.itemsLayout.path,
+          "children": this.itemsLayout.children,
+          "def": this.itemsLayout.def
+        }
       }
 	];
     this.super.buildLayout();

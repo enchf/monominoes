@@ -68,6 +68,11 @@ Monominoes.util.isRenderInstance = function(obj,type) {
 };
 
 /**
+ * Helper function to return data itself for Tag render customization.
+ */
+Monominoes.util.data = function(render,data) { return data; };
+
+/**
  * Render abstract class definition. 
  * In fact, a render is a decorator of a jQuery object, adding recursive and
  * iterative definition of sub-elements.
@@ -653,7 +658,7 @@ Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
 	  "path": null,
 	  "def": null
   },
-  "marker": undefined,
+  "marker": null,
   "buildLayout": function() {
 	var marker;
     this.tag = (this.ordered === true) ? Monominoes.tags.OL : Monominoes.tags.UL;
@@ -665,10 +670,12 @@ Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
 	this.config.children = [
       { 
     	"render": Monominoes.renders.LI,
-    	"iterable": true, 
-    	"path": this.itemsLayout.path,
-    	"children": this.itemsLayout.children,
-    	"def": this.itemsLayout.def
+        "config": {
+          "iterable": true, 
+          "path": this.itemsLayout.path,
+          "children": this.itemsLayout.children,
+          "def": this.itemsLayout.def
+        }
       }
 	];
     this.super.buildLayout();

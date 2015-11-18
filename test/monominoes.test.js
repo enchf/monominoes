@@ -893,11 +893,30 @@ QUnit.test("Tag render creation and property validation", function(assert) {
 });
 
 QUnit.test("List render instantiation and customization", function(assert) {
-  var list;
+  var list,item,li;
   var data = [1,2,3,4,5];
+  var i;
   
   list = new Monominoes.renders.LIST().render(data);
   assert.ok(list,"List render is created");
   assert.ok(Monominoes.util.isRender(list),"Object created is a Render");
-  
+  assert.equal(list.items.length,1,"List has an unique parent item");
+  assert.ok(Komunalne.util.isInstanceOf((item = list.items[0]),Monominoes.Item),"Item is created at the top of List");
+  assert.ok(Monominoes.util.isRender(item.render,Monominoes.renders.LIST),"List render is not UL or OL");
+  assert.equal(item.item.prop("tagName"),"UL","Default tag is unordered list (UL)");
+  assert.equal(Komunalne.$.elementText(item.item),"","No text is assigned to parent tag");
+  assert.strictEqual(list.marker,null,"Marker is not explicitly set");
+  assert.equal(list.layout.children.length,1,"Immediate children layout is only 1 render");
+  assert.ok(Monominoes.util.isRender(list.layout.children[0],Monominoes.renders.LI),"LI render is set for list children");
+  assert.equal(list.layout.children[0].layout.children.length,0,"No children are set as defaults");
+  i = new Komunalne.helper.Iterator(item.children[0]);
+  assert.equal(i.length(),5,"Five LI items are set as per data");
+  while (i.hasNext()) {
+    li = i.next();
+    assert.ok(Monominoes.util.isRender(li.render,Monominoes.renders.LI),"LI render is set for item " + i.currentKey());
+    assert.equal(li.data,parseInt(i.currentKey()) + 1,"LI data is set for item " + i.currentKey());
+    assert.equal(li.container,item.item,"LI #" + i.currentKey() + " item is attached to List parent item");
+    assert.equal(li.parent,item,"LI parent is set for item " + i.currentKey());
+    assert.equal(li.children.length,0,"No children are set for item " + i.currentKey());
+  }
 });
