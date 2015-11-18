@@ -141,7 +141,7 @@ Monominoes.renders.TAG.configValue = function(object,render,data) {
 })();
 
 /* LI extensions for Lists with UL or OL. */
-Monominoes.renders.LIST = Monominoes.renders.LI.extend({
+Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
   "ordered": false,
   "itemsLayout": {
 	  "children": null,
@@ -151,13 +151,15 @@ Monominoes.renders.LIST = Monominoes.renders.LI.extend({
   "marker": undefined,
   "buildLayout": function() {
 	var marker;
+    this.tag = (this.ordered === true) ? Monominoes.tags.OL : Monominoes.tags.UL;
+    this.defaultcss = Monominoes.util.format("monominoes-{0}",this.tag.name);
 	if (this.marker != undefined && this.marker !== true) {
       if (this.marker === false) this.marker = "none";
       if (typeof this.marker == "string") this.itemsLayout.def.style["list-style-type"] = this.marker;
     } 
 	this.config.children = [
       { 
-    	"render": (this.ordered === true) ? Monominoes.renders.OL : Monominoes.renders.UL, 
+    	"render": Monominoes.renders.LI,
     	"iterable": true, 
     	"path": this.itemsLayout.path,
     	"children": this.itemsLayout.children,

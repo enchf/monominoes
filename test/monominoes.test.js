@@ -807,7 +807,7 @@ QUnit.test("Tag renders default settings",function(assert) {
   var clazz;
   var i = new Komunalne.helper.Iterator(Monominoes.tags);
   while(i.hasNext()) {
-	i.next()
+	i.next();
     c = Monominoes.renders[i.currentKey()];
     r = c();
     assert.ok(r.tag === c.prototype.tag,"Correct Tag builder is set on render " + i.currentKey());
@@ -829,7 +829,7 @@ QUnit.test("Tag render creation and property validation", function(assert) {
   var count = 0, show = 0;
   var fn = function() { count++; };
   while(i.hasNext()) {
-	i.next()
+	i.next();
     Render = Monominoes.renders[i.currentKey()];
     msg = "Render Tag " + i.currentKey();
     defaultcss = "monominoes-" + i.currentKey().toLowerCase();
@@ -892,10 +892,12 @@ QUnit.test("Tag render creation and property validation", function(assert) {
   }
 });
 
-QUnit.test("Tag render creation and property validation", function(assert) {
+QUnit.test("List render instantiation and customization", function(assert) {
   var list;
   var data = [1,2,3,4,5];
   
   list = new Monominoes.renders.LIST().render(data);
-  assert.ok(list);
+  assert.ok(list,"List render is created");
+  assert.ok(Monominoes.util.isRender(list),"Object created is a Render");
+  
 });
