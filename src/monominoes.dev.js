@@ -257,11 +257,16 @@ Monominoes.Render.prototype.applyConfig = function(cfg) {
  */
 Monominoes.Render.prototype.buildSuper = function() {
   var type,holder;
+  var render = this;
+  var fix = function(val,key,holder) { 
+	if (Komunalne.util.isFunction(val) && !Monominoes.util.isRender(val)) holder[key] = val.bind(render);
+  };
   type = this.class;
   holder = this;
   while (type.superclass) {
     holder.super = {};
     Komunalne.util.clone(type.superclass.prototype,{"deep": true,"into": holder.super});
+    Komunalne.util.forEach(holder.super, fix);
     type = type.superclass;
     holder = holder.super;
   }
@@ -639,3 +644,31 @@ Monominoes.renders.TAG.configValue = function(object,render,data) {
     });
   }
 })();
+
+/* LI extensions for Lists with UL or OL. */
+Monominoes.renders.LIST = Monominoes.renders.LI.extend({
+  "ordered": false,
+  "itemsLayout": {
+	  "children": null,
+	  "path": null,
+	  "def": null
+  },
+  "marker": undefined,
+  "buildLayout": function() {
+	var marker;
+	if (this.marker != undefined && this.marker !== true) {
+      if (this.marker === false) this.marker = "none";
+      if (typeof this.marker == "string") this.itemsLayout.def.style["list-style-type"] = this.marker;
+    } 
+	this.config.children = [
+      { 
+    	"render": (this.ordered === true) ? Monominoes.renders.OL : Monominoes.renders.UL, 
+    	"iterable": true, 
+    	"path": this.itemsLayout.path,
+    	"children": this.itemsLayout.children,
+    	"def": this.itemsLayout.def
+      }
+	];
+    this.super.buildLayout();
+  }
+});

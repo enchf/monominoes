@@ -188,11 +188,16 @@ Monominoes.Render.prototype.applyConfig = function(cfg) {
  */
 Monominoes.Render.prototype.buildSuper = function() {
   var type,holder;
+  var render = this;
+  var fix = function(val,key,holder) { 
+	if (Komunalne.util.isFunction(val) && !Monominoes.util.isRender(val)) holder[key] = val.bind(render);
+  };
   type = this.class;
   holder = this;
   while (type.superclass) {
     holder.super = {};
     Komunalne.util.clone(type.superclass.prototype,{"deep": true,"into": holder.super});
+    Komunalne.util.forEach(holder.super, fix);
     type = type.superclass;
     holder = holder.super;
   }

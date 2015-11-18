@@ -181,7 +181,7 @@ QUnit.test("Extend function", function(assert) {
         if (m === "super") {
           if (sc === Monominoes.Render) assert.ok(rp[m] === null,"Parent property in super should be null");
           else assert.ok(Komunalne.util.isInstanceOf(rp[m],Object),"Parent property for lower levels is an object");
-        } else {
+        } else if (!Komunalne.util.isFunction(rp[m])){
           assert.deepEqual(rp[m],sc.prototype[m],
                            Monominoes.util.format("Superclass property {0} in super object {1}, level {2}", m,k,l));
         }
@@ -805,20 +805,19 @@ QUnit.test("Item retrieval by index", function(assert) {
 QUnit.test("Tag renders default settings",function(assert) {
   var c,r,t;
   var clazz;
-  var i = new Komunalne.helper.Iterator(Monominoes.renders);
+  var i = new Komunalne.helper.Iterator(Monominoes.tags);
   while(i.hasNext()) {
-    c = i.next();
-    if (Monominoes.util.isRender(c,Monominoes.renders.TAG)) {
-      r = c();
-      assert.ok(r.tag === c.prototype.tag,"Correct Tag builder is set on render " + i.currentKey());
-      assert.ok(Monominoes.util.isRender(r),"Tag render instance is a Render");
-      assert.ok(Monominoes.util.isRender(r,Monominoes.renders.TAG),"Tag render is a TAG Render instance");
-      if (r.tag != null) {
-        t = r.buildItem();
-        clazz = "monominoes-" + c.prototype.tag.name;
-        assert.ok(r.defaultcss === clazz,"Default css is set properly " + r.defaultcss);
-        assert.ok(t.hasClass(clazz),"Class " + clazz + " is set when building the item " + r.tag.name);
-      }
+	i.next()
+    c = Monominoes.renders[i.currentKey()];
+    r = c();
+    assert.ok(r.tag === c.prototype.tag,"Correct Tag builder is set on render " + i.currentKey());
+    assert.ok(Monominoes.util.isRender(r),"Tag render instance is a Render");
+    assert.ok(Monominoes.util.isRender(r,Monominoes.renders.TAG),"Tag render is a TAG Render instance");
+    if (r.tag != null) {
+      t = r.buildItem();
+      clazz = "monominoes-" + c.prototype.tag.name;
+      assert.ok(r.defaultcss === clazz,"Default css is set properly " + r.defaultcss);
+      assert.ok(t.hasClass(clazz),"Class " + clazz + " is set when building the item " + r.tag.name);
     }
   }
 });
@@ -826,12 +825,12 @@ QUnit.test("Tag renders default settings",function(assert) {
 QUnit.test("Tag render creation and property validation", function(assert) {
   var Render,instance,custom,item;
   var msg,defaultcss,data,aux;
-  var i = new Komunalne.helper.Iterator(Monominoes.renders);
+  var i = new Komunalne.helper.Iterator(Monominoes.tags);
   var count = 0, show = 0;
   var fn = function() { count++; };
   while(i.hasNext()) {
-    Render = i.next();
-    if (Render === Monominoes.renders.TAG || !Monominoes.util.isRender(Render,Monominoes.renders.TAG)) continue;
+	i.next()
+    Render = Monominoes.renders[i.currentKey()];
     msg = "Render Tag " + i.currentKey();
     defaultcss = "monominoes-" + i.currentKey().toLowerCase();
     
@@ -891,4 +890,12 @@ QUnit.test("Tag render creation and property validation", function(assert) {
     assert.ok(Komunalne.util.isArray(instance.layout.children),"Render layout remains set after clear for " + msg);
     assert.equal($("#" + data.id).length,0,"Rendered item doesn't exist in DOM after calling clear method for " + msg);
   }
+});
+
+QUnit.test("Tag render creation and property validation", function(assert) {
+  var list;
+  var data = [1,2,3,4,5];
+  
+  list = new Monominoes.renders.LIST().render(data);
+  assert.ok(list);
 });

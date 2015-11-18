@@ -139,3 +139,31 @@ Monominoes.renders.TAG.configValue = function(object,render,data) {
     });
   }
 })();
+
+/* LI extensions for Lists with UL or OL. */
+Monominoes.renders.LIST = Monominoes.renders.LI.extend({
+  "ordered": false,
+  "itemsLayout": {
+	  "children": null,
+	  "path": null,
+	  "def": null
+  },
+  "marker": undefined,
+  "buildLayout": function() {
+	var marker;
+	if (this.marker != undefined && this.marker !== true) {
+      if (this.marker === false) this.marker = "none";
+      if (typeof this.marker == "string") this.itemsLayout.def.style["list-style-type"] = this.marker;
+    } 
+	this.config.children = [
+      { 
+    	"render": (this.ordered === true) ? Monominoes.renders.OL : Monominoes.renders.UL, 
+    	"iterable": true, 
+    	"path": this.itemsLayout.path,
+    	"children": this.itemsLayout.children,
+    	"def": this.itemsLayout.def
+      }
+	];
+    this.super.buildLayout();
+  }
+});
