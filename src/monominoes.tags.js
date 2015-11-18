@@ -145,16 +145,13 @@ Monominoes.renders.TAG.configValue = function(object,render,data) {
 /* LI extensions for Lists with UL or OL. */
 Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
   "ordered": false,
-  "itemsLayout": {
-	  "children": null,
-	  "path": null,
-	  "def": null
-  },
+  "itemsLayout": null, // Config object for LI children. Iterable is set as true internally.
   "marker": null,
   "buildLayout": function() {
-	var marker;
+	var config;
     this.tag = (this.ordered === true) ? Monominoes.tags.OL : Monominoes.tags.UL;
     this.defaultcss = Monominoes.util.format("monominoes-{0}",this.tag.name);
+    this.itemsLayout = (this.itemsLayout || {});
 	if (this.marker != undefined && this.marker !== true) {
       if (this.marker === false) this.marker = "none";
       if (typeof this.marker == "string") {
@@ -162,18 +159,65 @@ Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
         this.itemsLayout.def.style = (this.itemsLayout.def.style || {});
         this.itemsLayout.def.style["list-style-type"] = this.marker;
       }
-    } 
-	this.config.children = [
-      { 
-    	"render": Monominoes.renders.LI,
-        "config": {
-          "iterable": true, 
-          "path": this.itemsLayout.path,
-          "children": this.itemsLayout.children,
-          "def": this.itemsLayout.def
-        }
-      }
-	];
+    }
+    config = Komunalne.util.clone(this.itemsLayout,{ "into": { "iterable": true }, "deep": true, "safe": true });
+	this.config.children = [{ "render": Monominoes.renders.LI, "config": config }];
+    this.super.buildLayout();
+  }
+});
+
+Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
+  "align": "center",
+  "valign": "center",
+  "source": null,
+  "defaultImg": null,
+  "extension": null,
+  "imgLayout": null, // Config object for IMG child render.
+  "sourceFn": function(render,data) {
+    var dir,ext,name,dot,slash;
+    dir = (this.source || "");
+    ext = (this.extension || "");
+    slash = dir[dir.length-1];
+    slash = slash !== "/" && slash !=="\\" ? "/" : "";
+    dot = ext[0] === "." ? "" : ".";
+    name = data ? data.toString() : this.defaultImg;
+    return Monominoes.util.format("{0}{1}{2}{3}{4}",dir,slash,name,dot,ext);
+  },
+  "errorHandler": function(img) {
+    if (this.hasDefault()) {
+      img.onerror = "";
+      img.src = this.sourceFn(this.defaultImg());
+      return true;
+    } else return img;
+  },
+  "buildLayout": function() {
+    var config;
+    this.imgLayout = this.imgLayout || {};
+    config = Komunalne.util.clone(this.imgLayout, { "deep": true, "safe": true });
+    config.def = (config.def || {});
+    config.def.attrs = (config.def.attrs || {});
+    config.def.attrs.src = { "handler": this.sourceFn, "scope": this };
+    config.def.class = Komunalne.util.append(config.def.class,"monominoes-imgblock");
+    this.def = (this.def || {});
+    this.def.error = (this.def.error || this.errorHandler.bind(this));
+    if (this.centered) this.def.class = Komunalne.util.append(this.def.class,"monominoes-centered");
+    this.children = [
+      { "render": Monominoes.renders.SPAN, "config": { "def": { "class": "monominoes-spanimgblock" } } },
+      { "render": Monominoes.renders.IMG,  "config": config }
+    ];
+    this.super.buildLayout();
+  }
+});
+
+Monominoes.renders.TEXT_BLOCK = Monominoes.renders.SPAN.extend({
+  "defaultcss": "monominoes-text-block",
+  "fontcolor": "white",
+  "background": "black",
+  "buildLayout": function() {
+    this.def = (this.def || {});
+    this.def.style = (this.def.style || {});
+    this.def.style.color = this.fontcolor;
+    this.def.style["background-color"] = this.background;
     this.super.buildLayout();
   }
 });

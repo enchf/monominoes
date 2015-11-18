@@ -14,42 +14,21 @@
   padding-right: 15px;
 }
 
-/* Renderers */
-.monominoes-h2 {
+.monominoes-centered {
   text-align: center;
-  letter-spacing: 4px;
-  font-size: 2.25em;
-  font-weight: 700;
-  color: black;
-  text-transform: uppercase;
 }
 
-.monominoes-h4 {
-  font-size: 18px;
-  font-weight: 700;
-  text-align: center;
-  color: black;
+.monominoes-imgblock {
+  /* Include definition of img-responsive from bootstrap */
+  display: inline-block;
+  max-height: 100%;
 }
 
-.monominoes-list {
-}
-
-.monominoes-item {
-}
-
-.monominoes-labeled {
-}
-
-.monominoes-img-helper {
+.monominoes-spanimgblock {
   height: 100%;
   width: 0px;
   display: inline-block;
   vertical-align: middle;
-}
-
-.monominoes-img {
-  display: inline-block;
-  max-height: 100%;
 }
 
 .monominoes-text-block {
