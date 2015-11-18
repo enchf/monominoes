@@ -920,11 +920,6 @@ QUnit.test("List render instantiation and customization", function(assert) {
     assert.equal(li.children.length,0,"No children are set for item " + i.currentKey());
   }
   
-  data = [
-    { "data": { "id": 1, "header": "First",  "text": "Dictionary of the Khazars" } },
-    { "data": { "id": 2, "header": "Second", "text": "Imperium" } },
-    { "data": { "id": 3, "header": "Third",  "text": "The Hand of Good Fortune" } }
-  ];
   config = {
     "ordered": true,
     "itemsLayout": {
@@ -932,13 +927,37 @@ QUnit.test("List render instantiation and customization", function(assert) {
         { "render": Monominoes.renders.H1, "config": { "path": "header", "text": Monominoes.util.data } },
         { "render": Monominoes.renders.P, "config": { "path": "text", "text": Monominoes.util.data } }
       ],
-      "path": "data",
       "def": {
         "class": "fake-css"
       }
     },
-    "marker": "armenian"
+    "marker": "armenian",
+    "text": "Title"
   };
+  data = [
+    { "id": 1, "header": "First",  "text": "Dictionary of the Khazars" },
+    { "id": 2, "header": "Second", "text": "Imperium" },
+    { "id": 3, "header": "Third",  "text": "The Hand of Good Fortune" }
+  ];
   
   list = Monominoes.renders.LIST(config).render(data);
+  assert.equal(list.items.length,1,"Custom list has an unique parent item");
+  assert.ok(Komunalne.util.isInstanceOf((item = list.items[0]),Monominoes.Item),"Only 1 item at the top of custom list");
+  assert.ok(Monominoes.util.isRender(item.render,Monominoes.renders.LIST),"Custom list render is not UL or OL");
+  assert.equal(item.item.prop("tagName"),"OL","Custom list set as ordered");
+  assert.equal(Komunalne.$.elementText(item.item),"Title","Explicit text is set for custom list parent item");
+  assert.strictEqual(list.marker,"armenian","Armenian numbering is set for custom list");
+  assert.equal(list.layout.children.length,1,"Immediate children layout is only 1 render for custom list");
+  assert.ok(Monominoes.util.isRender(list.layout.children[0],Monominoes.renders.LI),"LI children are set in custom list");
+  assert.equal(list.layout.children[0].layout.children.length,2,"Each LI will have two children");
+  i = new Komunalne.helper.Iterator(item.children[0]);
+  assert.equal(i.length(),3,"Three LI items are set as per data in custom list");
+  while (i.hasNext()) {
+    li = i.next();
+    assert.ok(Monominoes.util.isRender(li.render,Monominoes.renders.LI),"LI render is set for item " + i.currentKey());
+    assert.equal(li.data,data[i.currentKey()],"LI data is set for item " + i.currentKey());
+    assert.equal(li.container,item.item,"LI #" + i.currentKey() + " item is attached to List parent item");
+    assert.equal(li.parent,item,"LI parent is set for item " + i.currentKey());
+    assert.equal(li.children.length,2,"Two children are set for item " + i.currentKey());
+  }
 });
