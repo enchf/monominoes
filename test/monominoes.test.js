@@ -834,7 +834,7 @@ QUnit.test("Tag render creation and property validation", function(assert) {
     msg = "Render Tag " + i.currentKey();
     defaultcss = "monominoes-" + i.currentKey().toLowerCase();
     
-    custom = new Render({ "def": { "class": "custom-class" } }).render({});
+    custom = new Render({ "text": "Custom text", "def": { "class": "custom-class", "text": "Overriden" } }).render({});
     assert.strictEqual(custom.class,Render,"Class correctly set on " + msg);
     assert.strictEqual(custom.superclass,Monominoes.renders.TAG,msg + " superclass is TAG");
     assert.strictEqual(custom.tag,Monominoes.tags[i.currentKey()],"Tag object is assigned into tag for " + msg);
@@ -844,6 +844,7 @@ QUnit.test("Tag render creation and property validation", function(assert) {
     assert.ok(Komunalne.util.isArrayOf(custom.items,Monominoes.Item),"Items array is created for " + msg);
     item = custom.items[0];
     assert.ok(item.item.hasClass("custom-class"),"Custom class is assigned in custom object of " + msg);
+    assert.equal(Komunalne.$.elementText(item.item),"Custom text","Text in config overrides the one in def for " + msg);
     
     instance = Render({
       "extracss": "fake-css",
