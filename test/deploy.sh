@@ -8,3 +8,6 @@ cd ../test/
 cp index.html $path
 cp test.css $path
 cp monominoes.test.js $path
+mkdir $path/img
+cp 1.jpg $path/img
+cp 2.jpg $path/img
