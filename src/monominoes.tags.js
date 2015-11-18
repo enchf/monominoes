@@ -73,11 +73,13 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
   "def": null, // Object containing Tag configuration as per defined in Monominoes.Tag.
   "defaultcss": null, // Default class. Used if no class is specified in config.def.class.
   "extracss": null, // Extra class. Used to append a class without removing the default one.
+  "text": null,  // Text for tag, also it can be set on config.def.text, which is set will be overriden by this.
   "buildItem": function(data) {
     var config = Komunalne.util.clone(this.config.def || {});
     config.class = (config.class || this.defaultcss);
     config.extracss = this.extracss;
     config.data = data;
+    config.text = (this.text || config.text);
     this.preConfig(config);
     this.buildConfig(config);
     this.postConfig(config);
@@ -155,7 +157,11 @@ Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
     this.defaultcss = Monominoes.util.format("monominoes-{0}",this.tag.name);
 	if (this.marker != undefined && this.marker !== true) {
       if (this.marker === false) this.marker = "none";
-      if (typeof this.marker == "string") this.itemsLayout.def.style["list-style-type"] = this.marker;
+      if (typeof this.marker == "string") {
+        this.itemsLayout.def = (this.itemsLayout.def || {});
+        this.itemsLayout.def.style = (this.itemsLayout.def.style || {});
+        this.itemsLayout.def.style["list-style-type"] = this.marker;
+      }
     } 
 	this.config.children = [
       { 

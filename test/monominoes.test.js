@@ -894,7 +894,7 @@ QUnit.test("Tag render creation and property validation", function(assert) {
 
 QUnit.test("List render instantiation and customization", function(assert) {
   var list,item,li;
-  var data = [1,2,3,4,5];
+  var data = [1,2,3,4,5],config;
   var i;
   
   list = new Monominoes.renders.LIST().render(data);
@@ -919,4 +919,26 @@ QUnit.test("List render instantiation and customization", function(assert) {
     assert.equal(li.parent,item,"LI parent is set for item " + i.currentKey());
     assert.equal(li.children.length,0,"No children are set for item " + i.currentKey());
   }
+  
+  data = [
+    { "data": { "id": 1, "header": "First",  "text": "Dictionary of the Khazars" } },
+    { "data": { "id": 2, "header": "Second", "text": "Imperium" } },
+    { "data": { "id": 3, "header": "Third",  "text": "The Hand of Good Fortune" } }
+  ];
+  config = {
+    "ordered": true,
+    "itemsLayout": {
+      "children": [
+        { "render": Monominoes.renders.H1, "config": { "path": "header", "text": Monominoes.util.data } },
+        { "render": Monominoes.renders.P, "config": { "path": "text", "text": Monominoes.util.data } }
+      ],
+      "path": "data",
+      "def": {
+        "class": "fake-css"
+      }
+    },
+    "marker": "armenian"
+  };
+  
+  list = Monominoes.renders.LIST(config).render(data);
 });
