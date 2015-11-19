@@ -683,7 +683,6 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
   "imgLayout": null, // Config object for IMG child render.
   "sourceFn": function(render,data) { // Data will be the image name.
     var dir,ext,name,dot,slash,path;
-    var vfd = Monominoes.renders.TAG.valueForDef;
     if (data != null) {
       dir = (this.sourceDir || "");
       ext = (this.extension || "");
@@ -706,19 +705,25 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
   },
   "buildLayout": function() {
     var config,spancfg;
-    this.imgLayout = this.imgLayout || {};
-    config = Komunalne.util.clone(this.imgLayout, { "safe": true });
-    config.def = (config.def || {});
-    config.def.attrs = (config.def.attrs || {});
-    config.def.attrs.src = { "handler": this.sourceFn, "scope": this };
-    config.def.class = Komunalne.util.append(config.def.class,"monominoes-imgblock");
-    config.def.error = (config.def.error || this.errorHandler.bind(this));
-    spancfg = { "def": { "class": "monominoes-spanimgblock", "style": {} } };
-    if (this.valign) spancfg.def.style["vertical-align"] = this.valign;
-    this.config = (this.config || {});
+    // DIV configuration.
     this.config.def = (this.config.def || {});
     this.config.def.style = (this.config.def.style || {});
     if (this.align) this.config.def.style["text-align"] = this.align;
+    
+    // SPAN configuration.
+    spancfg = { "def": { "class": "monominoes-spanimgblock", "style": {} } };
+    if (this.valign) spancfg.def.style["vertical-align"] = this.valign;
+    
+    // IMG configuration.
+    this.imgLayout = this.imgLayout || {};
+    this.imgLayout.def = (this.imgLayout.def || {});
+    this.imgLayout.def.attrs = (this.imgLayout.def.attrs || {});
+    this.imgLayout.def.attrs.src = { "handler": this.sourceFn, "scope": this };
+    this.imgLayout.def.class = Komunalne.util.append(this.imgLayout.def.class,"monominoes-imgblock");
+    this.imgLayout.def.events = (this.imgLayout.def.events || {});
+    this.imgLayout.def.events.onError = (this.imgLayout.def.events.onError || this.errorHandler.bind(this));
+    config = Komunalne.util.clone(this.imgLayout, { "safe": true, "into": {} });
+    
     this.config.children = [
       { "render": Monominoes.renders.SPAN, "config": spancfg },
       { "render": Monominoes.renders.IMG,  "config": config }
