@@ -13,6 +13,8 @@ Monominoes.Render.prototype.config = null;    /* Config object used to build the
 Monominoes.Render.prototype.layout = null;    /* Configuration of the sub-elements */
 Monominoes.Render.prototype.key = null;       /* Internal sub-render id */
 Monominoes.Render.prototype.parent = null;    /* Render parent in layout */
+Monominoes.Render.prototype.name = "Render";  /* Render identifier name */
+Monominoes.Render.prototype.skipProperties = ["config","children"];
 
 /**
  * Render Type hierarchy definition:
@@ -178,8 +180,9 @@ Monominoes.Render.prototype.populateDefaults = function() {
  * Children property is excluded from deep cloning to avoid recloning subrenders.
  */
 Monominoes.Render.prototype.applyConfig = function(cfg) {
+  console.log(this.name);
   cfg = (cfg || {});
-  Komunalne.util.clone(cfg,{ "into": this, "deep": true, "skip": "children" });
+  Komunalne.util.clone(cfg,{ "into": this, "deep": true, "skip": this.skipProperties });
   this.config = cfg;
 };
 

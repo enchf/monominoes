@@ -211,7 +211,7 @@ QUnit.test("Render instantiation: Process layout, key-mapped items retrieval and
   assert.equal(render.id,"master","Custom property is set, verified in postInit function");
   assert.ok(Komunalne.util.isArray(render.layout.children),"The children array is created");
   assert.equal(render.layout.children.length,2,"Two children are appended in subitems array");
-  assert.equal(render.layout.children[0].id,"mock-" + (count+1),"First child custom property is set in postInit");
+  assert.equal(render.layout.children[0].id,"mock-" + (parseInt(createMock.count)-1),"Id property set on first child");
   assert.equal(render.layout.children[1].id,"sub","Second child custom property is set, verified in postInit");
   assert.ok(Monominoes.util.isRender(render.layout.children[0],Span),"First child is a render of type Span");
   assert.ok(Monominoes.util.isRender(render.layout.children[1],P),"Second child is a render of type P");

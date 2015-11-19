@@ -137,13 +137,15 @@ Monominoes.renders.TAG.configValue = function(object,render,data) {
     tag = Monominoes.tags[t];
     Monominoes.renders[t] = Monominoes.renders.TAG.extend({
       "tag": tag,
-      "defaultcss": Monominoes.util.format("monominoes-{0}",tag.name)
+      "defaultcss": Monominoes.util.format("monominoes-{0}",tag.name),
+      "name": t
     });
   }
 })();
 
 /* LI extensions for Lists with UL or OL. */
 Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
+  "name": "LIST",
   "ordered": false,
   "itemsLayout": null, // Config object for LI children. Iterable is set as true internally.
   "marker": null,
@@ -167,6 +169,7 @@ Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
 });
 
 Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
+  "name": "IMAGE_BLOCK",
   "align": "center",
   "valign": "middle",
   "sourceDir": null,
@@ -210,7 +213,7 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
     this.imgLayout = this.imgLayout || {};
     this.imgLayout.def = (this.imgLayout.def || {});
     this.imgLayout.def.attrs = (this.imgLayout.def.attrs || {});
-    this.imgLayout.def.attrs.src = { "handler": this.sourceFn, "scope": this };
+    this.imgLayout.def.attrs.src = this.sourceFn.bind(this);
     this.imgLayout.def.class = Komunalne.util.append(this.imgLayout.def.class,"monominoes-imgblock");
     this.imgLayout.def.events = (this.imgLayout.def.events || {});
     this.imgLayout.def.events.onError = (this.imgLayout.def.events.onError || this.errorHandler.bind(this));
@@ -225,6 +228,7 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
 });
 
 Monominoes.renders.TEXT_BLOCK = Monominoes.renders.SPAN.extend({
+  "name": "TEXT_BLOCK",
   "defaultcss": "monominoes-text-block",
   "fontcolor": "white",
   "background": "black",
