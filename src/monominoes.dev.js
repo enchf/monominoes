@@ -725,8 +725,8 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
     config = Komunalne.util.clone(this.imgLayout, { "safe": true, "into": {} });
     
     this.config.children = [
-      { "render": Monominoes.renders.SPAN, "config": spancfg },
-      { "render": Monominoes.renders.IMG,  "config": config }
+      new Monominoes.renders.SPAN(spancfg),
+      new Monominoes.renders.IMG(config)
     ];
     this.super.buildLayout();
   }
