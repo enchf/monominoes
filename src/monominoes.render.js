@@ -222,13 +222,11 @@ Monominoes.Render.prototype.buildLayout = function() {
     i = new Komunalne.helper.Iterator(config);
     while (i.hasNext()) {
       r = i.next();
-      r = (Monominoes.util.isRender(r)) ? 
-            Monominoes.util.concrete(r) :
-            (
-              (Komunalne.util.isInstanceOf(r,Object) && Monominoes.util.isRender(r.render)) ? 
-              (Komunalne.util.isFunction(r.render) ? r.render(r.config) : r.render) 
-              : null
-            );
+      if (Monominoes.util.isRender(r)) {
+        r = Monominoes.util.concrete(r);
+      } else if (Komunalne.util.isInstanceOf(r,Object) && Monominoes.util.isRender(r.render)) {
+        r = Komunalne.util.isFunction(r.render) ? r.render(r.config) : r.render;
+      } else r = null;
       if (r) {
         this.layout.children.push(r);
         if (r.key) this.layout.childMap[r.key] = r;

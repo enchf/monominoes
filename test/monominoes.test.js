@@ -1005,4 +1005,6 @@ QUnit.test("Image block render", function(assert) {
   assert.ok((child = item.children[1][0]).item.hasClass("monominoes-imgblock"),"IMG class is set");
   assert.equal(child.item.prop("tagName"),"IMG","Second child item is an IMG tag");
   assert.equal(child.item.attr("src"),image,"Image source is correctly set");
+  
+  render.clear();
 });
