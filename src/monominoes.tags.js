@@ -168,41 +168,51 @@ Monominoes.renders.LIST = Monominoes.renders.TAG.extend({
 
 Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
   "align": "center",
-  "valign": "center",
-  "source": null,
+  "valign": "middle",
+  "sourceDir": null,
   "defaultImg": null,
   "extension": null,
   "imgLayout": null, // Config object for IMG child render.
-  "sourceFn": function(render,data) {
-    var dir,ext,name,dot,slash;
-    dir = (this.source || "");
-    ext = (this.extension || "");
-    slash = dir[dir.length-1];
-    slash = slash !== "/" && slash !=="\\" ? "/" : "";
-    dot = ext[0] === "." ? "" : ".";
-    name = data ? data.toString() : this.defaultImg;
-    return Monominoes.util.format("{0}{1}{2}{3}{4}",dir,slash,name,dot,ext);
+  "sourceFn": function(render,data) { // Data will be the image name.
+    var dir,ext,name,dot,slash,path;
+    var vfd = Monominoes.renders.TAG.valueForDef;
+    if (data != null) {
+      dir = (this.sourceDir || "");
+      ext = (this.extension || "");
+      slash = dir[dir.length-1];
+      slash = dir != "" && slash !== "/" && slash !=="\\" ? "/" : "";
+      dot = ext != "" && ext[0] != "." ? "." : "";
+      name = data.toString();
+      path = Monominoes.util.format("{0}{1}{2}{3}{4}",dir,slash,name,dot,ext);
+    } else path = this.defaultImg;
+    return path;
   },
   "errorHandler": function(img) {
-    if (this.hasDefault()) {
+    var val;
+    if (this.defaultImg != null) {
       img.onerror = "";
-      img.src = this.sourceFn(this.defaultImg());
-      return true;
-    } else return img;
+      img.src = this.defaultImg;
+      val = true;
+    } else val = false;
+    return val;
   },
   "buildLayout": function() {
-    var config;
+    var config,spancfg;
     this.imgLayout = this.imgLayout || {};
-    config = Komunalne.util.clone(this.imgLayout, { "deep": true, "safe": true });
+    config = Komunalne.util.clone(this.imgLayout, { "safe": true });
     config.def = (config.def || {});
     config.def.attrs = (config.def.attrs || {});
     config.def.attrs.src = { "handler": this.sourceFn, "scope": this };
     config.def.class = Komunalne.util.append(config.def.class,"monominoes-imgblock");
-    this.def = (this.def || {});
-    this.def.error = (this.def.error || this.errorHandler.bind(this));
-    if (this.centered) this.def.class = Komunalne.util.append(this.def.class,"monominoes-centered");
-    this.children = [
-      { "render": Monominoes.renders.SPAN, "config": { "def": { "class": "monominoes-spanimgblock" } } },
+    config.def.error = (config.def.error || this.errorHandler.bind(this));
+    spancfg = { "def": { "class": "monominoes-spanimgblock", "style": {} } };
+    if (this.valign) spancfg.def.style["vertical-align"] = this.valign;
+    this.config = (this.config || {});
+    this.config.def = (this.config.def || {});
+    this.config.def.style = (this.config.def.style || {});
+    if (this.align) this.config.def.style["text-align"] = this.align;
+    this.config.children = [
+      { "render": Monominoes.renders.SPAN, "config": spancfg },
       { "render": Monominoes.renders.IMG,  "config": config }
     ];
     this.super.buildLayout();

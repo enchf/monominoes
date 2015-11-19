@@ -983,3 +983,26 @@ QUnit.test("List render instantiation and customization", function(assert) {
     assert.equal(Komunalne.$.elementText(child.item),data[j].text,"Text is set on first item in LI #" + j);
   }
 });
+
+QUnit.test("Image block render", function(assert) {
+  var render,item,data,child;
+  var image = "img/1.jpg";
+  
+  render = new Monominoes.renders.IMAGE_BLOCK().render(image,"#test-div");
+  assert.equal(render.items.length,1,"Unique parent item for Image Block");
+  assert.equal((item = render.items[0]).item.prop("tagName"),"DIV","Parent item is a DIV");
+  assert.equal(item.item.css("text-align"),"center","DIV text and items are centered");
+  assert.ok(Monominoes.util.isRender(item.render,Monominoes.renders.IMAGE_BLOCK),"Parent render is IMAGE_BLOCK");
+  assert.equal(Komunalne.$.elementText(item.item),"","No text is assigned to tag");
+  assert.equal(render.layout.children.length,2,"Two children renders are set");
+  assert.ok(Monominoes.util.isRender(render.layout.children[0],Monominoes.renders.SPAN),"First child render is SPAN");
+  assert.equal(render.layout.children[0].layout.children.length,0,"No children are set on first child");
+  assert.ok(Monominoes.util.isRender(render.layout.children[1],Monominoes.renders.IMG),"Second child render is IMG");
+  assert.equal(render.layout.children[1].layout.children.length,0,"No children are set on second child");
+  assert.ok((child = item.children[0][0]).item.hasClass("monominoes-spanimgblock"),"SPAN class is set");
+  assert.equal(child.item.prop("tagName"),"SPAN","First child item is a SPAN tag");
+  assert.equal(child.item.css("vertical-align"),"middle","SPAN is vertically centered");
+  assert.ok((child = item.children[1][0]).item.hasClass("monominoes-imgblock"),"IMG class is set");
+  assert.equal(child.item.prop("tagName"),"IMG","Second child item is an IMG tag");
+  assert.equal(child.item.attr("src"),image,"Image source is correctly set");
+});

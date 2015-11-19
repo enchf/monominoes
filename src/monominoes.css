@@ -19,7 +19,6 @@
 }
 
 .monominoes-imgblock {
-  /* Include definition of img-responsive from bootstrap */
   display: inline-block;
   max-height: 100%;
 }
@@ -28,7 +27,6 @@
   height: 100%;
   width: 0px;
   display: inline-block;
-  vertical-align: middle;
 }
 
 .monominoes-text-block {
