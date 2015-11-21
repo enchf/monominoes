@@ -717,7 +717,6 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
   "errorHandler": function(img) {
     var val;
     if (this.defaultImg != null) {
-      console.log("error handler");
       img.onerror = "";
       img.target.src = this.defaultImg;
       val = true;
@@ -779,5 +778,28 @@ Monominoes.renders.TEXT_BLOCK = Monominoes.renders.SPAN.extend({
     this.config.def.style["font-weight"] = this.bold === true ? "700" : "400";
     this.text = (this.text || Monominoes.util.data);
     this.super.buildLayout();
+  }
+});
+
+/**
+ * Extra renders definition.
+ */
+Monominoes.renders.YOUTUBE = Monominoes.renders.IFRAME.extend({
+  "width": 480,
+  "height": 360,
+  "buildLayout": function() {
+    this.config.def = this.config.def || {};
+    this.config.def.attrs = this.config.def.attrs || {};
+    this.config.def.attrs.frameborder = "0";
+    this.config.def.attrs.allowfullscreen = "";
+    this.config.def.attrs.src = this.getUrl;
+    this.config.def.attrs.width = this.width;
+    this.config.def.attrs.height = this.height;
+    this.super.buildLayout();
+  },
+  "getUrl": function(render,data) {
+    var url = data;
+    var base = "http://www.youtube.com/embed/";
+    return url.indexOf("watch?") >= 0 ? base + url.substr(url.lastIndexOf("=")+1) : url;
   }
 });

@@ -1113,3 +1113,19 @@ QUnit.test("Text block test", function(assert) {
   assert.equal(item.item.css("text-align"),"center","SPAN text and items are centered");
   render.clear();
 });
+
+QUnit.test("YouTube video render", function(assert) {
+  var render,url,item;
+  url = "https://www.youtube.com/watch?v=ihh4QPkbX9w";
+  render = new Monominoes.renders.YOUTUBE().render(url,"#test-div");
+  assert.equal(render.items.length,1,"Unique parent item for Text Block");
+  assert.equal((item = render.items[0]).item.prop("tagName"),"IFRAME","Parent item is an IFRAME");
+  assert.ok(Monominoes.util.isRender(item.render,Monominoes.renders.YOUTUBE),"Parent render is YOUTUBE");
+  assert.equal(Komunalne.$.elementText(item.item),"","Text is empty");
+  assert.equal(render.layout.children.length,0,"No children renders are set");
+  assert.ok(item.item.hasClass("monominoes-iframe"),"Default class for text block is set");
+  assert.equal(item.item.attr("width"),"480","Width is set as defaults");
+  assert.equal(item.item.attr("height"),"360","Height is set as defaults");
+  assert.equal(item.item.attr("src"),"http://www.youtube.com/embed/ihh4QPkbX9w","Iframe URL is set");
+  render.clear();
+});

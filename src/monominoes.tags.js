@@ -192,7 +192,6 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
   "errorHandler": function(img) {
     var val;
     if (this.defaultImg != null) {
-      console.log("error handler");
       img.onerror = "";
       img.target.src = this.defaultImg;
       val = true;

@@ -1,5 +1,5 @@
 #!/bin/sh
-MODULES="util render tags"
+MODULES="util render tags extra"
 cat monominoes.init.js > monominoes.dev.js
 for M in $MODULES
 do
