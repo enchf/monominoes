@@ -172,7 +172,7 @@ Monominoes.Render.prototype.isBuilt = function() {
 Monominoes.Render.prototype.populateDefaults = function() {
   this.defaults = {};
   Komunalne.util.clone(this,{ "into": this.defaults, "deep": true });
-  Monominoes.Render.fixFunctionClone(this,this.defaults);
+  Monominoes.util.bindFunctions(this,this.defaults);
 };
 
 /**
@@ -197,7 +197,7 @@ Monominoes.Render.prototype.buildSuper = function() {
   while (type.superclass) {
     holder.super = {};
     Komunalne.util.clone(type.superclass.prototype,{"deep": true,"into": holder.super});
-    Monominoes.Render.fixFunctionClone(this,holder.super);
+    Monominoes.util.bindFunctions(this,holder.super);
     type = type.superclass;
     holder = holder.super;
   }
@@ -430,15 +430,4 @@ Monominoes.Render.extend = function(ext) {
   constructor.prototype.class = constructor;
   constructor.prototype.superclass = extendedType;
   return constructor;
-};
-
-/**
- * Fix an array cloning to preserve the scope of the functions as the render.
- */
-Monominoes.Render.fixFunctionClone = function(render,holder) {
-  var r = render;
-  var fix = function(val,key) {
-    if (Komunalne.util.isFunction(val) && !Monominoes.util.isRender(val)) holder[key] = val.bind(r);
-  }
-  Komunalne.util.forEach(holder,fix);
 };

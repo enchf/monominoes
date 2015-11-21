@@ -1010,7 +1010,8 @@ QUnit.test("Image block render", function(assert) {
   assert.equal(child.item.css("vertical-align"),"middle","IMG is vertically centered");
   
   render.clear();
-  config = { "sourceDir": "img", "extension": "jpg", "def": { "style": { "border": "4px solid red", "height": "200px" } } };
+  config = { "sourceDir": "img", "extension": "jpg", 
+             "def": { "style": { "border": "4px solid red", "height": "200px" } } };
   render = new Monominoes.renders.IMAGE_BLOCK(config).render(2,"#test-div");
   assert.equal(Komunalne.$.elementText((item = render.items[0]).item),"","No text is assigned to tag");
   assert.equal(item.item.css("border-top-width"),"4px","DIV border is set");
@@ -1030,7 +1031,8 @@ QUnit.test("Image block render", function(assert) {
   assert.equal(child.item.css("vertical-align"),"middle","IMG is vertically centered");
   
   render.clear();
-  config = { "sourceDir": "img", "extension": "jpg", "def": { "style": { "border": "4px solid red", "height": "200px" } } };
+  config = { "sourceDir": "img", "extension": "jpg", 
+             "def": { "style": { "border": "4px solid red", "height": "200px" } } };
   render = new Monominoes.renders.IMAGE_BLOCK(config).render(2,"#test-div");
   assert.equal(Komunalne.$.elementText((item = render.items[0]).item),"","No text is assigned to tag");
   assert.equal(item.item.css("border-top-width"),"4px","DIV border is set");
@@ -1076,5 +1078,24 @@ QUnit.test("Image block render", function(assert) {
     assert.strictEqual(child.item.attr("src"),"img/1.jpg","Image src updated after fail");
     render.clear();
     wait();
-  },100);
+  },200);
+});
+
+QUnit.test("Text block test", function(assert) {
+  var render,config,item,child;
+  
+  render = new Monominoes.renders.TEXT_BLOCK().render("test","#test-div");
+  assert.equal(render.items.length,1,"Unique parent item for Text Block");
+  assert.equal((item = render.items[0]).item.prop("tagName"),"SPAN","Parent item is a SPAN");
+  assert.ok(Monominoes.util.isRender(item.render,Monominoes.renders.TEXT_BLOCK),"Parent render is TEXT_BLOCK");
+  assert.equal(Komunalne.$.elementText(item.item),"test","Text is assigned to tag");
+  assert.equal(render.layout.children.length,0,"No children renders are set");
+  assert.ok(item.item.hasClass("monominoes-text-block"),"Default class for text block is set");
+  assert.equal(item.item.css("color"),"rgb(255, 255, 255)","Color is set as white");
+  assert.equal(item.item.css("background-color"),"rgb(0, 0, 0)","Background color is set as black");
+  assert.equal(item.item.css("font-weight"),"bold","Font is set as bold");
+  assert.equal(item.item.css("text-align"),"center","SPAN text and items are centered");
+  assert.equal(item.item.css("padding-top"),"8px","Vertical pad is set as default");
+  assert.equal(item.item.css("padding-left"),"10px","Horizontal pad is set as default");
+  render.clear();
 });

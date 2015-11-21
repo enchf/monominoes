@@ -245,11 +245,14 @@ Monominoes.renders.TEXT_BLOCK = Monominoes.renders.SPAN.extend({
   "defaultcss": "monominoes-text-block",
   "fontcolor": "white",
   "background": "black",
+  "bold": true,
   "buildLayout": function() {
-    this.def = (this.def || {});
-    this.def.style = (this.def.style || {});
-    this.def.style.color = this.fontcolor;
-    this.def.style["background-color"] = this.background;
+    this.config.def = (this.config.def || {});
+    this.config.def.style = (this.config.def.style || {});
+    this.config.def.style.color = this.fontcolor;
+    this.config.def.style["background-color"] = this.background;
+    this.config.def.style["font-weight"] = this.bold === true ? "700" : "400";
+    this.text = (this.text || Monominoes.util.data);
     this.super.buildLayout();
   }
 });

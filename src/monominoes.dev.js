@@ -73,6 +73,16 @@ Monominoes.util.isRenderInstance = function(obj,type) {
 Monominoes.util.data = function(render,data) { return data; };
 
 /**
+ * Iterate over an object and transform the functions into binded functions with render as scope.
+ */
+Monominoes.util.bindFunctions = function(render,iterable) {
+  var fix = function(val,key) {
+    if (Komunalne.util.isFunction(val) && !Monominoes.util.isRender(val)) iterable[key] = val.bind(render);
+  }
+  Komunalne.util.forEach(iterable,fix);
+};
+
+/**
  * Render abstract class definition. 
  * In fact, a render is a decorator of a jQuery object, adding recursive and
  * iterative definition of sub-elements.
@@ -246,7 +256,7 @@ Monominoes.Render.prototype.isBuilt = function() {
 Monominoes.Render.prototype.populateDefaults = function() {
   this.defaults = {};
   Komunalne.util.clone(this,{ "into": this.defaults, "deep": true });
-  Monominoes.Render.fixFunctionClone(this,this.defaults);
+  Monominoes.util.bindFunctions(this,this.defaults);
 };
 
 /**
@@ -271,7 +281,7 @@ Monominoes.Render.prototype.buildSuper = function() {
   while (type.superclass) {
     holder.super = {};
     Komunalne.util.clone(type.superclass.prototype,{"deep": true,"into": holder.super});
-    Monominoes.Render.fixFunctionClone(this,holder.super);
+    Monominoes.util.bindFunctions(this,holder.super);
     type = type.superclass;
     holder = holder.super;
   }
@@ -504,17 +514,6 @@ Monominoes.Render.extend = function(ext) {
   constructor.prototype.class = constructor;
   constructor.prototype.superclass = extendedType;
   return constructor;
-};
-
-/**
- * Fix an array cloning to preserve the scope of the functions as the render.
- */
-Monominoes.Render.fixFunctionClone = function(render,holder) {
-  var r = render;
-  var fix = function(val,key) {
-    if (Komunalne.util.isFunction(val) && !Monominoes.util.isRender(val)) holder[key] = val.bind(r);
-  }
-  Komunalne.util.forEach(holder,fix);
 };
 
 /**
@@ -764,11 +763,14 @@ Monominoes.renders.TEXT_BLOCK = Monominoes.renders.SPAN.extend({
   "defaultcss": "monominoes-text-block",
   "fontcolor": "white",
   "background": "black",
+  "bold": true,
   "buildLayout": function() {
-    this.def = (this.def || {});
-    this.def.style = (this.def.style || {});
-    this.def.style.color = this.fontcolor;
-    this.def.style["background-color"] = this.background;
+    this.config.def = (this.config.def || {});
+    this.config.def.style = (this.config.def.style || {});
+    this.config.def.style.color = this.fontcolor;
+    this.config.def.style["background-color"] = this.background;
+    this.config.def.style["font-weight"] = this.bold === true ? "700" : "400";
+    this.text = (this.text || Monominoes.util.data);
     this.super.buildLayout();
   }
 });

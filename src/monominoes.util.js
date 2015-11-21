@@ -59,3 +59,13 @@ Monominoes.util.isRenderInstance = function(obj,type) {
  * Helper function to return data itself for Tag render customization.
  */
 Monominoes.util.data = function(render,data) { return data; };
+
+/**
+ * Iterate over an object and transform the functions into binded functions with render as scope.
+ */
+Monominoes.util.bindFunctions = function(render,iterable) {
+  var fix = function(val,key) {
+    if (Komunalne.util.isFunction(val) && !Monominoes.util.isRender(val)) iterable[key] = val.bind(render);
+  }
+  Komunalne.util.forEach(iterable,fix);
+};
