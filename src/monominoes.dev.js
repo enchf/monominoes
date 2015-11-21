@@ -90,6 +90,31 @@ Monominoes.util.bindFunctions = function(render,iterable) {
 };
 
 /**
+ * Returns a value for the Tag definition object when rendering.
+ * Rules:
+ * - A null or undefined is returned as null.
+ * - A primitive of type string, boolean or number is returned itself.
+ * - A function will be invoked using render as this, passing render and item as arguments.
+ * - An Array, Date or complex object is returned as its string representation using toString method.
+ * - An object is processed in the following way:
+ *   - If path, it is extracted from item.data, otherwise item.data is used itself.
+ *   - If scope, it is used as handler scope, otherwise render is used. If no handler this is ignored.
+ *   - If handler, it is invoked using scope as above, having render, item and data from path if path is defined, 
+ *     otherwise this function executed with the resulting data from path as object argument is returned.
+ */
+Monominoes.util.extractValue = function(object,render,data) {
+  var getFromConfig = function(object,render,data) {
+    var d = object.path ? Komunalne.util.path(data,object.path) : data;
+    return object.handler ? object.handler.call(render,render,d) : Monominoes.util.extractValue(d,render);
+  };
+  return object == null ? null :
+         Komunalne.util.isAnyOf(typeof object,"string","boolean","number") ? object :
+         Komunalne.util.isFunction(object) ? object.call(render,render,data) :
+         Komunalne.util.isInstanceOf(object,Object) ? getFromConfig(object,render,data) :
+         object.toString();
+};
+
+/**
  * Render abstract class definition. 
  * In fact, a render is a decorator of a jQuery object, adding recursive and
  * iterative definition of sub-elements.
@@ -613,7 +638,7 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
   "preConfig": function(config) {},
   "postConfig": function(config) {},
   "buildConfig": function(config) {
-    var vfd = Monominoes.renders.TAG.valueForDef;
+    var vfd = Monominoes.util.extractValue;
     var render = this;
     var data = config.data; delete config.data;
     var processVfd = function(item,key,arr) { arr[key] = vfd(item,render,data); };
@@ -624,37 +649,6 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
     if (config.style) Komunalne.util.forEach(config.style,processVfd);
   }
 });
-
-/**
- * Returns a value for the Tag definition object when rendering.
- * Rules:
- * - A null or undefined is returned as null.
- * - A primitive of type string, boolean or number is returned itself.
- * - A function will be invoked using render as this, passing render and item as arguments.
- * - An Array, Date or complex object is returned as its string representation using toString method.
- * - An object is processed in the following way:
- *   - If path, it is extracted from item.data, otherwise item.data is used itself.
- *   - If scope, it is used as handler scope, otherwise render is used. If no handler this is ignored.
- *   - If handler, it is invoked using scope as above, having render, item and data from path if path is defined, 
- *     otherwise this function executed with the resulting data from path as object argument is returned.
- */
-Monominoes.renders.TAG.valueForDef = function(object,render,data) {
-  return object == null ? null :
-         Komunalne.util.isAnyOf(typeof object,"string","boolean","number") ? object :
-         Komunalne.util.isFunction(object) ? object.call(render,render,data) :
-         Komunalne.util.isInstanceOf(object,Object) ? Monominoes.renders.TAG.configValue(object,render,data) :
-         object.toString();
-};
-
-/**
- * Extracts a value from a config object, using rules defined in valueForDef.
- */
-Monominoes.renders.TAG.configValue = function(object,render,data) {
-  data = object.path ? Komunalne.util.path(data,object.path) : data;
-  var scope = object.scope || render;
-  return object.handler ? object.handler.call(scope,render,data) :
-         Monominoes.renders.TAG.valueForDef(data,render);
-};
 
 (function() {
   var tag;

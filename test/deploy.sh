@@ -4,6 +4,12 @@ cd ../src/
 sh build.sh
 cp monominoes.dev.js $path
 cp monominoes.css $path
+for M in "fa"
+do
+  cp monominoes.$M.js $path
+done
+
+
 cd ../test/
 cp index.html $path
 cp test.css $path

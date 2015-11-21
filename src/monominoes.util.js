@@ -76,3 +76,28 @@ Monominoes.util.bindFunctions = function(render,iterable) {
   }
   Komunalne.util.forEach(iterable,fix);
 };
+
+/**
+ * Returns a value for the Tag definition object when rendering.
+ * Rules:
+ * - A null or undefined is returned as null.
+ * - A primitive of type string, boolean or number is returned itself.
+ * - A function will be invoked using render as this, passing render and item as arguments.
+ * - An Array, Date or complex object is returned as its string representation using toString method.
+ * - An object is processed in the following way:
+ *   - If path, it is extracted from item.data, otherwise item.data is used itself.
+ *   - If scope, it is used as handler scope, otherwise render is used. If no handler this is ignored.
+ *   - If handler, it is invoked using scope as above, having render, item and data from path if path is defined, 
+ *     otherwise this function executed with the resulting data from path as object argument is returned.
+ */
+Monominoes.util.extractValue = function(object,render,data) {
+  var getFromConfig = function(object,render,data) {
+    var d = object.path ? Komunalne.util.path(data,object.path) : data;
+    return object.handler ? object.handler.call(render,render,d) : Monominoes.util.extractValue(d,render);
+  };
+  return object == null ? null :
+         Komunalne.util.isAnyOf(typeof object,"string","boolean","number") ? object :
+         Komunalne.util.isFunction(object) ? object.call(render,render,data) :
+         Komunalne.util.isInstanceOf(object,Object) ? getFromConfig(object,render,data) :
+         object.toString();
+};

@@ -1137,3 +1137,29 @@ QUnit.test("YouTube video render", function(assert) {
   assert.equal(item.item.attr("src"),url,"Iframe URL is set");
   render.clear();
 });
+
+QUnit.test("Font Awesome renders", function(assert) {
+  var render;
+  var i = new Komunalne.helper.Iterator(["ICON"]);
+  var key;
+  
+  assert.ok(Monominoes.fa,"Monominoes fa container defined");
+  while (i.hasNext()) {
+    key = i.next();
+    render = new Monominoes.fa[key]()
+    assert.ok(Monominoes.util.isRender(Monominoes.fa[key]),key + " render constructor against isRender test");
+    assert.ok(Monominoes.util.isRender(render),key + " render instance against isRender test");
+    assert.notOk(Monominoes.util.isRenderInstance(Monominoes.fa[key]),key + " constructor against isRenderInstance test");
+    assert.ok(Monominoes.util.isRenderInstance(render),key + " render instance against isRenderInstance test");
+  }
+  
+  render = new Monominoes.fa.ICON().render("camera-retro");
+  assert.equal(render.items.length,1,"Unique parent item for FA icon");
+  assert.equal((item = render.items[0]).item.prop("tagName"),"I","FA icon item is an I");
+  assert.ok(Monominoes.util.isRender(item.render,Monominoes.fa.ICON),"FA icon render is M.fa.ICON");
+  assert.equal(Komunalne.$.elementText(item.item),"","Text tag is empty");
+  assert.equal(render.layout.children.length,0,"No children renders are set");
+  assert.ok(item.item.hasClass("fa"),"FA icon classes contains fa");
+  assert.ok(item.item.hasClass("fa-camera-retro"),"FA icon classes contains the rendered icon");
+  render.clear();
+});
