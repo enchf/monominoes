@@ -1082,7 +1082,7 @@ QUnit.test("Image block render", function(assert) {
 });
 
 QUnit.test("Text block test", function(assert) {
-  var render,config,item,child;
+  var render,config,item;
   
   render = new Monominoes.renders.TEXT_BLOCK().render("test","#test-div");
   assert.equal(render.items.length,1,"Unique parent item for Text Block");
@@ -1097,5 +1097,19 @@ QUnit.test("Text block test", function(assert) {
   assert.equal(item.item.css("text-align"),"center","SPAN text and items are centered");
   assert.equal(item.item.css("padding-top"),"8px","Vertical pad is set as default");
   assert.equal(item.item.css("padding-left"),"10px","Horizontal pad is set as default");
+  render.clear();
+  
+  config = { 
+    "fontcolor": "#ffff66", "background": "#006600", "bold": false,
+    "text": Monominoes.util.property("data")
+  };
+  render = new Monominoes.renders.TEXT_BLOCK(config).render({ "data": "Other test" },"#test-div");
+  assert.equal(Komunalne.$.elementText((item = render.items[0]).item),"Other test","Text is assigned to tag");
+  assert.equal(render.layout.children.length,0,"No children renders are set");
+  assert.ok(item.item.hasClass("monominoes-text-block"),"Default class for text block is set");
+  assert.equal(item.item.css("color"),"rgb(255, 255, 102)","Color is set as yellow");
+  assert.equal(item.item.css("background-color"),"rgb(0, 102, 0)","Background color is set as dark green");
+  assert.equal(item.item.css("font-weight"),"400","Font is set as bold");
+  assert.equal(item.item.css("text-align"),"center","SPAN text and items are centered");
   render.clear();
 });
