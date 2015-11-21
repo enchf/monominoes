@@ -1115,7 +1115,7 @@ QUnit.test("Text block test", function(assert) {
 });
 
 QUnit.test("YouTube video render", function(assert) {
-  var render,url,item;
+  var render,url,item,config;
   url = "https://www.youtube.com/watch?v=ihh4QPkbX9w";
   render = new Monominoes.renders.YOUTUBE().render(url,"#test-div");
   assert.equal(render.items.length,1,"Unique parent item for Text Block");
@@ -1127,5 +1127,13 @@ QUnit.test("YouTube video render", function(assert) {
   assert.equal(item.item.attr("width"),"480","Width is set as defaults");
   assert.equal(item.item.attr("height"),"360","Height is set as defaults");
   assert.equal(item.item.attr("src"),"http://www.youtube.com/embed/ihh4QPkbX9w","Iframe URL is set");
+  render.clear();
+  
+  url = "http://www.youtube.com/embed/ihh4QPkbX9w";
+  config = { "width": 240, "height": 180 };
+  render = new Monominoes.renders.YOUTUBE(config).render(url,"#test-div");
+  assert.equal((item = render.items[0]).item.attr("width"),"240","Width is set as in config");
+  assert.equal(item.item.attr("height"),"180","Height is set as in config");
+  assert.equal(item.item.attr("src"),url,"Iframe URL is set");
   render.clear();
 });
