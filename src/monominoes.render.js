@@ -172,6 +172,7 @@ Monominoes.Render.prototype.isBuilt = function() {
 Monominoes.Render.prototype.populateDefaults = function() {
   this.defaults = {};
   Komunalne.util.clone(this,{ "into": this.defaults, "deep": true });
+  Monominoes.Render.fixFunctionClone(this,this.defaults);
 };
 
 /**
@@ -180,7 +181,6 @@ Monominoes.Render.prototype.populateDefaults = function() {
  * Children property is excluded from deep cloning to avoid recloning subrenders.
  */
 Monominoes.Render.prototype.applyConfig = function(cfg) {
-  console.log(this.name);
   cfg = (cfg || {});
   Komunalne.util.clone(cfg,{ "into": this, "deep": true, "skip": this.skipProperties });
   this.config = cfg;
@@ -192,15 +192,12 @@ Monominoes.Render.prototype.applyConfig = function(cfg) {
 Monominoes.Render.prototype.buildSuper = function() {
   var type,holder;
   var render = this;
-  var fix = function(val,key,holder) { 
-	if (Komunalne.util.isFunction(val) && !Monominoes.util.isRender(val)) holder[key] = val.bind(render);
-  };
   type = this.class;
   holder = this;
   while (type.superclass) {
     holder.super = {};
     Komunalne.util.clone(type.superclass.prototype,{"deep": true,"into": holder.super});
-    Komunalne.util.forEach(holder.super, fix);
+    Monominoes.Render.fixFunctionClone(this,holder.super);
     type = type.superclass;
     holder = holder.super;
   }
@@ -433,4 +430,15 @@ Monominoes.Render.extend = function(ext) {
   constructor.prototype.class = constructor;
   constructor.prototype.superclass = extendedType;
   return constructor;
+};
+
+/**
+ * Fix an array cloning to preserve the scope of the functions as the render.
+ */
+Monominoes.Render.fixFunctionClone = function(render,holder) {
+  var r = render;
+  var fix = function(val,key) {
+    if (Komunalne.util.isFunction(val) && !Monominoes.util.isRender(val)) holder[key] = val.bind(r);
+  }
+  Komunalne.util.forEach(holder,fix);
 };

@@ -118,7 +118,7 @@ QUnit.test("Tag class methods", function(assert) {
 });
 
 QUnit.test("Extend function", function(assert) {
-  var i,j=0,r,k;
+  var i,j=0,r,k,msg;
   var ext = {
     "a": "test",
     "render": function(parent,data) { j++; },
@@ -168,8 +168,9 @@ QUnit.test("Extend function", function(assert) {
     assert.ok(("super" in r),"Parent object created for object " + k);
     assert.ok(Komunalne.util.isInstanceOf(r.super,Object),"Parent object in render is of type Object");
     for (var m in classes[k].prototype) {
-      if (m == "defaults") continue;
-      assert.deepEqual(r.defaults[m],classes[k].prototype[m],"Property " + m + " against prototype in object " + k);
+      msg = "Property " + m + " against prototype in object " + k;
+      if (Komunalne.util.isFunction(classes[k].prototype[m]) || m == "defaults") assert.ok(r.defaults[m],msg);
+      else assert.deepEqual(r.defaults[m],classes[k].prototype[m],msg);
     }
     
     // Superclass defaults into super object.
@@ -181,9 +182,10 @@ QUnit.test("Extend function", function(assert) {
         if (m === "super") {
           if (sc === Monominoes.Render) assert.ok(rp[m] === null,"Parent property in super should be null");
           else assert.ok(Komunalne.util.isInstanceOf(rp[m],Object),"Parent property for lower levels is an object");
-        } else if (!Komunalne.util.isFunction(rp[m])){
-          assert.deepEqual(rp[m],sc.prototype[m],
-                           Monominoes.util.format("Superclass property {0} in super object {1}, level {2}", m,k,l));
+        } else {
+          msg = Monominoes.util.format("Superclass property {0} in super object {1}, level {2}", m,k,l);
+          if (!Komunalne.util.isFunction(sc.prototype[m])) assert.deepEqual(rp[m],sc.prototype[m],msg);
+          else assert.ok(rp[m],msg);
         }
       }
       l++;
@@ -985,7 +987,7 @@ QUnit.test("List render instantiation and customization", function(assert) {
 });
 
 QUnit.test("Image block render", function(assert) {
-  var render,item,data,child;
+  var render,item,data,child,wait;
   var image = "img/1.jpg";
   
   render = new Monominoes.renders.IMAGE_BLOCK().render(image,"#test-div");
@@ -1005,6 +1007,74 @@ QUnit.test("Image block render", function(assert) {
   assert.ok((child = item.children[1][0]).item.hasClass("monominoes-imgblock"),"IMG class is set");
   assert.equal(child.item.prop("tagName"),"IMG","Second child item is an IMG tag");
   assert.equal(child.item.attr("src"),image,"Image source is correctly set");
+  assert.equal(child.item.css("vertical-align"),"middle","IMG is vertically centered");
   
   render.clear();
+  config = { "sourceDir": "img", "extension": "jpg", "def": { "style": { "border": "4px solid red", "height": "200px" } } };
+  render = new Monominoes.renders.IMAGE_BLOCK(config).render(2,"#test-div");
+  assert.equal(Komunalne.$.elementText((item = render.items[0]).item),"","No text is assigned to tag");
+  assert.equal(item.item.css("border-top-width"),"4px","DIV border is set");
+  assert.equal(item.item.css("border-top-style"),"solid","DIV border is set");
+  assert.equal(item.item.css("border-top-color"),"rgb(255, 0, 0)","DIV border is set");
+  assert.equal(render.layout.children.length,2,"Two children renders are set");
+  assert.ok(Monominoes.util.isRender(render.layout.children[0],Monominoes.renders.SPAN),"First child render is SPAN");
+  assert.equal(render.layout.children[0].layout.children.length,0,"No children are set on first child");
+  assert.ok(Monominoes.util.isRender(render.layout.children[1],Monominoes.renders.IMG),"Second child render is IMG");
+  assert.equal(render.layout.children[1].layout.children.length,0,"No children are set on second child");
+  assert.ok((child = item.children[0][0]).item.hasClass("monominoes-spanimgblock"),"SPAN class is set");
+  assert.equal(child.item.prop("tagName"),"SPAN","First child item is a SPAN tag");
+  assert.equal(child.item.css("vertical-align"),"middle","SPAN is vertically centered");
+  assert.ok((child = item.children[1][0]).item.hasClass("monominoes-imgblock"),"IMG class is set");
+  assert.equal(child.item.prop("tagName"),"IMG","Second child item is an IMG tag");
+  assert.equal(child.item.attr("src"),"img/2.jpg","Image source is correctly set");
+  assert.equal(child.item.css("vertical-align"),"middle","IMG is vertically centered");
+  
+  render.clear();
+  config = { "sourceDir": "img", "extension": "jpg", "def": { "style": { "border": "4px solid red", "height": "200px" } } };
+  render = new Monominoes.renders.IMAGE_BLOCK(config).render(2,"#test-div");
+  assert.equal(Komunalne.$.elementText((item = render.items[0]).item),"","No text is assigned to tag");
+  assert.equal(item.item.css("border-top-width"),"4px","DIV border is set");
+  assert.equal(item.item.css("border-top-style"),"solid","DIV border is set");
+  assert.equal(item.item.css("border-top-color"),"rgb(255, 0, 0)","DIV border is set");
+  assert.equal(render.layout.children.length,2,"Two children renders are set");
+  assert.ok(Monominoes.util.isRender(render.layout.children[0],Monominoes.renders.SPAN),"First child render is SPAN");
+  assert.equal(render.layout.children[0].layout.children.length,0,"No children are set on first child");
+  assert.ok(Monominoes.util.isRender(render.layout.children[1],Monominoes.renders.IMG),"Second child render is IMG");
+  assert.equal(render.layout.children[1].layout.children.length,0,"No children are set on second child");
+  assert.ok((child = item.children[0][0]).item.hasClass("monominoes-spanimgblock"),"SPAN class is set");
+  assert.equal(child.item.prop("tagName"),"SPAN","First child item is a SPAN tag");
+  assert.equal(child.item.css("vertical-align"),"middle","SPAN is vertically centered");
+  assert.ok((child = item.children[1][0]).item.hasClass("monominoes-imgblock"),"IMG class is set");
+  assert.equal(child.item.prop("tagName"),"IMG","Second child item is an IMG tag");
+  assert.equal(child.item.attr("src"),"img/2.jpg","Image source is correctly set");
+  assert.equal(child.item.css("vertical-align"),"middle","IMG is vertically centered");
+  
+  render.clear();
+  config = { 
+    "align": "left",
+    "valign": "bottom",
+    "defaultImg": "img/1.jpg",
+    "sourceDir": "img",
+    "extension": "jpg",
+    "def": { 
+      "style": { "border": "4px solid", "height": "200px" }
+    } 
+  };
+  render = new Monominoes.renders.IMAGE_BLOCK(config).render(3,"#test-div");
+  assert.equal(Komunalne.$.elementText((item = render.items[0]).item),"","No text is assigned to tag");
+  assert.equal(render.defaultImg,"img/1.jpg","Default img is set on render");
+  assert.equal(item.item.css("text-align"),"left","DIV text and items are left aligned");
+  assert.ok((child = item.children[0][0]).item.hasClass("monominoes-spanimgblock"),"SPAN class is set");
+  assert.equal(child.item.prop("tagName"),"SPAN","First child item is a SPAN tag");
+  assert.equal(child.item.css("vertical-align"),"bottom","SPAN is vertically on bottom");
+  assert.ok((child = item.children[1][0]).item.hasClass("monominoes-imgblock"),"IMG class is set");
+  assert.equal(child.item.prop("tagName"),"IMG","Second child item is an IMG tag");
+  assert.equal(child.item.attr("src"),"img/3.jpg","Image source is correctly set");
+  assert.equal(child.item.css("vertical-align"),"bottom","IMG is vertically on bottom");
+  wait = assert.async();
+  setTimeout(function() { 
+    assert.strictEqual(child.item.attr("src"),"img/1.jpg","Image src updated after fail");
+    render.clear();
+    wait();
+  },100);
 });

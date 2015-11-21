@@ -192,14 +192,16 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
   "errorHandler": function(img) {
     var val;
     if (this.defaultImg != null) {
+      console.log("error handler");
       img.onerror = "";
-      img.src = this.defaultImg;
+      img.target.src = this.defaultImg;
       val = true;
     } else val = false;
     return val;
   },
   "buildLayout": function() {
-    var config,spancfg;
+    var config,spancfg,baseRender = this;
+    
     // DIV configuration.
     this.config.def = (this.config.def || {});
     this.config.def.style = (this.config.def.style || {});
@@ -207,7 +209,6 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
     
     // SPAN configuration.
     spancfg = { "def": { "class": "monominoes-spanimgblock", "style": {} } };
-    if (this.valign) spancfg.def.style["vertical-align"] = this.valign;
     
     // IMG configuration.
     this.imgLayout = this.imgLayout || {};
@@ -215,9 +216,21 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
     this.imgLayout.def.attrs = (this.imgLayout.def.attrs || {});
     this.imgLayout.def.attrs.src = this.sourceFn.bind(this);
     this.imgLayout.def.class = Komunalne.util.append(this.imgLayout.def.class,"monominoes-imgblock");
-    this.imgLayout.def.events = (this.imgLayout.def.events || {});
-    this.imgLayout.def.events.onError = (this.imgLayout.def.events.onError || this.errorHandler.bind(this));
     config = Komunalne.util.clone(this.imgLayout, { "safe": true, "into": {} });
+    
+    // Error on load image.
+    config.buildItem = function(data) {
+  	  var item;
+  	  item = this.defaults.buildItem(data);
+  	  item.error(baseRender.errorHandler.bind(baseRender));
+  	  return item;
+    };
+    
+    if (this.valign) {
+      spancfg.def.style["vertical-align"] = this.valign;
+      config.def.style = (config.style || {});
+      config.def.style["vertical-align"] = this.valign;
+    }
     
     this.config.children = [
       new Monominoes.renders.SPAN(spancfg),

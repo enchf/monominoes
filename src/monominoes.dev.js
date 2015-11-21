@@ -246,6 +246,7 @@ Monominoes.Render.prototype.isBuilt = function() {
 Monominoes.Render.prototype.populateDefaults = function() {
   this.defaults = {};
   Komunalne.util.clone(this,{ "into": this.defaults, "deep": true });
+  Monominoes.Render.fixFunctionClone(this,this.defaults);
 };
 
 /**
@@ -254,7 +255,6 @@ Monominoes.Render.prototype.populateDefaults = function() {
  * Children property is excluded from deep cloning to avoid recloning subrenders.
  */
 Monominoes.Render.prototype.applyConfig = function(cfg) {
-  console.log(this.name);
   cfg = (cfg || {});
   Komunalne.util.clone(cfg,{ "into": this, "deep": true, "skip": this.skipProperties });
   this.config = cfg;
@@ -266,15 +266,12 @@ Monominoes.Render.prototype.applyConfig = function(cfg) {
 Monominoes.Render.prototype.buildSuper = function() {
   var type,holder;
   var render = this;
-  var fix = function(val,key,holder) { 
-	if (Komunalne.util.isFunction(val) && !Monominoes.util.isRender(val)) holder[key] = val.bind(render);
-  };
   type = this.class;
   holder = this;
   while (type.superclass) {
     holder.super = {};
     Komunalne.util.clone(type.superclass.prototype,{"deep": true,"into": holder.super});
-    Komunalne.util.forEach(holder.super, fix);
+    Monominoes.Render.fixFunctionClone(this,holder.super);
     type = type.superclass;
     holder = holder.super;
   }
@@ -510,6 +507,17 @@ Monominoes.Render.extend = function(ext) {
 };
 
 /**
+ * Fix an array cloning to preserve the scope of the functions as the render.
+ */
+Monominoes.Render.fixFunctionClone = function(render,holder) {
+  var r = render;
+  var fix = function(val,key) {
+    if (Komunalne.util.isFunction(val) && !Monominoes.util.isRender(val)) holder[key] = val.bind(r);
+  }
+  Komunalne.util.forEach(holder,fix);
+};
+
+/**
  * Tag class definition.
  * @param config A string with the tag name or a configuration object with the following properties:
  * - name (mandatory):  Tag name.
@@ -703,14 +711,16 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
   "errorHandler": function(img) {
     var val;
     if (this.defaultImg != null) {
+      console.log("error handler");
       img.onerror = "";
-      img.src = this.defaultImg;
+      img.target.src = this.defaultImg;
       val = true;
     } else val = false;
     return val;
   },
   "buildLayout": function() {
-    var config,spancfg;
+    var config,spancfg,baseRender = this;
+    
     // DIV configuration.
     this.config.def = (this.config.def || {});
     this.config.def.style = (this.config.def.style || {});
@@ -718,7 +728,6 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
     
     // SPAN configuration.
     spancfg = { "def": { "class": "monominoes-spanimgblock", "style": {} } };
-    if (this.valign) spancfg.def.style["vertical-align"] = this.valign;
     
     // IMG configuration.
     this.imgLayout = this.imgLayout || {};
@@ -726,9 +735,21 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
     this.imgLayout.def.attrs = (this.imgLayout.def.attrs || {});
     this.imgLayout.def.attrs.src = this.sourceFn.bind(this);
     this.imgLayout.def.class = Komunalne.util.append(this.imgLayout.def.class,"monominoes-imgblock");
-    this.imgLayout.def.events = (this.imgLayout.def.events || {});
-    this.imgLayout.def.events.onError = (this.imgLayout.def.events.onError || this.errorHandler.bind(this));
     config = Komunalne.util.clone(this.imgLayout, { "safe": true, "into": {} });
+    
+    // Error on load image.
+    config.buildItem = function(data) {
+  	  var item;
+  	  item = this.defaults.buildItem(data);
+  	  item.error(baseRender.errorHandler.bind(baseRender));
+  	  return item;
+    };
+    
+    if (this.valign) {
+      spancfg.def.style["vertical-align"] = this.valign;
+      config.def.style = (config.style || {});
+      config.def.style["vertical-align"] = this.valign;
+    }
     
     this.config.children = [
       new Monominoes.renders.SPAN(spancfg),
