@@ -829,7 +829,8 @@ QUnit.test("Tag render creation and property validation", function(assert) {
   var msg,defaultcss,data,aux;
   var i = new Komunalne.helper.Iterator(Monominoes.tags);
   var count = 0, show = 0;
-  var fn = function() { count++; };
+  var fn;
+  
   while(i.hasNext()) {
 	i.next();
     Render = Monominoes.renders[i.currentKey()];
@@ -847,6 +848,15 @@ QUnit.test("Tag render creation and property validation", function(assert) {
     item = custom.items[0];
     assert.ok(item.item.hasClass("custom-class"),"Custom class is assigned in custom object of " + msg);
     assert.equal(Komunalne.$.elementText(item.item),"Custom text","Text in config overrides the one in def for " + msg);
+    
+    fn = function(event) { 
+      count++; 
+      assert.ok(Monominoes.util.isRender(this),"Event handler scope is a render object for " + msg);
+      assert.equal(this.name,i.currentKey(),"Event handler scope is a render object for " + msg);
+      assert.ok(event,"Event object is passed as argument for " + msg);
+      assert.ok(event.target,"Event target is passed as argument for " + msg);
+      assert.equal(event.target.tagName,i.currentKey(),"Event tag is " + i.currentKey());
+    };
     
     instance = Render({
       "extracss": "fake-css",

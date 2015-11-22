@@ -642,11 +642,14 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
     var render = this;
     var data = config.data; delete config.data;
     var processVfd = function(item,key,arr) { arr[key] = vfd(item,render,data); };
+    var bindEvent = function(item,key,arr) { arr[key] = item.bind(render); };
+    
     config.class = Komunalne.util.append(vfd(config.class,this,data),vfd(config.extracss,this,data));
     delete config.extracss;
     config.text = vfd(config.text,this,data);
     if (config.attrs) Komunalne.util.forEach(config.attrs,processVfd);
     if (config.style) Komunalne.util.forEach(config.style,processVfd);
+    if (config.events) Komunalne.util.forEach(config.events,bindEvent);
   }
 });
 
