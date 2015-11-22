@@ -698,7 +698,7 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
   "sourceFn": function(render,data) { // Data will be the image name.
     var dir,ext,name,dot,slash,path;
     if (data != null) {
-      dir = (this.sourceDir || "");
+      dir = (Monominoes.util.extractValue(this.sourceDir,this,data) || "");
       ext = (this.extension || "");
       slash = dir[dir.length-1];
       slash = dir != "" && slash !== "/" && slash !=="\\" ? "/" : "";
