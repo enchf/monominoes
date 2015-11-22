@@ -184,7 +184,7 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
     this.imgLayout.def.attrs = (this.imgLayout.def.attrs || {});
     this.imgLayout.def.attrs.src = this.sourceFn.bind(this);
     this.imgLayout.def.class = Komunalne.util.append(this.imgLayout.def.class,"monominoes-imgblock");
-    config = Komunalne.util.clone(this.imgLayout, { "safe": true, "into": {} });
+    config = Komunalne.util.clone(this.imgLayout,{ "deep": true });
     
     // Error on load image.
     config.buildItem = function(data) {

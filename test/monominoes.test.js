@@ -1153,7 +1153,7 @@ QUnit.test("Font Awesome renders", function(assert) {
     assert.ok(Monominoes.util.isRenderInstance(render),key + " render instance against isRenderInstance test");
   }
   
-  render = new Monominoes.fa.ICON().render("camera-retro");
+  render = new Monominoes.fa.ICON().render("camera-retro","#test-div");
   assert.equal(render.items.length,1,"Unique parent item for FA icon");
   assert.equal((item = render.items[0]).item.prop("tagName"),"I","FA icon item is an I");
   assert.ok(Monominoes.util.isRender(item.render,Monominoes.fa.ICON),"FA icon render is M.fa.ICON");
@@ -1162,4 +1162,7 @@ QUnit.test("Font Awesome renders", function(assert) {
   assert.ok(item.item.hasClass("fa"),"FA icon classes contains fa");
   assert.ok(item.item.hasClass("fa-camera-retro"),"FA icon classes contains the rendered icon");
   render.clear();
+  
+  /*config = {};
+  render = new Monominoes.fa.ICON(config).render(data,"#test-div");*/
 });
