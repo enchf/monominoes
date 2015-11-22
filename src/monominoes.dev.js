@@ -625,7 +625,7 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
   "extracss": null, // Extra class. Used to append a class without removing the default one.
   "text": null,  // Text for tag, also it can be set on config.def.text, which is set will be overriden by this.
   "buildItem": function(data) {
-    var config = Komunalne.util.clone(this.config.def || {});
+    var config = Komunalne.util.clone(this.config.def || {}, { "deep": true });
     config.class = (config.class || this.defaultcss);
     config.extracss = this.extracss;
     config.data = data;
