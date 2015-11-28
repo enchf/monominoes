@@ -14,6 +14,10 @@ cd ../test/
 cp index.html $path
 cp test.css $path
 cp monominoes.test.js $path
+for M in "fa"
+do
+  cp monominoes.$M.test.js $path
+done
 if [ ! -d "$path/img" ]; then
   mkdir $path/img
 fi

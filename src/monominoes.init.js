@@ -9,3 +9,6 @@ function Monominoes() {}
 Monominoes.util = {};
 Monominoes.tags = {};
 Monominoes.renders = {};
+
+/* Shortcut if not defined already */
+if (window.M === undefined) window.M = Monominoes;

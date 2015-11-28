@@ -10,6 +10,9 @@ Monominoes.util = {};
 Monominoes.tags = {};
 Monominoes.renders = {};
 
+/* Shortcut if not defined already */
+if (window.M === undefined) window.M = Monominoes;
+
 /**
  * Placeholder replacer formatter, replica from jquery.validator.format.
  * @see http://jqueryvalidation.org/jQuery.validator.format/
