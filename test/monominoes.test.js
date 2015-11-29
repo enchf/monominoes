@@ -583,6 +583,7 @@ QUnit.test("Items rendering, content, structure, customization and clear for ite
   assert.equal(aux.childMap.options[1],aux.children[1][1],"Second mapped item is the second children iterable element");
   assert.ok(aux.isDrawn(),"Base item is marked as drawn");
   assert.equal($("#base-div").length,1,"Base item item is present in DOM");
+  assert.equal(render.getBaseRender(),render,"Base render for base render its itself");
   
   child = render.getItemByKey("headtext");
   subrender = aux.render.layout.children[0];
@@ -600,6 +601,7 @@ QUnit.test("Items rendering, content, structure, customization and clear for ite
   assert.deepEqual(Komunalne.util.keys(child.childMap),[],"No children are mapped into headtext");
   assert.ok(child.isDrawn(),"Headtext is marked as drawn");
   assert.equal($("#"+child.item.attr("id")).length,1,"Headtext item is present in DOM");
+  assert.equal(subrender.getBaseRender(),render,"Base render for child 1 is the upmost render");
   id1 = "#" + child.item.attr("id");
   
   options = render.getItemByKey("options");
@@ -607,6 +609,7 @@ QUnit.test("Items rendering, content, structure, customization and clear for ite
   assert.ok(Komunalne.util.isArrayOf(options,Monominoes.Item),"Options item is an array of Items");
   assert.equal(options.length,3,"Options item is of length 3");
   id2 = "#" + options[0].item.attr("id");
+  assert.equal(subrender.getBaseRender(),render,"Base render for child 2 is the upmost render");
   
   for (var i = 0; i < options.length; i++) {
     child = options[i];
@@ -653,6 +656,7 @@ QUnit.test("Items rendering, content, structure, customization and clear for ite
     assert.deepEqual(Komunalne.util.keys(grandson.childMap),[],F("No children are mapped in 1st grandson child #{0}",i));
     assert.ok(grandson.isDrawn(),F("Child #{0} first grandson is marked as drawn",i));
     assert.equal($("#" + grandson.item.attr("id")).length,1,F("Child #{0} first grandson item is present in DOM",i));
+    assert.equal(gsrender.getBaseRender(),render,"Base render for grandson 1 is the upmost render");
     
     grandson = child.children[1][0];
     gsrender = subrender.getMappedRender("value");
@@ -671,6 +675,7 @@ QUnit.test("Items rendering, content, structure, customization and clear for ite
     assert.deepEqual(Komunalne.util.keys(grandson.childMap),[],F("No children are mapped in 2st grandson child #{0}",i));
     assert.ok(grandson.isDrawn(),F("Child #{0} second grandson is marked as drawn",i));
     assert.equal($("#" + grandson.item.attr("id")).length,1,F("Child #{0} second grandson item is present in DOM",i));
+    assert.equal(gsrender.getBaseRender(),render,"Base render for grandson 2 is the upmost render");
   }
   
   render.clear();

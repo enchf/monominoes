@@ -4,16 +4,17 @@
  * iterative definition of sub-elements.
  */
 Monominoes.Render = function(){};
-Monominoes.Render.prototype.data = null;      /* The global data used to produce the render object */
-Monominoes.Render.prototype.path = null;      /* The path to be used to get the rendered data */
-Monominoes.Render.prototype.iterable = false; /* True if the children elements are produced from iterable data */
-Monominoes.Render.prototype.items = null;     /* The underlying objects produced by the render. If iterable is an array */
-Monominoes.Render.prototype.defaults = null;  /* Default configuration object */
-Monominoes.Render.prototype.config = null;    /* Config object used to build the render. */
-Monominoes.Render.prototype.layout = null;    /* Configuration of the sub-elements */
-Monominoes.Render.prototype.key = null;       /* Internal sub-render id */
-Monominoes.Render.prototype.parent = null;    /* Render parent in layout */
-Monominoes.Render.prototype.name = "Render";  /* Render identifier name */
+Monominoes.Render.prototype.data = null;       /* The global data used to produce the render object */
+Monominoes.Render.prototype.path = null;       /* The path to be used to get the rendered data */
+Monominoes.Render.prototype.iterable = false;  /* True if the children elements are produced from iterable data */
+Monominoes.Render.prototype.items = null;      /* The underlying objects produced by the render. If iterable is an array */
+Monominoes.Render.prototype.defaults = null;   /* Default configuration object */
+Monominoes.Render.prototype.config = null;     /* Config object used to build the render. */
+Monominoes.Render.prototype.layout = null;     /* Configuration of the sub-elements */
+Monominoes.Render.prototype.key = null;        /* Internal sub-render id */
+Monominoes.Render.prototype.parent = null;     /* Render parent in layout */
+Monominoes.Render.prototype.baseRender = null; /* Upmost parent render */
+Monominoes.Render.prototype.name = "Render";   /* Render identifier name */
 Monominoes.Render.prototype.skipProperties = ["config","children"];
 
 /**
@@ -411,6 +412,20 @@ Monominoes.Render.prototype.getItemByKey = function(key) {
  * @param itemdata Individual item data of the individual object.
  */
 Monominoes.Render.prototype.customize = function(item) {};
+
+/**
+ * Return the upmost parent render from the layout structure.
+ * Useful to access configuration properties defined in the upper-most render config.
+ */
+Monominoes.Render.prototype.getBaseRender = function() {
+  var render;
+  if (this.baseRender == null) {
+    render = this;
+    while (render.parent != null) render = render.parent;
+    this.baseRender = render;
+  }
+  return this.baseRender;
+};
 
 /**
  * Render statics: Extend.
