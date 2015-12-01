@@ -32,14 +32,14 @@ QUnit.test("Bootstrap Grid System", function(assert) {
           "children": [{
             "render": M.renders.DIV,
             "config": { 
-              "def": { "class": "text-centered" }, 
+              "def": { "class": "text-center" }, 
               "path": "icon", 
               "children": [{ "render": M.fa.ICON, "size": "5x" }] 
             }
           },{
             "render": M.renders.P,
             "config": {
-              "def": { "class": "text-centered" },
+              "def": { "class": "text-center" },
               "path": "name",
               "text": M.util.data
             }
@@ -50,7 +50,7 @@ QUnit.test("Bootstrap Grid System", function(assert) {
       "render": M.renders.P,
       "config": {
         "key": "message",
-        "def": { "class": "text-centered" }
+        "def": { "class": "text-center" }
       }
     }]
   };

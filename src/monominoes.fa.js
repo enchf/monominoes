@@ -45,7 +45,7 @@ Monominoes.fa.ICON = Monominoes.renders.I.extend({
     
     cls = this["fixed-width"] === true ? append(cls,"fw") : cls;
     cls = this.border === true ? append(cls,"border") : cls;
-    item.attr("class",cls);
+    item.addClass(cls);
     
     return item;
   }
