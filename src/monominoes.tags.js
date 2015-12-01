@@ -80,23 +80,23 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
     config.extracss = this.extracss;
     config.data = data;
     config.text = (this.text || config.text);
-    this.preConfig(config);
-    this.buildConfig(config);
-    this.postConfig(config);
+    this.preConfig(config,target);
+    this.buildConfig(config,target);
+    this.postConfig(config,target);
     return this.tag.build(config);
   },
-  "preConfig": function(config) {},
-  "postConfig": function(config) {},
-  "buildConfig": function(config) {
+  "preConfig": function(config,target) {},
+  "postConfig": function(config,target) {},
+  "buildConfig": function(config,target) {
     var vfd = Monominoes.util.extractValue;
     var render = this;
     var data = config.data; delete config.data;
-    var processVfd = function(val,key,arr) { arr[key] = vfd(val,render,data); };
+    var processVfd = function(val,key,arr) { arr[key] = vfd(val,render,target,data); };
     var bindEvent = function(val,key,arr) { arr[key] = val.bind(render); };
     
-    config.class = Komunalne.util.append(vfd(config.class,this,data),vfd(config.extracss,this,data));
+    config.class = Komunalne.util.append(vfd(config.class,this,target,data),vfd(config.extracss,this,target,data));
     delete config.extracss;
-    config.text = vfd(config.text,this,data);
+    config.text = vfd(config.text,this,target,data);
     if (config.attrs) Komunalne.util.forEach(config.attrs,processVfd);
     if (config.style) Komunalne.util.forEach(config.style,processVfd);
     if (config.events) Komunalne.util.forEach(config.events,bindEvent);
@@ -148,7 +148,7 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
   "defaultImg": null,
   "extension": null,
   "imgLayout": null, // Config object for IMG child render.
-  "sourceFn": function(render,data) { // Data will be the image name.
+  "sourceFn": function(render,target,data) { // Data will be the image name.
     var dir,ext,name,dot,slash,path;
     if (data != null) {
       dir = (Monominoes.util.extractValue(this.sourceDir,this,data) || "");

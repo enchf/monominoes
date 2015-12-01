@@ -870,7 +870,7 @@ QUnit.test("Tag render creation and property validation", function(assert) {
         "text": msg,
         "attrs": { "id": { "path": "id" } },
         "style": {
-          "display": { "path": "show", "handler": function(render,data) { return (data || "none"); } },
+          "display": { "path": "show", "handler": function(render,target,data) { return (data || "none"); } },
           "color": function() { return "blue"; },
           "text-transform": "uppercase"
         },

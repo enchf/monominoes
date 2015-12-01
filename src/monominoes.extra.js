@@ -14,7 +14,7 @@ Monominoes.renders.YOUTUBE = Monominoes.renders.IFRAME.extend({
     this.config.def.attrs.height = this.height;
     this.super.buildLayout();
   },
-  "getUrl": function(render,data) {
+  "getUrl": function(render,target,data) {
     var url = data;
     var base = "http://www.youtube.com/embed/";
     return url.indexOf("watch?") >= 0 ? base + url.substr(url.lastIndexOf("=")+1) : url;

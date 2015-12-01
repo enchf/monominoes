@@ -58,13 +58,13 @@ Monominoes.util.isRenderInstance = function(obj,type) {
 /**
  * Helper function to return data itself for Tag render customization.
  */
-Monominoes.util.data = function(render,data) { return data; };
+Monominoes.util.data = function(render,target,data) { return data; };
 
 /**
  * Helper function to return data itself for Tag render customization.
  */
 Monominoes.util.property = function(path) { 
-  return function(render,data) { return Komunalne.util.path(data,path); };
+  return function(render,target,data) { return Komunalne.util.path(data,path); };
 };
 
 /**
@@ -90,14 +90,14 @@ Monominoes.util.bindFunctions = function(render,iterable) {
  *   - If handler, it is invoked using scope as above, having render, item and data from path if path is defined, 
  *     otherwise this function executed with the resulting data from path as object argument is returned.
  */
-Monominoes.util.extractValue = function(object,render,data) {
-  var getFromConfig = function(object,render,data) {
+Monominoes.util.extractValue = function(object,render,target,data) {
+  var getFromConfig = function(object,render,target,data) {
     var d = object.path ? Komunalne.util.path(data,object.path) : data;
-    return object.handler ? object.handler.call(render,render,d) : Monominoes.util.extractValue(d,render);
+    return object.handler ? object.handler.call(render,render,target,d) : Monominoes.util.extractValue(d,render,target);
   };
   return object == null ? null :
          Komunalne.util.isAnyOf(typeof object,"string","boolean","number") ? object :
-         Komunalne.util.isFunction(object) ? object.call(render,render,data) :
-         Komunalne.util.isInstanceOf(object,Object) ? getFromConfig(object,render,data) :
+         Komunalne.util.isFunction(object) ? object.call(render,render,target,data) :
+         Komunalne.util.isInstanceOf(object,Object) ? getFromConfig(object,render,target,data) :
          object.toString();
 };

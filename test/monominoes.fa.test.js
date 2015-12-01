@@ -33,7 +33,7 @@ QUnit.test("Font Awesome renders", function(assert) {
     "fixed-width": true,
     "border": true,
     "pull": "left",
-    "animated": function(render,data) { return data.animation; },
+    "animated": function(render,target,data) { return data.animation; },
     "flip": "vertical",
     "rotate": "180",
     "color": Monominoes.util.property("color"),

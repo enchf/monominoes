@@ -73,13 +73,13 @@ Monominoes.util.isRenderInstance = function(obj,type) {
 /**
  * Helper function to return data itself for Tag render customization.
  */
-Monominoes.util.data = function(render,data) { return data; };
+Monominoes.util.data = function(render,target,data) { return data; };
 
 /**
  * Helper function to return data itself for Tag render customization.
  */
 Monominoes.util.property = function(path) { 
-  return function(render,data) { return Komunalne.util.path(data,path); };
+  return function(render,target,data) { return Komunalne.util.path(data,path); };
 };
 
 /**
@@ -105,15 +105,15 @@ Monominoes.util.bindFunctions = function(render,iterable) {
  *   - If handler, it is invoked using scope as above, having render, item and data from path if path is defined, 
  *     otherwise this function executed with the resulting data from path as object argument is returned.
  */
-Monominoes.util.extractValue = function(object,render,data) {
-  var getFromConfig = function(object,render,data) {
+Monominoes.util.extractValue = function(object,render,target,data) {
+  var getFromConfig = function(object,render,target,data) {
     var d = object.path ? Komunalne.util.path(data,object.path) : data;
-    return object.handler ? object.handler.call(render,render,d) : Monominoes.util.extractValue(d,render);
+    return object.handler ? object.handler.call(render,render,target,d) : Monominoes.util.extractValue(d,render,target);
   };
   return object == null ? null :
          Komunalne.util.isAnyOf(typeof object,"string","boolean","number") ? object :
-         Komunalne.util.isFunction(object) ? object.call(render,render,data) :
-         Komunalne.util.isInstanceOf(object,Object) ? getFromConfig(object,render,data) :
+         Komunalne.util.isFunction(object) ? object.call(render,render,target,data) :
+         Komunalne.util.isInstanceOf(object,Object) ? getFromConfig(object,render,target,data) :
          object.toString();
 };
 
@@ -648,23 +648,23 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
     config.extracss = this.extracss;
     config.data = data;
     config.text = (this.text || config.text);
-    this.preConfig(config);
-    this.buildConfig(config);
-    this.postConfig(config);
+    this.preConfig(config,target);
+    this.buildConfig(config,target);
+    this.postConfig(config,target);
     return this.tag.build(config);
   },
-  "preConfig": function(config) {},
-  "postConfig": function(config) {},
-  "buildConfig": function(config) {
+  "preConfig": function(config,target) {},
+  "postConfig": function(config,target) {},
+  "buildConfig": function(config,target) {
     var vfd = Monominoes.util.extractValue;
     var render = this;
     var data = config.data; delete config.data;
-    var processVfd = function(val,key,arr) { arr[key] = vfd(val,render,data); };
+    var processVfd = function(val,key,arr) { arr[key] = vfd(val,render,target,data); };
     var bindEvent = function(val,key,arr) { arr[key] = val.bind(render); };
     
-    config.class = Komunalne.util.append(vfd(config.class,this,data),vfd(config.extracss,this,data));
+    config.class = Komunalne.util.append(vfd(config.class,this,target,data),vfd(config.extracss,this,target,data));
     delete config.extracss;
-    config.text = vfd(config.text,this,data);
+    config.text = vfd(config.text,this,target,data);
     if (config.attrs) Komunalne.util.forEach(config.attrs,processVfd);
     if (config.style) Komunalne.util.forEach(config.style,processVfd);
     if (config.events) Komunalne.util.forEach(config.events,bindEvent);
@@ -716,7 +716,7 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
   "defaultImg": null,
   "extension": null,
   "imgLayout": null, // Config object for IMG child render.
-  "sourceFn": function(render,data) { // Data will be the image name.
+  "sourceFn": function(render,target,data) { // Data will be the image name.
     var dir,ext,name,dot,slash,path;
     if (data != null) {
       dir = (Monominoes.util.extractValue(this.sourceDir,this,data) || "");
@@ -812,7 +812,7 @@ Monominoes.renders.YOUTUBE = Monominoes.renders.IFRAME.extend({
     this.config.def.attrs.height = this.height;
     this.super.buildLayout();
   },
-  "getUrl": function(render,data) {
+  "getUrl": function(render,target,data) {
     var url = data;
     var base = "http://www.youtube.com/embed/";
     return url.indexOf("watch?") >= 0 ? base + url.substr(url.lastIndexOf("=")+1) : url;

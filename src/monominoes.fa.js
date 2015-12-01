@@ -19,8 +19,8 @@ Monominoes.fa.ICON = Monominoes.renders.I.extend({
   "buildItem": function(data,target) {
     var cls = "";
     var self,item,pivot;
-    var append = function(target,cls) {
-      return Komunalne.util.append(target,Monominoes.util.format("fa-{0}",cls));
+    var append = function(str,cls) {
+      return Komunalne.util.append(str,Monominoes.util.format("fa-{0}",cls));
     };
     
     this.config.def = this.config.def || {};
@@ -32,7 +32,7 @@ Monominoes.fa.ICON = Monominoes.renders.I.extend({
     self = this;
     pivot = {};
     Komunalne.util.forEach(["size","pull","animated","rotate","flip","icon"],function(val) {
-      pivot[val] = Monominoes.util.extractValue(self[val],self,data);
+      pivot[val] = Monominoes.util.extractValue(self[val],self,target,data);
     });
     
     cls = Komunalne.util.append("fa",item.attr("class"));
