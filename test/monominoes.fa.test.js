@@ -9,7 +9,7 @@ QUnit.test("Font Awesome renders", function(assert) {
   assert.ok(Monominoes.fa,"Monominoes fa container defined");
   while (i.hasNext()) {
     key = i.next();
-    render = new Monominoes.fa[key]()
+    render = new Monominoes.fa[key]();
     assert.ok(Monominoes.util.isRender(Monominoes.fa[key]),key + " render constructor against isRender test");
     assert.ok(Monominoes.util.isRender(render),key + " render instance against isRender test");
     assert.notOk(Monominoes.util.isRenderInstance(Monominoes.fa[key]),key + " constructor against isRenderInstance test");
