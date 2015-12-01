@@ -32,10 +32,12 @@ Monominoes.bs.GRID = Monominoes.renders.DIV.extend({
     this.cell.def.class = Monominoes.util.format("col-{0}-{1}",this.size,(12/this.cols));
     this.cell.extracss = this.gridcss.cols || "";
     this.cell.iterable = true;
+    this.cell.key = "col";
     
     this.config.children = [{
       "render": Monominoes.renders.DIV,
       "config": {
+        "key": "row",
         "def": { "class": "row" },
         "extracss": (this.gridcss.rows || ""),
         "iterable": true,
