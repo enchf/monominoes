@@ -5,6 +5,7 @@
 Monominoes.fa = {};
 
 Monominoes.fa.ICON = Monominoes.renders.I.extend({
+  "name": "FA_ICON",
   "icon": Monominoes.util.data, // Name from library (example: "camera-retro", without "fa"). Default is data itself.
   "size": "", // Add size: lg, 2x, 3x, 4x, 5x.  
   "fixed-width": false,

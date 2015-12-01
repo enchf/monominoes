@@ -16,3 +16,55 @@ QUnit.test("General Bootstrap test", function(assert) {
     assert.ok(Monominoes.util.isRenderInstance(render),key + " render instance against isRenderInstance test");
   }
 });
+
+QUnit.test("Bootstrap Grid System", function(assert) {
+  var render;
+  var about = {
+    "path": "data",
+    "children": [{ 
+      "render": M.bs.GRID, 
+      "config": {
+        "cols": { "num": 4, "size": "sm" },
+        "cell": {
+          "def": {
+            "attrs": { "data-content": M.util.property("content") }
+          },
+          "children": [{
+            "render": M.renders.DIV,
+            "config": { 
+              "def": { "class": "text-centered" }, 
+              "path": "icon", 
+              "children": [{ "render": M.fa.ICON, "size": "5x" }] 
+            }
+          },{
+            "render": M.renders.P,
+            "config": {
+              "def": { "class": "text-centered" },
+              "path": "name",
+              "text": M.util.data
+            }
+          }]
+        }
+      }
+    },{
+      "render": M.renders.P,
+      "config": {
+        "key": "message",
+        "def": { "class": "text-centered" }
+      }
+    }]
+  };
+  
+  aboutData = { 
+    "data": [
+      { "icon": "industry", "name": "A", "content": "First" },
+      { "icon": "cogs", "name": "B", "content": "Second" },
+      { "icon": "star-o", "name": "C", "content": "Third" },
+      { "icon": "line-chart", "name": "D", "content": "Fourth" }
+    ]
+  };
+  
+  render = new Monominoes.renders.DIV(about).render(aboutData,"#test-div");
+  assert.ok(Monominoes.util.isRenderInstance(render),"Bootstrap Grid instance is a render");
+  render.clear();
+});
