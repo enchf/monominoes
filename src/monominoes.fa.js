@@ -16,7 +16,7 @@ Monominoes.fa.ICON = Monominoes.renders.I.extend({
   "flip": "", // Choose between horizontal and vertical.
   "color": "", // Default existent.
   "background": "", // Default existent.
-  "buildItem": function(data) {
+  "buildItem": function(data,target) {
     var cls = "";
     var self,item,pivot;
     var append = function(target,cls) {
@@ -28,7 +28,7 @@ Monominoes.fa.ICON = Monominoes.renders.I.extend({
     this.config.def.style.color = (this.color || this.config.def.style.color);
     this.config.def.style["background-color"] = (this.background || this.config.def.style["background-color"]);
     
-    item = this.super.buildItem(data);
+    item = this.super.buildItem(data,target);
     self = this;
     pivot = {};
     Komunalne.util.forEach(["size","pull","animated","rotate","flip","icon"],function(val) {

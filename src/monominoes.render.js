@@ -83,7 +83,7 @@ Monominoes.Item.prototype.isDrawn = function() {
  * Draw the item.
  */
 Monominoes.Item.prototype.draw = function() {
-  this.item = this.render.buildItem(this.data);
+  this.item = this.render.buildItem(this.data, this);
   this.render.customize(this);
   if (this.container) this.container.append(this.item);
   this.drawChildren();
@@ -319,7 +319,7 @@ Monominoes.Render.prototype.clear = function() {
  * Takes the constructor configuration and builds the inner object, returning it.
  * It is limited to only create the underlying render object, not its children or the attachment to its container.
  */
-Monominoes.Render.prototype.buildItem = function(data) { 
+Monominoes.Render.prototype.buildItem = function(data,target) { 
   throw "M.Render.buildItem should be overriden by subclass Render";
 };
 

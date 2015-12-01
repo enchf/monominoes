@@ -4,7 +4,7 @@
 function createMock(tag) {
   return Monominoes.Render.extend({
     "postInit": function() { this.id = (this.id || "mock-" + (createMock.count++)); },
-    "buildItem": function(data) { return $(Monominoes.util.format("<{0}></{0}>",tag)).attr("id",this.id); },
+    "buildItem": function(data,target) { return $(Monominoes.util.format("<{0}></{0}>",tag)).attr("id",this.id); },
     "customize": function(item) { item.item.text(item.data); }
   });
 };
