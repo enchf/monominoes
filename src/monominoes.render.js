@@ -261,6 +261,17 @@ Monominoes.Render.prototype.render = function(data,container) {
 };
 
 /**
+ * Extracts render data from a remote location using URL, and renders the result.
+ * Returns a promise object, chainable for done, fail and always methods as per $ specification.
+ */
+Monominoes.Render.prototype.remote = function(url,container) {
+  var render = this.render.bind(this);
+  return $.getJSON(url,function(data) {
+    render(data,container);
+  });
+};
+
+/**
  * Updates the base global data of the render.
  */
 Monominoes.Render.prototype.updateGlobalData = function(data) {
