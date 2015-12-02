@@ -24,7 +24,7 @@ QUnit.test("Bootstrap Grid System", function(assert) {
     "children": [{ 
       "render": M.bs.GRID, 
       "config": {
-        "cols": { "num": 4, "size": "sm" },
+        "grid": { "sm": 4 },
         "cell": {
           "def": {
             "attrs": { "data-content": M.util.property("content") }

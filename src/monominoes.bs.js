@@ -11,25 +11,33 @@ Monominoes.bs = {};
 Monominoes.bs.GRID = Monominoes.renders.DIV.extend({
   "name": "BOOTSTRAP_GRID",
   "defaultcss": "container",
-  "cols": null, // Number of columns. Can be a number or an object of the form { "number": 1, "size": "sm" },
-                // to specify minimum grid size. Default values are sm for size and 1 for cols.
+  "grid": null, // Object with rules according to number of columns per screen size.
   "cell": null, // Configuration object for each of the items of the grid.
   "gridcss": null, // Special configuration for grid rows and cols in the form { "cols": "...", "rows": "..." }.
+  "buildGridSystem": function() {
+    var sizes = ["lg","md","sm","xs"];
+    var clazz = "";
+    var config = this.grid;
+    var max = 1;
+    sizes.forEach(function(size) {
+      var val = Math.abs(parseInt(config[size]));
+      if (!isNaN(val)) {
+        // TODO Fix to allow non multiple of 12 columns.
+        val = val % 12;
+        if (val == 0) val = 12;
+        Komunalne.util.append(clazz,Monominoes.util.format("col-{0}-{1}",size,val));
+        if (val > max) max = val;
+      }
+    });
+    this.cols = max;
+    return (clazz != "") ? clazz : "col-lg-1";
+  },
   "buildLayout": function() {
-    var cols,size;
     this.gridcss = (this.gridcss || {});
-    
-    size = Komunalne.util.path(this.cols,"size") || "sm";
-    size = Komunalne.util.isAnyOf(size,"lg","md","sm","xs") ? size : "sm";
-    cols = Komunalne.util.isInstanceOf(this.cols,"number") ? this.cols : Komunalne.util.path(this.cols,"num") || 1;
-    cols = (cols > 0 && cols < 13) ? parseInt(cols) : 1;
-    
-    this.cols = cols;
-    this.size = size;
+    this.grid = this.grid || { "lg": 1 };
     this.cell = this.cell || {};
     this.cell.def = this.cell.def || {};
-    // TODO Fix to allow non multiple of 12 columns.
-    this.cell.def.class = Monominoes.util.format("col-{0}-{1}",this.size,(12/this.cols));
+    this.cell.def.class = this.buildGridSystem();
     this.cell.extracss = this.gridcss.cols || "";
     this.cell.iterable = true;
     this.cell.key = "col";
