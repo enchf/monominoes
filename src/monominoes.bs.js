@@ -25,7 +25,7 @@ Monominoes.bs.GRID = Monominoes.renders.DIV.extend({
         // TODO Fix to allow non multiple of 12 columns.
         val = val % 12;
         if (val == 0) val = 12;
-        Komunalne.util.append(clazz,Monominoes.util.format("col-{0}-{1}",size,val));
+        clazz = Komunalne.util.append(clazz,Monominoes.util.format("col-{0}-{1}",size,(12/val)));
         if (val > max) max = val;
       }
     });
