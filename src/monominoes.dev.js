@@ -757,6 +757,7 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
   },
   "buildLayout": function() {
     var config,spancfg;
+    var seeker;
     
     // DIV configuration.
     this.config.def = (this.config.def || {});
@@ -774,10 +775,15 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
     this.imgLayout.def.class = Komunalne.util.append(this.imgLayout.def.class,"monominoes-imgblock");
     config = Komunalne.util.clone(this.imgLayout,{ "deep": true });
     
+    seeker = function(render) {
+      while (render.name != "IMAGE_BLOCK") render = render.parent;
+      return render;
+    };
+    
     // Error on load image.
     config.buildItem = function(data,target) {
   	  var item;
-      var base = this.getBaseRender();
+      var base = seeker(this);
   	  item = this.defaults.buildItem(data,target);
   	  item.error(base.errorHandler.bind(base));
   	  return item;
