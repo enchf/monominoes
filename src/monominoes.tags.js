@@ -171,7 +171,7 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
     return val;
   },
   "buildLayout": function() {
-    var config,spancfg,baseRender = this;
+    var config,spancfg;
     
     // DIV configuration.
     this.config.def = (this.config.def || {});
@@ -192,8 +192,9 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
     // Error on load image.
     config.buildItem = function(data,target) {
   	  var item;
+      var base = this.getBaseRender();
   	  item = this.defaults.buildItem(data,target);
-  	  item.error(baseRender.errorHandler.bind(baseRender));
+  	  item.error(base.errorHandler.bind(base));
   	  return item;
     };
     
@@ -214,14 +215,14 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
 Monominoes.renders.TEXT_BLOCK = Monominoes.renders.SPAN.extend({
   "name": "TEXT_BLOCK",
   "defaultcss": "monominoes-text-block",
-  "fontcolor": "white",
-  "background": "black",
+  "fontcolor": null,
+  "background": null,
   "bold": true,
   "buildLayout": function() {
     this.config.def = (this.config.def || {});
     this.config.def.style = (this.config.def.style || {});
-    this.config.def.style.color = this.fontcolor;
-    this.config.def.style["background-color"] = this.background;
+    if (this.fontcolor) this.config.def.style.color = this.fontcolor;
+    if (this.background) this.config.def.style["background-color"] = this.background;
     this.config.def.style["font-weight"] = this.bold === true ? "700" : "400";
     this.text = (this.text || Monominoes.util.data);
     this.super.buildLayout();

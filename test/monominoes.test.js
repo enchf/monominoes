@@ -1068,6 +1068,7 @@ QUnit.test("Image block render", function(assert) {
   assert.equal(child.item.css("vertical-align"),"middle","IMG is vertically centered");
   
   render.clear();
+  wait = assert.async();
   config = { 
     "align": "left",
     "valign": "bottom",
@@ -1076,7 +1077,13 @@ QUnit.test("Image block render", function(assert) {
     "extension": "jpg",
     "def": { 
       "style": { "border": "4px solid", "height": "200px" }
-    } 
+    },
+    "errorHandler": function(img) {
+      var val = this.defaults.errorHandler(img);
+      assert.strictEqual(child.item.attr("src"),"img/1.jpg","Image src updated after fail");
+      render.clear();
+      wait();
+    }
   };
   render = new Monominoes.renders.IMAGE_BLOCK(config).render(3,"#test-div");
   assert.equal(Komunalne.$.elementText((item = render.items[0]).item),"","No text is assigned to tag");
@@ -1089,12 +1096,6 @@ QUnit.test("Image block render", function(assert) {
   assert.equal(child.item.prop("tagName"),"IMG","Second child item is an IMG tag");
   assert.equal(child.item.attr("src"),"img/3.jpg","Image source is correctly set");
   assert.equal(child.item.css("vertical-align"),"bottom","IMG is vertically on bottom");
-  wait = assert.async();
-  setTimeout(function() { 
-    assert.strictEqual(child.item.attr("src"),"img/1.jpg","Image src updated after fail");
-    render.clear();
-    wait();
-  },200);
 });
 
 QUnit.test("Text block test", function(assert) {
@@ -1107,8 +1108,6 @@ QUnit.test("Text block test", function(assert) {
   assert.equal(Komunalne.$.elementText(item.item),"test","Text is assigned to tag");
   assert.equal(render.layout.children.length,0,"No children renders are set");
   assert.ok(item.item.hasClass("monominoes-text-block"),"Default class for text block is set");
-  assert.equal(item.item.css("color"),"rgb(255, 255, 255)","Color is set as white");
-  assert.equal(item.item.css("background-color"),"rgb(0, 0, 0)","Background color is set as black");
   assert.ok(item.item.css("font-weight") == "bold" || item.item.css("font-weight") == "700","Font is set as bold");
   assert.equal(item.item.css("text-align"),"center","SPAN text and items are centered");
   assert.equal(item.item.css("padding-top"),"8px","Vertical pad is set as default");
