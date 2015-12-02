@@ -92,8 +92,14 @@ Monominoes.util.bindFunctions = function(render,iterable) {
  */
 Monominoes.util.extractValue = function(object,render,target,data) {
   var getFromConfig = function(object,render,target,data) {
-    var d = object.path ? Komunalne.util.path(data,object.path) : data;
-    return object.handler ? object.handler.call(render,render,target,d) : Monominoes.util.extractValue(d,render,target);
+    var finaldata,source;
+    if ("path" in object) {
+      source = ("absolute" in object && object.absolute === true) ? render.data : data;
+      finaldata = Komunalne.util.path(source,object.path);
+    } else finaldata = data;
+    return object.handler ? 
+      object.handler.call(render,render,target,finaldata) : 
+      Monominoes.util.extractValue(finaldata,render,target,finaldata);
   };
   return object == null ? null :
          Komunalne.util.isAnyOf(typeof object,"string","boolean","number") ? object :

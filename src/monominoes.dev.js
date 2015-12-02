@@ -107,8 +107,14 @@ Monominoes.util.bindFunctions = function(render,iterable) {
  */
 Monominoes.util.extractValue = function(object,render,target,data) {
   var getFromConfig = function(object,render,target,data) {
-    var d = object.path ? Komunalne.util.path(data,object.path) : data;
-    return object.handler ? object.handler.call(render,render,target,d) : Monominoes.util.extractValue(d,render,target);
+    var finaldata,source;
+    if ("path" in object) {
+      source = ("absolute" in object && object.absolute === true) ? render.data : data;
+      finaldata = Komunalne.util.path(source,object.path);
+    } else finaldata = data;
+    return object.handler ? 
+      object.handler.call(render,render,target,finaldata) : 
+      Monominoes.util.extractValue(finaldata,render,target,finaldata);
   };
   return object == null ? null :
          Komunalne.util.isAnyOf(typeof object,"string","boolean","number") ? object :
@@ -730,7 +736,7 @@ Monominoes.renders.IMAGE_BLOCK = Monominoes.renders.DIV.extend({
   "sourceFn": function(render,target,data) { // Data will be the image name.
     var dir,ext,name,dot,slash,path;
     if (data != null) {
-      dir = (Monominoes.util.extractValue(this.sourceDir,this,data) || "");
+      dir = (Monominoes.util.extractValue(this.sourceDir,this,target,data) || "");
       ext = (this.extension || "");
       slash = dir[dir.length-1];
       slash = dir != "" && slash !== "/" && slash !=="\\" ? "/" : "";
