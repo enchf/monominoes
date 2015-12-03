@@ -92,7 +92,7 @@ Monominoes.renders.TAG = Monominoes.Render.extend({
     var render = this;
     var data = config.data; delete config.data;
     var processVfd = function(val,key,arr) { arr[key] = vfd(val,render,target,data); };
-    var bindEvent = function(val,key,arr) { arr[key] = val.bind(render); };
+    var bindEvent = function(val,key,arr) { arr[key] = val.bind(render,target); };
     
     config.class = Komunalne.util.append(vfd(config.class,this,target,data),vfd(config.extracss,this,target,data));
     delete config.extracss;

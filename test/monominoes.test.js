@@ -855,13 +855,13 @@ QUnit.test("Tag render creation and property validation", function(assert) {
     assert.ok(item.item.hasClass("custom-class"),"Custom class is assigned in custom object of " + msg);
     assert.equal(Komunalne.$.elementText(item.item),"Custom text","Text in config overrides the one in def for " + msg);
     
-    fn = function(event) { 
+    fn = function(item) { 
       count++; 
       assert.ok(Monominoes.util.isRender(this),"Event handler scope is a render object for " + msg);
       assert.equal(this.name,i.currentKey(),"Event handler scope is a render object for " + msg);
-      assert.ok(event,"Event object is passed as argument for " + msg);
-      assert.ok(event.target,"Event target is passed as argument for " + msg);
-      assert.equal(event.target.tagName,i.currentKey(),"Event tag is " + i.currentKey());
+      assert.ok(item,"Item object is passed as argument for " + msg);
+      assert.ok(Komunalne.util.isInstanceOf(item,Monominoes.Item),"Item object is an instance of Item for " + msg);
+      assert.equal(item.item.prop("tagName"),i.currentKey(),"Event tag is " + i.currentKey());
     };
     
     instance = Render({
