@@ -364,6 +364,18 @@ Monominoes.Render.prototype.renderByKey = function(key) {
   return render;
 };
 
+Monominoes.Render.prototype.inspectRender = function(key) {
+  var render = this;
+  var token;
+  var i = new Komunalne.helper.Iterator(key.split("."));
+  while (i.hasNext()) {
+    token = i.next();
+    render = (render.getMappedRender(token) || render.getRenderByIndex(token));
+    if (!render) break;
+  }
+  return render == null ? null : render;
+};
+
 /**
  * Gets a child item by its index, getting sub-items using dot-notation.
  * Iterates over the render layout, meaning that items of an iterable child 

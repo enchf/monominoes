@@ -810,6 +810,54 @@ QUnit.test("Item retrieval by index", function(assert) {
   assert.strictEqual(render.getItemByIndex("1.0.0"),null,"Retrieving unexisting child of iterable second child");
 });
 
+QUnit.test("Render retrieval by combined index/key", function(assert) {
+  var config = {
+    "children": [{
+      "render": Monominoes.renders.DIV,
+      "config": {
+        "key": "modal",
+        "id": "modal-div",
+        "children": [{
+          "render": Monominoes.renders.DIV,
+          "config": {
+            "id": "modal-subdiv",
+            "children": [{
+              "render": Monominoes.renders.DIV,
+              "config": {
+                "id": "modal-subsubdiv",
+                "children": [{
+                  "render": Monominoes.renders.DIV,
+                  "config": {
+                    "key": "submodal",
+                    "id": "modal-subsubsubdiv"
+                  }
+                }]
+              }
+            }]
+          }
+        }]
+      }
+    }]
+  };
+  
+  var render = new Monominoes.renders.DIV(config).render({});
+  var aux;
+  
+  assert.ok(Komunalne.util.isFunction(Monominoes.Render.prototype.inspectRender),"Function inspectRender exists");
+  assert.strictEqual(render.inspectRender("fakekey"),null,"Non existing key");
+  assert.ok((aux = render.inspectRender("modal")) != null,"Existing key");
+  assert.equal(aux.id, "modal-div", "Correct render for existing key");
+  assert.strictEqual(render.inspectRender("modal.1.key.2"),null,"Non existing sub index");
+  assert.strictEqual(render.inspectRender("1"),null,"Non existing index");
+  assert.ok((aux = render.inspectRender("modal.0.0")) != null,"Existing sub index");
+  assert.equal(aux.id, "modal-subsubdiv", "Correct render for existing key");
+  assert.strictEqual(render.inspectRender("modal.0.1"),null,"Non existing sub-index");
+  assert.ok((aux = render.inspectRender("modal.0.0.submodal")) != null,"Existing sub key");
+  assert.equal(aux.id, "modal-subsubsubdiv", "Correct render for existing key");
+  assert.strictEqual(render.inspectRender("modal.0.0.submodal.fake"),null,"Non existing sub key");
+  assert.strictEqual(render.inspectRender("modal.0.0.submodal.0"),null,"Non existing sub index for existing sub key");
+});
+
 QUnit.test("Tag renders default settings",function(assert) {
   var c,r,t;
   var clazz;
