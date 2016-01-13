@@ -1,0 +1,64 @@
+.monominoes {}
+
+.monominoes-root {
+  padding: 0;
+  width: 100%;
+}
+
+.monominoes .container {
+  max-width: 100%;
+}
+
+.monominoes-simple {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Renderers */
+.monominoes-h2 {
+  text-align: center;
+  letter-spacing: 4px;
+  font-size: 2.25em;
+  font-weight: 700;
+  color: black;
+  text-transform: uppercase;
+}
+
+.monominoes-h4 {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  color: black;
+}
+
+.monominoes-list {
+}
+
+.monominoes-item {
+}
+
+.monominoes-labeled {
+}
+
+.monominoes-img-helper {
+  height: 100%;
+  width: 0px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.monominoes-img {
+  display: inline-block;
+  max-height: 100%;
+}
+
+.monominoes-text-block {
+  display: block;
+  text-align: center;
+  padding: 8px 10px;
+  border-radius: 3px;
+  -o-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  font-weight: 700;
+}
