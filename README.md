@@ -1,32 +1,34 @@
 # Monominoes
 
-Simplified content render for HTML5 catalogs.
-It uses Bootstrap Grid System and is coded in Javascript, supported by jQuery. 
+Javascript templates through configuration files.
+Current implementation produces HTML structures through jQuery.
+Renders for HTML5 libraries, like Bootstrap, are in progress.
 The quality assurance testing is supported by QUnit.
-
-## Applicable to:
-
-* Non-frequent updated lists (list of services, clients, packages) 
-* Frequently and big data sets (catalog of products, libraries)
 
 ## Provides:
 
 * Quick and easy to configure interface.
-* Integrates with any JSON hierarchical data.
+* Useful to create reusable components and templates.
+* Each template can work as a plugin, adaptable in sizes or look-and-feel using CSS.
+* Renders content from any JSON hierarchical data.
 * Pre-defined item renderer functions.
 * Freedom to add new configurable and adaptable renderers.
 
 ## Dependencies
 
 * jQuery (api.jquery.com)
-* jQuery validator (jqueryvalidation.org)
-* Bootstrap (getbootstrap.com)
 * Komunalne.js (github.com/enchf/komunalne.js)
+
+## Libraries components
+
+* Bootstrap (getbootstrap.com)
+* Fontawesome (fontawesome.io)
+* Mixitup (requires license, mixitup.kunkalabs.com)
 
 ## Directory structure:
 
-* dist/ - Official distribution.
+* dist/ - Official distributions.
 * src/ - Code in progress.
-* samples/ - Live samples of usage.
 * test/ - QUnit test cases.
+* samples/ - Live samples of usage.
 * docs/ - Documentation.
