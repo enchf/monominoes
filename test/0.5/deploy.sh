@@ -1,26 +1,20 @@
 # Path is obtained from the single-line text file "test.target".
 path="$(cat test.target)"
-MODULES="fa bs"
-cd ../src/
-sh build.sh
-cp monominoes.dev.js $path
-cp monominoes.css $path
-for M in $MODULES
-do
-  cp monominoes.$M.js $path
+
+cd ../../dist/0.5/
+cp monominoes.min.js $path
+cp monominoes.min.css $path
+
+cd ../../test/0.5/
+for f in *.{html,js,css}; do
+  cp $f $path
 done
 
-
-cd ../test/
-cp index.html $path
-cp test.css $path
-cp monominoes.test.js $path
-for M in $MODULES
-do
-  cp monominoes.$M.test.js $path
-done
 if [ ! -d "$path/img" ]; then
   mkdir $path/img
 fi
-cp 1.jpg $path/img
-cp 2.jpg $path/img
+
+cd ../res/
+for f in *.jpg; do
+  cp $f $path/img
+done
