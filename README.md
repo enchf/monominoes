@@ -1,6 +1,6 @@
 # Monominoes
 
-Javascript templates through configuration files.
+Javascript dynamic templates through JSON objects.
 Current implementation produces HTML structures through jQuery.
 Renders for HTML5 libraries, like Bootstrap, are in progress.
 The quality assurance testing is supported by QUnit.
