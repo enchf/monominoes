@@ -1052,7 +1052,7 @@ QUnit.test("List render instantiation and customization", function(assert) {
 
 QUnit.test("Image block render", function(assert) {
   var render,item,data,child,wait;
-  var image = "img/1.jpg";
+  var image = "res/1.jpg";
   
   render = new Monominoes.renders.IMAGE_BLOCK().render(image,"#test-div");
   assert.equal(render.items.length,1,"Unique parent item for Image Block");
@@ -1074,7 +1074,7 @@ QUnit.test("Image block render", function(assert) {
   assert.equal(child.item.css("vertical-align"),"middle","IMG is vertically centered");
   
   render.clear();
-  config = { "sourceDir": "img", "extension": "jpg", 
+  config = { "sourceDir": "res", "extension": "jpg", 
              "def": { "style": { "border": "4px solid red", "height": "200px" } } };
   render = new Monominoes.renders.IMAGE_BLOCK(config).render(2,"#test-div");
   assert.equal(Komunalne.$.elementText((item = render.items[0]).item),"","No text is assigned to tag");
@@ -1091,11 +1091,11 @@ QUnit.test("Image block render", function(assert) {
   assert.equal(child.item.css("vertical-align"),"middle","SPAN is vertically centered");
   assert.ok((child = item.children[1][0]).item.hasClass("monominoes-imgblock"),"IMG class is set");
   assert.equal(child.item.prop("tagName"),"IMG","Second child item is an IMG tag");
-  assert.equal(child.item.attr("src"),"img/2.jpg","Image source is correctly set");
+  assert.equal(child.item.attr("src"),"res/2.jpg","Image source is correctly set");
   assert.equal(child.item.css("vertical-align"),"middle","IMG is vertically centered");
   
   render.clear();
-  config = { "sourceDir": "img", "extension": "jpg", 
+  config = { "sourceDir": "res", "extension": "jpg", 
              "def": { "style": { "border": "4px solid red", "height": "200px" } } };
   render = new Monominoes.renders.IMAGE_BLOCK(config).render(2,"#test-div");
   assert.equal(Komunalne.$.elementText((item = render.items[0]).item),"","No text is assigned to tag");
@@ -1112,7 +1112,7 @@ QUnit.test("Image block render", function(assert) {
   assert.equal(child.item.css("vertical-align"),"middle","SPAN is vertically centered");
   assert.ok((child = item.children[1][0]).item.hasClass("monominoes-imgblock"),"IMG class is set");
   assert.equal(child.item.prop("tagName"),"IMG","Second child item is an IMG tag");
-  assert.equal(child.item.attr("src"),"img/2.jpg","Image source is correctly set");
+  assert.equal(child.item.attr("src"),"res/2.jpg","Image source is correctly set");
   assert.equal(child.item.css("vertical-align"),"middle","IMG is vertically centered");
   
   render.clear();
@@ -1120,29 +1120,29 @@ QUnit.test("Image block render", function(assert) {
   config = { 
     "align": "left",
     "valign": "bottom",
-    "defaultImg": "img/1.jpg",
-    "sourceDir": "img",
+    "defaultImg": "res/1.jpg",
+    "sourceDir": "res",
     "extension": "jpg",
     "def": { 
       "style": { "border": "4px solid", "height": "200px" }
     },
     "errorHandler": function(img) {
       var val = this.defaults.errorHandler(img);
-      assert.strictEqual(child.item.attr("src"),"img/1.jpg","Image src updated after fail");
+      assert.strictEqual(child.item.attr("src"),"res/1.jpg","Image src updated after fail");
       render.clear();
       wait();
     }
   };
   render = new Monominoes.renders.IMAGE_BLOCK(config).render(3,"#test-div");
   assert.equal(Komunalne.$.elementText((item = render.items[0]).item),"","No text is assigned to tag");
-  assert.equal(render.defaultImg,"img/1.jpg","Default img is set on render");
+  assert.equal(render.defaultImg,"res/1.jpg","Default img is set on render");
   assert.equal(item.item.css("text-align"),"left","DIV text and items are left aligned");
   assert.ok((child = item.children[0][0]).item.hasClass("monominoes-spanimgblock"),"SPAN class is set");
   assert.equal(child.item.prop("tagName"),"SPAN","First child item is a SPAN tag");
   assert.equal(child.item.css("vertical-align"),"bottom","SPAN is vertically on bottom");
   assert.ok((child = item.children[1][0]).item.hasClass("monominoes-imgblock"),"IMG class is set");
   assert.equal(child.item.prop("tagName"),"IMG","Second child item is an IMG tag");
-  assert.equal(child.item.attr("src"),"img/3.jpg","Image source is correctly set");
+  assert.equal(child.item.attr("src"),"res/3.jpg","Image source is correctly set");
   assert.equal(child.item.css("vertical-align"),"bottom","IMG is vertically on bottom");
 });
 
