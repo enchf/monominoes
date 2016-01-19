@@ -1,8 +1,13 @@
 #!/bin/sh
-MODULES="util render tags extra"
-cat monominoes.init.js > monominoes.dev.js
-for M in $MODULES
+cd $1
+source dist.config
+ks=""
+for k in $(cat dist.config | awk 'BEGIN {FS="="}; {print $1}')
 do
-  echo "" >> monominoes.dev.js
-  cat monominoes.$M.js >> monominoes.dev.js
+  echo "" > monominoes.$k.js
+  for m in $(eval "echo \$$k")
+  do
+    cat monominoes.$m.js >> monominoes.$k.js
+    echo "" >> monominoes.$k.js
+  done
 done
