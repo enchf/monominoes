@@ -26,8 +26,16 @@ do
   done
   if [ ! -d "$p/res" ]; then mkdir "$p/res"; fi
   cp ../res/* $p/res
+  
   cd ../../$l
-  if [ $l = "src" ]; then sh build.sh $i; fi
+  if [ $l = "src" ]
+    then 
+      if [ -f "$i/custom.sh" ]
+        then sh $i/custom.sh;
+        else sh build.sh $i;
+      fi
+  fi
+  
   cd $i
   cp monominoes.all$m.js $p/monominoes.js
   cp monominoes$m.css $p/monominoes.css

@@ -1,6 +1,7 @@
 # Ignoring MacOS files
 **/.DS_Store
 
-# Ignoring Eclipse files
+# Ignoring Editor files
 .settings
 .project
+**/.brackets.json
