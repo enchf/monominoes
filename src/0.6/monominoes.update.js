@@ -96,3 +96,53 @@ Monominoes.bs.MODAL = Monominoes.renders.DIV.extend({
     this.super.buildLayout();
   }
 });
+
+Monominoes.bs.DROPDOWN = Monominoes.renders.DIV.extend({
+  "name": "BOOTSTRAP_DROPDOWN",
+  "id": "",    // Dropdown id.
+  "label": "", // Dropwdown label.
+  "labelProperty": "", // Label property to place in the dropdown list for each of the elements.
+  "selectHandler": null, // Function to be executed when an element is selected.
+  "selected": null, // Item selected.
+  "buildLayout": function() {
+    this.config.children = [{
+      "render": Monominoes.renders.BUTTON,
+      "config": {
+        "def": {
+          "class": "btn btn-default dropdown-toggle",
+          "attrs": { 
+            "type": "button", "id": this.id, "data-toggle": "dropdown", 
+            "aria-haspopup": true, "aria-expanded": true
+          }
+        },
+        "children": [ new Monominoes.renders.SPAN({ "def": { "class": "caret" } }) ],
+        "text": this.label
+      }
+    },{
+      "render": Monominoes.renders.LIST,
+      "config": {
+        "def": { 
+          "class": "dropdown-menu",
+          "attrs": { "aria-labelledby": this.id }
+        },
+        "itemsLayout": {
+          "children": [{
+            "render": Monominoes.renders.A,
+            "config": {
+              "text": Monominoes.util.property(this.labelProperty),
+              "def": { 
+                "attrs": { "href": "#" },
+                "events": {
+                  "click": function(item,event) {
+                    this.getBaseRender().selected = item;
+                  }
+                }
+              }
+            }
+          }]
+        }
+      }
+    }];
+    this.super.buildLayout();
+  }
+});
