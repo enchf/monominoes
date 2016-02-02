@@ -5,6 +5,15 @@ Monominoes.bs.MODAL = Monominoes.renders.DIV.extend({
   "size": "",
   "footer": null, // Layout to be applied to the modal footer.
   "title": "", // Modal window header title.
+  "show": function(data,target) {
+    var container = null;
+    if (this.isBuilt()) {
+      container = this.items[0].container;
+      this.clear();
+    }
+    this.render(data,target || container);
+    this.items[0].item.modal('show');
+  },
   "buildLayout": function() {
     var size;
     var children;
@@ -57,7 +66,7 @@ Monominoes.bs.MODAL = Monominoes.renders.DIV.extend({
       "render": Monominoes.renders.DIV,
       "config": {
         "def": { "class": "modal-body" },
-        "children": [ this.cell ]
+        "children": Komunalne.util.isArray(this.cell) ? this.cell : [ this.cell ]
       }
     }];
     
@@ -65,7 +74,7 @@ Monominoes.bs.MODAL = Monominoes.renders.DIV.extend({
       this.children.push({
         "render": Monominoes.renders.DIV,
         "config": {
-          "def": { "class". "modal-footer" },
+          "def": { "class": "modal-footer" },
           "children": Komunalne.util.isArray(this.footer) ? this.footer : [ this.footer ]
         }
       });
