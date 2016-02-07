@@ -102,8 +102,11 @@ Monominoes.bs.DROPDOWN = Monominoes.renders.DIV.extend({
   "id": "",    // Dropdown id.
   "label": "", // Dropwdown label.
   "labelProperty": "", // Label property to place in the dropdown list for each of the elements.
-  "selectHandler": null, // Function to be executed when an element is selected.
+  "selectHandler": function(item,event) {}, // Function to be executed when an element is selected.
   "selected": null, // Item selected.
+  "getSelected": function() {
+    return this.selected;
+  },
   "buildLayout": function() {
     this.config.children = [{
       "render": Monominoes.renders.BUTTON,
@@ -134,7 +137,9 @@ Monominoes.bs.DROPDOWN = Monominoes.renders.DIV.extend({
                 "attrs": { "href": "#" },
                 "events": {
                   "click": function(item,event) {
-                    this.getBaseRender().selected = item;
+                    var base = this.getBaseRender();
+                    base.selected = item;
+                    base.selectHandler(item,event);
                   }
                 }
               }
