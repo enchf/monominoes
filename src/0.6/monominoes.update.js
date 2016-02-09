@@ -100,14 +100,23 @@ Monominoes.bs.MODAL = Monominoes.renders.DIV.extend({
 Monominoes.bs.DROPDOWN = Monominoes.renders.DIV.extend({
   "name": "BOOTSTRAP_DROPDOWN",
   "id": "",    // Dropdown id.
-  "label": "", // Dropwdown label.
-  "labelProperty": "", // Label property to place in the dropdown list for each of the elements.
-  "selectHandler": function(item,event) {}, // Function to be executed when an element is selected.
+  "placeholder": "", // Dropwdown placeholder.
+  "options": null, // Explicit set of options.
+  "labelProperty": Monominoes.util.data, // Label property to place in the dropdown list for each of the elements.
+  "valueProperty": Monominoes.util.data, // Property to be used as value in the form, through the underlying hidden input.
+  "fieldName": "", // Property or value to be used as name of the hidden input.
   "selected": null, // Item selected.
+  "selectHandler": function(item,event) {}, // Function to be executed when an element is selected.
   "getSelected": function() {
     return this.selected;
+  },                                                  
+  "extractData": function(data) {
+    return Komunalne.util.isArray(this.options) ? this.options : this.super.extractData(data);
   },
   "buildLayout": function() {
+    this.config.def = this.config.def || {};
+    this.config.def.style = this.config.def.style || {};
+    this.config.def.style.position = "relative";
     this.config.children = [{
       "render": Monominoes.renders.BUTTON,
       "config": {
@@ -119,7 +128,13 @@ Monominoes.bs.DROPDOWN = Monominoes.renders.DIV.extend({
           }
         },
         "children": [ new Monominoes.renders.SPAN({ "def": { "class": "caret" } }) ],
-        "text": this.label
+        "text": this.placeholder
+      }
+    },{
+      "render": Monominoes.renders.INPUT,
+      "config": {
+        "def": { "attrs": { "type": "hidden", "name": this.fieldName } },
+        "key": "hidden"
       }
     },{
       "render": Monominoes.renders.LIST,
@@ -132,14 +147,31 @@ Monominoes.bs.DROPDOWN = Monominoes.renders.DIV.extend({
           "children": [{
             "render": Monominoes.renders.A,
             "config": {
-              "text": Monominoes.util.property(this.labelProperty),
+              "text": Komunalne.util.isInstanceOf(this.labelProperty,"string") ? 
+                      Monominoes.util.property(this.labelProperty) : Monominoes.util.data,
               "def": { 
                 "attrs": { "href": "#" },
                 "events": {
                   "click": function(item,event) {
-                    var base = this.getBaseRender();
-                    base.selected = item;
-                    base.selectHandler(item,event);
+                    var value,visible,dropdown,dditem;
+                    
+                    dropdown = this.parent.parent.parent;
+                    dropdown.selected = item.data;
+                    dropdown.selectHandler(item,event);
+                    
+                    dditem = item.parent.parent.parent;
+                    
+                    value = Komunalne.util.isInstanceOf(dropdown.valueProperty,"string") ? 
+                            Monominoes.util.property(dropdown.valueProperty)(item.data) : 
+                            dropdown.valueProperty(this,item,item.data);
+                    
+                    visible = Komunalne.util.isInstanceOf(dropdown.labelProperty,"string") ? 
+                            Monominoes.util.property(dropdown.labelProperty)(item.data) : 
+                            dropdown.labelProperty(this,item,item.data);
+                    
+                    // Sets the value to the hidden element and put the visible value into the combo caret.
+                    dditem.children[1][0].item.val(value);
+                    dditem.children[0][0].item.text(visible);
                   }
                 }
               }
