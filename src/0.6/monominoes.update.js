@@ -97,6 +97,163 @@ Monominoes.bs.MODAL = Monominoes.renders.DIV.extend({
   }
 });
 
+Monominoes.bs.CAROUSEL = Monominoes.renders.DIV.extend({
+  "name": "BOOTSTRAP_CAROUSEL",
+  "id": "", // Carousel ID.
+  "image": null,
+  "title": null,
+  "interval": "5000",
+  "slideText": null,  // Each of image, title and slideText is a configuration file in the form:
+                      // { 
+                      //    "property": String (path) or function for the data to be rendered.
+                      //    "cell": (optional) Sub render to be used as children of the item. 
+                      //            Applicable only for title and slideText.
+                      //    "def": Monominoes item definition to apply to the container tag.
+                      // }
+  "buildLayout": function() {
+    var inner, indicators, left, right;
+    var extract = Monominoes.util.extractValue;
+    
+    this.config.def = this.config.def || {};
+    this.config.def.attrs = this.config.def.attrs || {};
+    this.config.def.attrs["data-ride"] = "carousel";
+    this.config.def.attrs["data-interval"] = this.interval;
+    this.config.def.attrs.id = this.id;
+    this.config.def.class = (extract(this.config.def.class) || "") + "carousel slide";
+    
+    <div class="carousel-inner" role="listbox">
+      <div class="item active">
+        <span></span><img src="img/welcome.jpg" alt="Rumorosa Blues Band">
+        <div class="carousel-caption">
+          <h3>Rumorosa Blues Band</h3>
+          <p>"Paz y Blues"<br>
+          Bienvenidos a nuestro sitio</p>
+        </div>
+      </div>
+      <div class="item">
+        <span></span><img src="img/start.jpg" alt="T&oacute;mese poco a poco">
+        <div class="carousel-caption">
+          <h3>T&oacute;mese Poco a Poco</h3>
+          <p>Es la nueva producción de Rumorosa Blues Band<br>
+          "Cada tema es una experiencia diferente para tus sentidos"</p>
+        </div>
+      </div>
+    </div>
+                    
+    inner = {
+      "render": Monominoes.renders.DIV,
+      "config": {
+        "def": {
+          "class": "carousel-inner",
+          "attrs": { "role": "listbox" }
+        },
+        "children": [{
+          "render": Monominoes.renders.DIV,
+          "config": {
+            "iterable": true,
+            "def": { 
+              "class": function(r,t,d) { return "item" + (t.index == 0 ? " active" : ""); }
+            },
+            "children": [{
+              "render": Monominoes.renders.IMG,
+              "config": {
+              }
+            },{
+              "render": Monominoes.renders.DIV,
+              "config": {
+                "def": { "class": "carousel-caption" },
+                "children": [{
+                  "render": Monominoes.renders.H3,
+                  "config": {}
+                },{
+                  "render": Monominoes.renders.P,
+                  "config": {}
+                }]
+              }
+            }]
+          }
+        }]
+      }
+    };
+    
+    indicators = {
+      "render": Monominoes.renders.LIST,
+      "config": {
+        "ordered": true,
+        "def": { "class": "carousel-indicators" },
+        "itemsLayout": {
+          "def": {
+            "attrs": { "data-target": "#" + this.id, "data-slide-to": Monominoes.util.property("index") },
+            "class": function(r,t,d) { return d.active ? "active" : ""; }
+          }
+        },
+        "extractData": function(data) {
+          var indicatorArray = [];
+          
+          for (var x in data) {
+            indicatorArray.push({ "index": x, "active": x == 0 });
+          }
+          
+          return indicatorArray;
+        }
+      }
+    };
+    
+    left = {
+      "render": Monominoes.renders.A,
+      "config": {
+        "def": { 
+          "class": "left carousel-control",
+          "attrs": { "href": "#" + this.id, "role": "button", "data-slide": "prev" }
+        },
+        "children": [{
+          "render": Monominoes.renders.SPAN,
+          "config": {
+            "def": { 
+              "class": "glyphicon glyphicon-chevron-left",
+              "attrs": { "aria-hidden": "true" }
+            }
+          }
+        },{
+          "render": Monominoes.renders.SPAN,
+          "config": {
+            "def": { "class": "sr-only" },
+            "text": "Previous"
+          }
+        }]
+      }
+    };
+    
+    right = {
+      "render": Monominoes.renders.A,
+      "config": {
+        "def": { 
+          "class": "right carousel-control",
+          "attrs": { "href": "#" + this.id, "role": "button", "data-slide": "next" }
+        },
+        "children": [{
+          "render": Monominoes.renders.SPAN,
+          "config": {
+            "def": { 
+              "class": "glyphicon glyphicon-chevron-right",
+              "attrs": { "aria-hidden": "true" }
+            }
+          }
+        },{
+          "render": Monominoes.renders.SPAN,
+          "config": {
+            "def": { "class": "sr-only" },
+            "text": "Next"
+          }
+        }]
+      }
+    };
+    
+    this.config.children = [ inner, indicators, left, right ];
+    this.super.buildLayout();
+  }
+});
+
 Monominoes.bs.DROPDOWN = Monominoes.renders.DIV.extend({
   "name": "BOOTSTRAP_DROPDOWN",
   "id": "",    // Dropdown id.
