@@ -103,16 +103,15 @@ Monominoes.bs.CAROUSEL = Monominoes.renders.DIV.extend({
   "image": null, // If this config property not present, data itself will be used as the "src" attribute of the tag.
   "title": null,
   "interval": "5000",
-  "slideText": null,  // Each of image, title and slideText is a configuration file in the form:
+  "slideText": null,  // Each of image, title and slideText is a standard Monominoes config object, as below:
                       // { 
-                      //    "property": String (path) or function for the data to be rendered.
-                      //    "cell": (optional) Sub render to be used as children of the item. 
-                      //            Applicable only for title and slideText.
+                      //    "path": String (path) or function for the data to be rendered.
+                      //    "children": [ ... sub items ... ]
                       //    "def": Monominoes item definition to apply to the container tag.
+                      //    "text": Text definition.
                       // }
   "buildLayout": function() {
     var inner, indicators, left, right;
-    var imgConfig, titleConfig, textConfig;
     var hasTextProperties, textProperties;
     var extract = Monominoes.util.extractValue;
     
@@ -124,27 +123,6 @@ Monominoes.bs.CAROUSEL = Monominoes.renders.DIV.extend({
     this.config.def.class = (extract(this.config.def.class) || "") + "carousel slide";
     
     hasTextProperties = this.image && (this.title || this.slideText);
-    imgConfig = {};
-    
-    if (this.image) {
-      imgConfig.path = this.image.property;
-      imgConfig.def = this.image.def || {};
-      imgConfig.def.attrs = imgConfig.def.attrs || {};
-      imgConfig.def.attrs.src = imgConfig.def.attrs.src || Monominoes.util.data;
-    } else {
-      imgConfig.def = { "attrs": { "src": Monominoes.util.data } }
-    }
-        
-    <div class="carousel-inner" role="listbox">
-      <div class="item active">
-        <span></span><img src="img/welcome.jpg" alt="Rumorosa Blues Band">
-        <div class="carousel-caption">
-          <h3>Rumorosa Blues Band</h3>
-          <p>"Paz y Blues"<br>
-          Bienvenidos a nuestro sitio</p>
-        </div>
-      </div>
-    </div>
                     
     inner = {
       "render": Monominoes.renders.DIV,
@@ -162,7 +140,7 @@ Monominoes.bs.CAROUSEL = Monominoes.renders.DIV.extend({
             },
             "children": [{
               "render": Monominoes.renders.IMG,
-              "config": imgConfig
+              "config": this.image || { "def": { "attrs": { "src": Monominoes.util.data } } }
             }]
           }
         }]
@@ -174,15 +152,24 @@ Monominoes.bs.CAROUSEL = Monominoes.renders.DIV.extend({
         "render": Monominoes.renders.DIV,
         "config": {
           "def": { "class": "carousel-caption" },
-          "children": [{
-            "render": Monominoes.renders.H3,
-            "config": titleConfig
-          },{
-            "render": Monominoes.renders.P,
-            "config": textConfig
-          }]
+          "children": []
         }
       };
+      
+      if (this.title) {
+        textProperties.config.children.push({
+          "render": Monominoes.renders.H3,
+          "config": this.title
+        });
+      }
+      
+      if (this.slideText) {
+        textProperties.config.children.push({
+          "render": Monominoes.renders.P,
+          "config": this.slideText
+        });
+      }
+      
       inner.config.children.config.children.push(textProperties);
     }
     
