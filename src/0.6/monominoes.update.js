@@ -100,7 +100,7 @@ Monominoes.bs.MODAL = Monominoes.renders.DIV.extend({
 Monominoes.bs.CAROUSEL = Monominoes.renders.DIV.extend({
   "name": "BOOTSTRAP_CAROUSEL",
   "id": "", // Carousel ID.
-  "image": null,
+  "image": null, // If this config property not present, data itself will be used as the "src" attribute of the tag.
   "title": null,
   "interval": "5000",
   "slideText": null,  // Each of image, title and slideText is a configuration file in the form:
@@ -112,6 +112,8 @@ Monominoes.bs.CAROUSEL = Monominoes.renders.DIV.extend({
                       // }
   "buildLayout": function() {
     var inner, indicators, left, right;
+    var imgConfig, titleConfig, textConfig;
+    var hasTextProperties, textProperties;
     var extract = Monominoes.util.extractValue;
     
     this.config.def = this.config.def || {};
@@ -121,6 +123,18 @@ Monominoes.bs.CAROUSEL = Monominoes.renders.DIV.extend({
     this.config.def.attrs.id = this.id;
     this.config.def.class = (extract(this.config.def.class) || "") + "carousel slide";
     
+    hasTextProperties = this.image && (this.title || this.slideText);
+    imgConfig = {};
+    
+    if (this.image) {
+      imgConfig.path = this.image.property;
+      imgConfig.def = this.image.def || {};
+      imgConfig.def.attrs = imgConfig.def.attrs || {};
+      imgConfig.def.attrs.src = imgConfig.def.attrs.src || Monominoes.util.data;
+    } else {
+      imgConfig.def = { "attrs": { "src": Monominoes.util.data } }
+    }
+        
     <div class="carousel-inner" role="listbox">
       <div class="item active">
         <span></span><img src="img/welcome.jpg" alt="Rumorosa Blues Band">
@@ -128,14 +142,6 @@ Monominoes.bs.CAROUSEL = Monominoes.renders.DIV.extend({
           <h3>Rumorosa Blues Band</h3>
           <p>"Paz y Blues"<br>
           Bienvenidos a nuestro sitio</p>
-        </div>
-      </div>
-      <div class="item">
-        <span></span><img src="img/start.jpg" alt="T&oacute;mese poco a poco">
-        <div class="carousel-caption">
-          <h3>T&oacute;mese Poco a Poco</h3>
-          <p>Es la nueva producción de Rumorosa Blues Band<br>
-          "Cada tema es una experiencia diferente para tus sentidos"</p>
         </div>
       </div>
     </div>
@@ -152,29 +158,33 @@ Monominoes.bs.CAROUSEL = Monominoes.renders.DIV.extend({
           "config": {
             "iterable": true,
             "def": { 
-              "class": function(r,t,d) { return "item" + (t.index == 0 ? " active" : ""); }
+              "class": function(r,t,d) { return "item" + (t.parent.index == 0 ? " active" : ""); }
             },
             "children": [{
               "render": Monominoes.renders.IMG,
-              "config": {
-              }
-            },{
-              "render": Monominoes.renders.DIV,
-              "config": {
-                "def": { "class": "carousel-caption" },
-                "children": [{
-                  "render": Monominoes.renders.H3,
-                  "config": {}
-                },{
-                  "render": Monominoes.renders.P,
-                  "config": {}
-                }]
-              }
+              "config": imgConfig
             }]
           }
         }]
       }
     };
+    
+    if (hasTextProperties) {
+      textProperties = {
+        "render": Monominoes.renders.DIV,
+        "config": {
+          "def": { "class": "carousel-caption" },
+          "children": [{
+            "render": Monominoes.renders.H3,
+            "config": titleConfig
+          },{
+            "render": Monominoes.renders.P,
+            "config": textConfig
+          }]
+        }
+      };
+      inner.config.children.config.children.push(textProperties);
+    }
     
     indicators = {
       "render": Monominoes.renders.LIST,
@@ -183,18 +193,16 @@ Monominoes.bs.CAROUSEL = Monominoes.renders.DIV.extend({
         "def": { "class": "carousel-indicators" },
         "itemsLayout": {
           "def": {
-            "attrs": { "data-target": "#" + this.id, "data-slide-to": Monominoes.util.property("index") },
-            "class": function(r,t,d) { return d.active ? "active" : ""; }
+            "attrs": { 
+              "data-target": "#" + this.id, 
+              "data-slide-to": function(r,t,d) {
+                return t.parent.index;
+              }
+            },
+            "class": function(r,t,d) { 
+              return t.parent.index == 0 ? "active" : ""; 
+            }
           }
-        },
-        "extractData": function(data) {
-          var indicatorArray = [];
-          
-          for (var x in data) {
-            indicatorArray.push({ "index": x, "active": x == 0 });
-          }
-          
-          return indicatorArray;
         }
       }
     };
