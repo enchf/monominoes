@@ -137,7 +137,7 @@ Monominoes.bs.CAROUSEL = Monominoes.renders.DIV.extend({
             "iterable": true,
             "def": { 
               "class": function(r,t,d) { 
-                return "item" + (t.parent.index == 0 ? " active" : ""); 
+                return "item" + (t.index == 0 ? " active" : ""); 
               }
             },
             "children": [{
