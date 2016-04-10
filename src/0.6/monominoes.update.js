@@ -185,11 +185,11 @@ Monominoes.bs.CAROUSEL = Monominoes.renders.DIV.extend({
             "attrs": { 
               "data-target": "#" + this.id, 
               "data-slide-to": function(r,t,d) {
-                return t.parent.index;
+                return t.index;
               }
             },
             "class": function(r,t,d) { 
-              return t.parent.index == 0 ? "active" : ""; 
+              return t.index == 0 ? "active" : ""; 
             }
           }
         }
